@@ -1,3 +1,5 @@
+import { getCache } from "@vercel/functions"
+
 const ONE_MINUTE = 60
 
 // Busy regions to rotate through (lat, lon) so there's always something airborne.
@@ -23,6 +25,30 @@ type Aircraft = {
   gnd?: boolean
 }
 
+// Deliberately NOT `next: { revalidate }`. The Data Cache bills every
+// revalidation as an ISR write, and with 8 region keys visited in random order
+// each key is revisited ~8 minutes apart — always past a 60s TTL, so every
+// single request was a write. The Runtime Cache is a regional KV that isn't
+// billed that way. Caching the region payload rather than the response is what
+// keeps the per-visitor seed free to pick a different aircraft each minute.
+const fetchRegion = async (lat: number, lon: number) => {
+  const cache = getCache()
+  const key = `adsb:${lat},${lon}`
+  const hit = await cache.get(key)
+  if (hit) return hit as { ac?: Aircraft[] }
+  const res = await fetch(
+    `https://api.adsb.lol/v2/lat/${lat}/lon/${lon}/dist/250`,
+    {
+      headers: { "User-Agent": "Globetrotter/1.0" },
+      cache: "no-store",
+    },
+  )
+  if (!res.ok) throw new Error(`adsb ${res.status}`)
+  const data = (await res.json()) as { ac?: Aircraft[] }
+  await cache.set(key, data, { ttl: ONE_MINUTE })
+  return data
+}
+
 // One live aircraft from adsb.lol (free, no key, deploy-friendly). The client
 // sends a fresh seed each minute to rotate region + aircraft.
 export const GET = async (req: Request) => {
@@ -30,15 +56,7 @@ export const GET = async (req: Request) => {
     const seedParam = new URL(req.url).searchParams.get("seed")
     const seed = seedParam ? Math.abs(Number(seedParam)) : 0
     const [lat, lon] = REGIONS[seed % REGIONS.length]
-    const res = await fetch(
-      `https://api.adsb.lol/v2/lat/${lat}/lon/${lon}/dist/250`,
-      {
-        headers: { "User-Agent": "Globetrotter/1.0" },
-        next: { revalidate: ONE_MINUTE },
-      },
-    )
-    if (!res.ok) throw new Error(`adsb ${res.status}`)
-    const data = (await res.json()) as { ac?: Aircraft[] }
+    const data = await fetchRegion(lat, lon)
     const airborne = (data.ac ?? []).filter(
       (a) =>
         !a.gnd &&
