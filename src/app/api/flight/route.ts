@@ -1,6 +1,26 @@
 import { getCache } from "@vercel/functions"
 
-const ONE_MINUTE = 60
+/**
+ * How long a region's payload is held. TEN minutes, and the number is a spend
+ * ceiling rather than a freshness preference — lower it and the bill scales with
+ * traffic again.
+ *
+ * It was 60s, which is the poll period, and the two together meant this cache
+ * almost never returned a hit. A random region per request means any one key
+ * comes round about every eight minutes; expiring it after one guaranteed it was
+ * gone before it was next asked for, so nearly every request missed and every
+ * miss is a write. Moving off the Data Cache (see below) changed which meter that
+ * billed and not the rate: the free tier's 200k Runtime Cache Writes was 75%
+ * spent.
+ *
+ * Above the revisit interval, writes stop tracking traffic at all and are capped
+ * at keys ÷ TTL — eight regions over ten minutes, so ~35k a month however many
+ * people show up. The visible liveness survives because the per-visitor seed
+ * picks a different aircraft out of the payload each minute regardless; only the
+ * positions inside it age, and a ten-minute-old ADS-B snapshot still has
+ * everything in it airborne.
+ */
+const REGION_TTL = 600
 
 // Busy regions to rotate through (lat, lon) so there's always something airborne.
 const REGIONS: [number, number][] = [
@@ -26,11 +46,11 @@ type Aircraft = {
 }
 
 // Deliberately NOT `next: { revalidate }`. The Data Cache bills every
-// revalidation as an ISR write, and with 8 region keys visited in random order
-// each key is revisited ~8 minutes apart — always past a 60s TTL, so every
-// single request was a write. The Runtime Cache is a regional KV that isn't
-// billed that way. Caching the region payload rather than the response is what
-// keeps the per-visitor seed free to pick a different aircraft each minute.
+// revalidation as an ISR write; the Runtime Cache is a regional KV that isn't
+// billed that way. That move fixed which meter was charged and not the rate —
+// REGION_TTL above is what actually caps the writes. Caching the region payload
+// rather than the response is what keeps the per-visitor seed free to pick a
+// different aircraft each minute.
 const fetchRegion = async (lat: number, lon: number) => {
   const cache = getCache()
   const key = `adsb:${lat},${lon}`
@@ -45,7 +65,7 @@ const fetchRegion = async (lat: number, lon: number) => {
   )
   if (!res.ok) throw new Error(`adsb ${res.status}`)
   const data = (await res.json()) as { ac?: Aircraft[] }
-  await cache.set(key, data, { ttl: ONE_MINUTE })
+  await cache.set(key, data, { ttl: REGION_TTL })
   return data
 }
 
