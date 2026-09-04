@@ -22,6 +22,17 @@ import { getCache } from "@vercel/functions"
  */
 const REGION_TTL = 600
 
+/**
+ * Search radius in nautical miles. Fifty, not the 250 this started with.
+ *
+ * 250nm returns ~395 aircraft and 243KB per region; 50nm returns ~89, of which
+ * about 50 are airborne and so eligible for the pick below. Fifty candidates is
+ * far more than a random choice needs, and adsb.lol is fed by volunteers, so the
+ * five-fold cut is bandwidth taken off a donated feed rather than a saving of
+ * ours.
+ */
+const RADIUS_NM = 50
+
 // Busy regions to rotate through (lat, lon) so there's always something airborne.
 const REGIONS: [number, number][] = [
   [51.5, -0.13], // London
@@ -57,7 +68,7 @@ const fetchRegion = async (lat: number, lon: number) => {
   const hit = await cache.get(key)
   if (hit) return hit as { ac?: Aircraft[] }
   const res = await fetch(
-    `https://api.adsb.lol/v2/lat/${lat}/lon/${lon}/dist/250`,
+    `https://api.adsb.lol/v2/lat/${lat}/lon/${lon}/dist/${RADIUS_NM}`,
     {
       headers: { "User-Agent": "Globetrotter/1.0" },
       cache: "no-store",
