@@ -1,5 +1,32 @@
 @import "tailwindcss";
 
+@media (max-width: 767px) {
+  .map-stage canvas {
+    touch-action: none;
+  }
+
+  /* Detail panels are sheets; leave the globe visible above them. */
+  .map-stage > aside {
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    height: min(58dvh, 560px);
+    border-radius: 24px 24px 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--border);
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+    overscroll-behavior: contain;
+  }
+
+  .map-stage > aside > header:first-child {
+    position: sticky;
+    top: -20px;
+    z-index: 1;
+    background: var(--panel);
+    padding-block: 8px;
+  }
+}
+
 /* System fonts keep builds and font rendering independent of network access. */
 :root {
   --font-geist-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;

@@ -300,8 +300,8 @@ export const useTravelStore = create<TravelState>()(
         statuses: state.statuses,
         notes: state.notes,
         reviews: state.reviews,
-        // `view` is intentionally not persisted so the app always opens on the
-        // flat map (the better planning view) rather than the last-used view.
+        // `view` is not persisted: desktop opens the flat map; the mobile
+        // workspace switches to the globe without overwriting travel data.
         theme: state.theme,
         locale: state.locale,
         localePinned: state.localePinned,

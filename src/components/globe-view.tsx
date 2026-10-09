@@ -386,19 +386,26 @@ const GlobeView = ({ size }: Props) => {
   useEffect(() => {
     const globe = globeRef.current
     if (!globe) return
+    // Fit the whole sphere on tall phone screens without changing desktop
+    // framing or the user's subsequent drag/zoom controls.
+    const fitAltitude = (altitude: number) => {
+      if (!window.matchMedia("(max-width: 767px)").matches) return altitude
+      const canvas = globe.renderer().domElement
+      return Math.max(altitude, (canvas.clientHeight / Math.max(canvas.clientWidth, 1)) * 1.9)
+    }
     // If a country is already selected, the focus effect centres on it — don't
     // override that with the geolocation/default fly-to. Geolocation only frames
     // the globe when nothing is selected.
     if (useTravelStore.getState().selectedId) return
     // Re-entering the globe: fly straight to the known viewer location.
     if (cachedViewerLatLng) {
-      globe.pointOfView({ ...cachedViewerLatLng, altitude: 1.8 }, 0)
+      globe.pointOfView({ ...cachedViewerLatLng, altitude: fitAltitude(1.8) }, 0)
       return
     }
     // First entry: show the default framing immediately, then animate to the
     // viewer's location once geolocation resolves. A denial or timeout simply
     // leaves the default in place.
-    globe.pointOfView(DEFAULT_POV, 0)
+    globe.pointOfView({ ...DEFAULT_POV, altitude: fitAltitude(DEFAULT_POV.altitude) }, 0)
     if (typeof navigator === "undefined" || !navigator.geolocation) return
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -407,7 +414,7 @@ const GlobeView = ({ size }: Props) => {
           lng: pos.coords.longitude,
         }
         globeRef.current?.pointOfView(
-          { ...cachedViewerLatLng, altitude: 1.8 },
+          { ...cachedViewerLatLng, altitude: fitAltitude(1.8) },
           1200,
         )
       },

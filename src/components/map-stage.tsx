@@ -36,7 +36,7 @@ const ViewToggle = () => {
   const view = useTravelStore((s) => s.view)
   const setView = useTravelStore((s) => s.setView)
   const base =
-    "flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm transition-colors cursor-pointer"
+    "flex min-h-11 items-center gap-1.5 px-2.5 py-2 md:min-h-0 md:px-3.5 rounded-full text-sm transition-colors cursor-pointer"
   const active = "bg-[var(--accent)] text-[var(--accent-ink)] font-semibold"
   const idle = "text-[var(--ink-dim)] hover:text-[var(--ink)]"
   return (
@@ -62,7 +62,7 @@ const SpinToggle = () => {
   const autoSpin = useTravelStore((s) => s.autoSpin)
   const setAutoSpin = useTravelStore((s) => s.setAutoSpin)
   return (
-    <label className="flex cursor-pointer select-none items-center gap-2 text-sm text-[var(--ink-dim)]">
+    <label className="flex min-h-11 cursor-pointer select-none items-center gap-2 text-sm text-[var(--ink-dim)] md:min-h-0">
       <input
         type="checkbox"
         checked={autoSpin}
@@ -94,7 +94,7 @@ const LanguageSelect = () => {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label="Language"
-        className="flex h-9 items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--panel)] pl-2.5 pr-2.5 text-sm font-medium text-[var(--ink-dim)] hover:text-[var(--ink)]"
+        className="flex h-11 items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--panel)] pl-2.5 pr-2.5 text-sm font-medium text-[var(--ink-dim)] hover:text-[var(--ink)] md:h-9"
       >
         <span className="text-base leading-none">{current.flag}</span>
         {current.short}
@@ -152,7 +152,7 @@ const ThemeToggle = () => {
       onClick={cycleTheme}
       aria-label={t("theme.toggle")}
       title={t(`theme.${theme}`)}
-      className="grid h-9 w-9 place-items-center overflow-hidden rounded-full border border-[var(--border)] bg-[var(--panel)] text-[var(--ink-dim)] hover:text-[var(--ink)]"
+      className="grid h-11 w-11 place-items-center overflow-hidden rounded-full border border-[var(--border)] bg-[var(--panel)] text-[var(--ink-dim)] hover:text-[var(--ink)] md:h-9 md:w-9"
     >
       <AnimatePresence mode="wait" initial={false}>
         <motion.span
@@ -232,12 +232,12 @@ const MapStage = () => {
 
   return (
     <main
-      className="relative flex h-full flex-col"
+      className="map-stage relative flex h-full min-h-0 min-w-0 flex-col pb-[calc(76px+env(safe-area-inset-bottom))] md:pb-0"
       style={{ background: "var(--stage)" }}
     >
-      <div className="flex items-center justify-between gap-3 px-4 py-3.5">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 px-3 pb-2 pt-[max(8px,env(safe-area-inset-top))] md:flex-nowrap md:gap-3 md:px-4 md:py-3.5">
         <ViewToggle />
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 md:gap-3">
           {view === "globe" && <SpinToggle />}
           <LanguageSelect />
           <ThemeToggle />

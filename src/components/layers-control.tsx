@@ -11,7 +11,7 @@ const LayersControl = () => {
   const toggleLayer = useTravelStore((s) => s.toggleLayer)
 
   return (
-    <div className="absolute bottom-5 left-5 z-10 flex flex-col gap-1.5 rounded-2xl border border-[var(--border)] bg-[var(--panel)]/90 p-1.5 shadow-lg backdrop-blur">
+    <div className="absolute bottom-[calc(76px+env(safe-area-inset-bottom))] left-3 right-3 z-10 flex flex-wrap gap-1 rounded-2xl border border-[var(--border)] bg-[var(--panel)]/90 p-1.5 shadow-lg backdrop-blur md:bottom-5 md:left-5 md:right-auto md:flex-col md:gap-1.5">
       {LAYERS.map((layer) => {
         const on = layers[layer.id]
         return (

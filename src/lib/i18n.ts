@@ -15,6 +15,7 @@ export const LOCALES: {
 type Dict = Record<string, string>
 
 const en: Dict = {
+  "mobile.travels": "Search & my travels",
   eyebrow: "Atlas of you",
   tagline: "Where in the world have you been?",
   "stat.visited": "visited",
@@ -122,6 +123,7 @@ const en: Dict = {
 }
 
 const fr: Dict = {
+  "mobile.travels": "Recherche et mes voyages",
   eyebrow: "Votre atlas",
   tagline: "Où dans le monde êtes-vous allé ?",
   "stat.visited": "visités",
@@ -230,6 +232,7 @@ const fr: Dict = {
 }
 
 const es: Dict = {
+  "mobile.travels": "Buscar y mis viajes",
   eyebrow: "Tu atlas",
   tagline: "¿Dónde has estado en el mundo?",
   "stat.visited": "visitados",
@@ -338,6 +341,7 @@ const es: Dict = {
 }
 
 const de: Dict = {
+  "mobile.travels": "Suche & meine Reisen",
   eyebrow: "Dein Atlas",
   tagline: "Wo auf der Welt warst du schon?",
   "stat.visited": "besucht",
