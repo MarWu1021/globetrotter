@@ -1,6 +1,15 @@
 @import "tailwindcss";
 
 @media (max-width: 767px) {
+  /* Scroll the complete travel drawer instead of compressing its sections. */
+  .travel-sidebar > * {
+    flex-shrink: 0;
+  }
+
+  .travel-sidebar > section {
+    flex: 0 0 auto;
+  }
+
   .map-stage canvas {
     touch-action: none;
   }

@@ -353,7 +353,7 @@ const Sidebar = () => {
   }
 
   return (
-    <aside className="flex h-full flex-col gap-4 overflow-y-auto border-r border-[var(--border)] bg-[var(--panel)] p-5">
+    <aside className="travel-sidebar flex h-full flex-col gap-4 overflow-y-auto border-r border-[var(--border)] bg-[var(--panel)] p-5">
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-[var(--accent)]">
