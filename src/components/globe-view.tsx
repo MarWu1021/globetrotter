@@ -182,6 +182,7 @@ const GlobeView = ({ size }: Props) => {
       if (!d) return setHover(null)
       const f = d as CountryFeature
       setHover({
+        id: f.id,
         name: f.properties.name,
         flag: getCountryInfo(f.id)?.flag ?? "",
         status: statuses[f.id],

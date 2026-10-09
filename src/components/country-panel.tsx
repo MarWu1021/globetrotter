@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { useTravelStore, type Status, type WouldReturn } from "@/lib/store"
-import { useT, dateLocale } from "@/lib/i18n"
+import { countryName, infoName, localizeText } from "@/lib/localized-country"
+import { useT, dateLocale, translate } from "@/lib/i18n"
 import { countryById } from "@/lib/geo"
 import {
   getCountryInfo,
@@ -25,11 +26,6 @@ import PanelHeader from "@/components/panel-header"
 import { Fact } from "@/components/panel-stats"
 import Conditions from "@/components/conditions"
 
-const numberFmt = new Intl.NumberFormat("en-US")
-const compactFmt = new Intl.NumberFormat("en-US", {
-  notation: "compact",
-  maximumFractionDigits: 1,
-})
 
 const StatusButton = ({
   active,
@@ -73,7 +69,7 @@ const StarRating = ({
       <button
         key={n}
         onClick={() => onChange(value === n ? undefined : n)}
-        aria-label={`${n} star${n > 1 ? "s" : ""}`}
+        aria-label={translate(useTravelStore.getState().locale)("rating.stars", { n })}
         className="text-2xl leading-none transition-transform hover:scale-110"
         style={{ color: n <= value ? STAR_GOLD : "var(--border)" }}
       >
@@ -105,6 +101,7 @@ const ReturnToggle = ({
           <button
             key={o.value}
             onClick={() => onChange(active ? undefined : o.value)}
+            aria-label={t(`return.${o.value}`)}
             className="flex-1 rounded-lg border px-2 py-1.5 text-sm font-medium transition-colors"
             style={
               active
@@ -253,7 +250,7 @@ const VisitsEditor = ({
             {formatVisit(v)}
             <button
               onClick={() => onChange(visits.filter((x) => x !== v))}
-              aria-label={`Remove ${formatVisit(v)}`}
+              aria-label={translate(useTravelStore.getState().locale)("visit.remove", { date: formatVisit(v) })}
               className="text-[var(--ink-dim)] hover:text-[var(--danger)]"
             >
               ✕
@@ -277,10 +274,10 @@ const SourceLinks = ({ info }: { info: CountryInfo }) => (
         href={s.url(info)}
         target="_blank"
         rel="noopener noreferrer"
-        title={`${s.label} — official travel advice`}
+        title={`${localizeText(s.label, useTravelStore.getState().locale)} — ${translate(useTravelStore.getState().locale)("advice.official")}`}
         className="rounded-full border border-[var(--border)] bg-[var(--panel-2)] px-2.5 py-1 text-xs font-medium text-[var(--ink-dim)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
       >
-        {s.country} ↗
+        {localizeText(s.country, useTravelStore.getState().locale)} ↗
       </a>
     ))}
   </div>
@@ -308,6 +305,8 @@ const CountryPanel = () => {
   const liveSources = useAdvisoryStore((s) => s.sources)
   const liveUpdated = useAdvisoryStore((s) => s.updated)
   const locale = useTravelStore((s) => s.locale)
+  const numberFmt = new Intl.NumberFormat(dateLocale(locale))
+  const compactFmt = new Intl.NumberFormat(dateLocale(locale), { notation: "compact", maximumFractionDigits: 1 })
 
   // Ensure live advisories are loaded (retries if the initial fetch failed) so
   // Canada — which has no offline snapshot — reliably appears alongside the US.
@@ -326,11 +325,12 @@ const CountryPanel = () => {
     const cinfo = id ? getCountryInfo(id) : undefined
     if (!cinfo) return
     let active = true
-    const lang = locale === "fr" ? "fr" : "en"
-    const title = locale === "fr" ? (cinfo.nameFr ?? cinfo.name) : cinfo.name
+    const lang = locale === "zh-TW" ? "zh" : locale === "fr" ? "fr" : "en"
+    const title = infoName(cinfo, locale, id ?? undefined)
     const key = `${id}:${locale}`
     fetch(
       `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`,
+      locale === "zh-TW" ? { headers: { "Accept-Language": "zh-TW" } } : undefined,
     )
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
@@ -356,7 +356,7 @@ const CountryPanel = () => {
 
   const info = selectedId ? getCountryInfo(selectedId) : undefined
   const name = selectedId
-    ? (info?.name ?? countryById.get(selectedId)?.name ?? t("unknown"))
+    ? countryName(selectedId, locale, countryById.get(selectedId)?.name ?? t("unknown"))
     : ""
   const status = selectedId ? statuses[selectedId] : undefined
   const review = selectedId ? reviews[selectedId] : undefined
@@ -420,13 +420,11 @@ const CountryPanel = () => {
             subtitle={
               info?.subregion && (
                 <>
-                  {info.subregion}
+                  {localizeText(info.subregion, locale)}
                   {advisoryInfo && info.parent && (
                     <>
                       {" · "}
-                      {locale === "fr"
-                        ? advisoryInfo.nameFr
-                        : advisoryInfo.name}
+                      {infoName(advisoryInfo, locale)}
                     </>
                   )}
                 </>
@@ -484,7 +482,7 @@ const CountryPanel = () => {
                     {levels.map((l) => (
                       <span
                         key={l.name}
-                        title={`${l.name} · ${l.meta.label}`}
+                        title={`${localizeText(l.name, locale)} · ${localizeText(l.meta.label, locale)}`}
                         className="rounded-full px-2.5 py-0.5 text-xs font-bold"
                         style={{
                           background: withAlpha(l.meta.color, 0.18),
@@ -492,11 +490,11 @@ const CountryPanel = () => {
                         }}
                       >
                         {l.flag}{" "}
-                        {t("safety.level", { n: l.level, short: l.meta.short })}
+                        {t("safety.level", { n: l.level, short: localizeText(l.meta.short, locale) })}
                       </span>
                     ))}
                   </div>
-                  {primary && <p className="text-sm">{primary.meta.label}</p>}
+                  {primary && <p className="text-sm">{localizeText(primary.meta.label, locale)}</p>}
                 </>
               ) : (
                 <p className="text-sm text-[var(--ink-dim)]">
@@ -507,7 +505,7 @@ const CountryPanel = () => {
                 <p className="text-[11px] italic text-[var(--ink-faint)]">
                   {t("safety.parent", {
                     country:
-                      locale === "fr" ? advisoryInfo.nameFr : advisoryInfo.name,
+                      infoName(advisoryInfo, locale),
                   })}
                 </p>
               )}
@@ -516,14 +514,14 @@ const CountryPanel = () => {
                 <p className="text-[11px] text-[var(--ink-faint)]">
                   {isLive
                     ? t("safety.live", {
-                        source: "US + Canada",
+                        source: localizeText("US + Canada", locale),
                         date: new Date(liveUpdated!).toLocaleDateString(
                           dateLocale(useTravelStore.getState().locale),
                         ),
                       })
                     : t("safety.snapshot", {
-                        source: ADVISORY_SOURCE_NAME,
-                        date: ADVISORY_SNAPSHOT,
+                        source: localizeText(ADVISORY_SOURCE_NAME, locale),
+                        date: localizeText(ADVISORY_SNAPSHOT, locale),
                       })}
                 </p>
               )}
@@ -536,15 +534,15 @@ const CountryPanel = () => {
                 <Fact
                   label={t("fact.partof")}
                   value={
-                    locale === "fr" ? advisoryInfo.nameFr : advisoryInfo.name
+                    infoName(advisoryInfo, locale)
                   }
                 />
               )}
               {info.capital && (
-                <Fact label={t("fact.capital")} value={info.capital} />
+                <Fact label={t("fact.capital")} value={localizeText(info.capital, locale)} />
               )}
               {info.region && (
-                <Fact label={t("fact.region")} value={info.region} />
+                <Fact label={t("fact.region")} value={localizeText(info.region, locale)} />
               )}
               {info.population != null && (
                 <Fact
@@ -555,13 +553,13 @@ const CountryPanel = () => {
               {info.languages.length > 0 && (
                 <Fact
                   label={t("fact.languages")}
-                  value={info.languages.join(", ")}
+                  value={info.languages.map((v) => localizeText(v, locale)).join(locale === "zh-TW" ? "、" : ", ")}
                 />
               )}
               {info.currencies.length > 0 && (
                 <Fact
                   label={t("fact.currency")}
-                  value={info.currencies.join(", ")}
+                  value={info.currencies.map((v) => localizeText(v, locale)).join(locale === "zh-TW" ? "、" : ", ")}
                 />
               )}
               {info.area && (

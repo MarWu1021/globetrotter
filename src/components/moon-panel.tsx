@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import { useTravelStore } from "@/lib/store"
 import { useMoon } from "@/lib/use-moon"
 import { phaseEmoji } from "@/lib/moon"
+import { localizeText } from "@/lib/localized-country"
 import { useT } from "@/lib/i18n"
 import PanelImage from "@/components/panel-image"
 import PanelHeader from "@/components/panel-header"
@@ -17,6 +18,8 @@ const MOON_PHOTO =
 
 const MoonPanel = () => {
   const t = useT()
+  const locale = useTravelStore((s) => s.locale)
+  const text = (value: string) => localizeText(value, locale)
   const open = useTravelStore((s) => s.moonOpen)
   const close = () => useTravelStore.getState().closeMoon()
   const moon = useMoon()
@@ -43,7 +46,7 @@ const MoonPanel = () => {
           <PanelHeader
             icon={moon ? phaseEmoji(moon.phase) : "🌙"}
             title="The Moon"
-            subtitle={moon ? moon.phaseName : "Earth's natural satellite"}
+            subtitle={text(moon ? moon.phaseName : "Earth's natural satellite")}
             onClose={close}
             closeLabel={t("close")}
           />
@@ -60,7 +63,7 @@ const MoonPanel = () => {
               color: "var(--accent)",
             }}
           >
-            Live · computed locally
+            {text("Live \u00b7 computed locally")}
           </span>
 
           <div className="grid grid-cols-2 gap-2">
@@ -75,15 +78,15 @@ const MoonPanel = () => {
             <Stat label="Phase" value={moon ? moon.phaseName : "—"} />
             <Stat
               label="Age"
-              value={moon ? `${moon.ageDays.toFixed(1)} days` : "—"}
+              value={moon ? `${moon.ageDays.toFixed(1)} ${locale === "zh-TW" ? "天" : "days"}` : "—"}
             />
             <Stat
               label="Next full moon"
               value={
                 moon
                   ? moon.daysToFull < 0.5
-                    ? "Today"
-                    : `in ${Math.round(moon.daysToFull)} days`
+                    ? text("Today")
+                    : locale === "zh-TW" ? `${Math.round(moon.daysToFull)} 天後` : `in ${Math.round(moon.daysToFull)} days`
                   : "—"
               }
             />
@@ -100,8 +103,7 @@ const MoonPanel = () => {
           </div>
 
           <p className="text-sm leading-relaxed text-[var(--ink-dim)]">
-            The marker shows the sublunar point — where the Moon is directly
-            overhead right now. It drifts west as the Earth turns beneath it.
+            {locale === "zh-TW" ? "標記顯示月球目前直射地球的位置，會隨著地球自轉向西移動。" : "The marker shows the sublunar point — where the Moon is directly overhead right now. It drifts west as the Earth turns beneath it."}
           </p>
 
           <a

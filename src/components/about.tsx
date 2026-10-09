@@ -2,11 +2,15 @@
 
 import { useEffect, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
+import { useT } from "@/lib/i18n"
+import { useTravelStore } from "@/lib/store"
 import { GlobeIcon } from "@/components/icons"
 
 // A small "About" trigger + modal explaining why Globetrotter exists — a
 // passion project living between planning your travels and learning the world.
 const About = () => {
+  const t = useT()
+  const locale = useTravelStore((s) => s.locale)
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
@@ -22,11 +26,11 @@ const About = () => {
     <>
       <button
         onClick={() => setOpen(true)}
-        aria-label="About Globetrotter"
-        title="About Globetrotter"
+        aria-label={`${t("about")} Globetrotter`}
+        title={`${t("about")} Globetrotter`}
         className="flex h-7 shrink-0 items-center rounded-full border border-[var(--border)] px-2.5 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-[var(--ink-dim)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
       >
-        About
+        {t("about")}
       </button>
 
       <AnimatePresence>
@@ -53,7 +57,7 @@ const About = () => {
             >
               <header>
                 <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-[var(--accent)]">
-                  ✦ About
+                  ✦ {t("about")}
                 </p>
                 <h2 className="font-display mt-1.5 flex items-center gap-2.5 text-2xl font-semibold">
                   <GlobeIcon
@@ -66,6 +70,11 @@ const About = () => {
               </header>
 
               <div className="flex flex-col gap-3 text-sm leading-relaxed text-[var(--ink-dim)]">
+                {locale === "zh-TW" ? <>
+                  <p>Globetrotter 來自對地圖的熱愛：用手指探索世界，想著下一趟旅行要去哪裡。</p>
+                  <p>在這裡規劃旅程、認識世界。記下走過的國家、收藏想去的地方，也能探索海洋、機場、國際太空站與月球，保持對世界的好奇。</p>
+                  <p>獻給每位旅行者與喜歡探索的人。🌍</p>
+                </> : <>
                 <p>
                   Globetrotter began with a simple love of maps — the kind you
                   trace with a finger, wondering <em>“where next?”</em>
@@ -83,13 +92,14 @@ const About = () => {
                   Built with care, for travellers and the endlessly curious
                   alike. 🌍
                 </p>
+                </>}
               </div>
 
               <button
                 onClick={() => setOpen(false)}
                 className="self-end rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm font-medium text-[var(--ink-dim)] transition-colors hover:border-[var(--accent)] hover:text-[var(--ink)]"
               >
-                Close
+                {t("close")}
               </button>
             </motion.div>
           </motion.div>

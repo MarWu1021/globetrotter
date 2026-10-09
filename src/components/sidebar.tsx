@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import { countries, countryById } from "@/lib/geo"
 import { getCountryInfo } from "@/lib/country-info"
 import { useT, statusKey } from "@/lib/i18n"
+import { countryName } from "@/lib/localized-country"
 import { formatVisit } from "@/components/country-panel"
 import {
   useTravelStore,
@@ -123,7 +124,7 @@ const SortSelect = ({
   }, [open])
 
   return (
-    <div className="relative ml-auto">
+    <div className="relative ml-auto shrink-0">
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label={t("sort.aria")}
@@ -186,6 +187,7 @@ const SortSelect = ({
 
 const Sidebar = () => {
   const t = useT()
+  const locale = useTravelStore((s) => s.locale)
   const hydrated = useHasHydrated()
   const statuses = useTravelStore((s) => s.statuses)
   const notes = useTravelStore((s) => s.notes)
@@ -242,16 +244,15 @@ const Sidebar = () => {
             hasNote: Boolean(notes[id]),
             rating: reviews[id]?.rating,
             lastVisit: [...(reviews[id]?.visits ?? [])].sort().at(-1),
-            name: countryById.get(id)?.name ?? id,
+            name: countryName(id, locale, countryById.get(id)?.name ?? id),
             parent: parentId
-              ? (countryById.get(parentId)?.name ??
-                getCountryInfo(parentId)?.name)
+              ? countryName(parentId, locale)
               : undefined,
           }
         })
         .sort((a, b) => a.name.localeCompare(b.name)),
     }
-  }, [statuses, notes, reviews])
+  }, [statuses, notes, reviews, locale])
 
   const percent = Math.min(100, Math.round((visited / WORLD_COUNTRIES) * 100))
 
@@ -291,16 +292,17 @@ const Sidebar = () => {
     const q = query.trim().toLowerCase()
     // Typing → filtered matches. Focused with no query → the full list, so the
     // user can browse/scroll to a country without typing.
-    if (!q) return searchFocus ? countries : []
-    return countries
-      .filter((c) => c.name.toLowerCase().includes(q))
+    const localized = countries.map((c) => ({ ...c, originalName: c.name, name: countryName(c.id, locale, c.name) }))
+    if (!q) return searchFocus ? localized : []
+    return localized
+      .filter((c) => c.name.toLowerCase().includes(q) || c.originalName.toLowerCase().includes(q))
       .sort((a, b) => {
         const aStarts = a.name.toLowerCase().startsWith(q) ? 0 : 1
         const bStarts = b.name.toLowerCase().startsWith(q) ? 0 : 1
         return aStarts - bStarts || a.name.localeCompare(b.name)
       })
       .slice(0, 8)
-  }, [query, searchFocus])
+  }, [query, searchFocus, locale])
 
   const pick = (id: string) => {
     flyTo(id)
@@ -324,7 +326,7 @@ const Sidebar = () => {
     try {
       applyParsed(parseSaveFile(await file.text()))
     } catch (error) {
-      window.alert(error instanceof Error ? error.message : t("import.error"))
+      window.alert(locale === "zh-TW" ? t("import.error") : error instanceof Error ? error.message : t("import.error"))
     }
   }
 
@@ -348,7 +350,7 @@ const Sidebar = () => {
       setPasteOpen(false)
       setPasteText("")
     } catch (error) {
-      window.alert(error instanceof Error ? error.message : t("import.error"))
+      window.alert(locale === "zh-TW" ? t("import.error") : error instanceof Error ? error.message : t("import.error"))
     }
   }
 
@@ -486,8 +488,8 @@ const Sidebar = () => {
           )}
         </h2>
         {hydrated && marked.length > 0 && (
-          <div className="mb-2 flex items-center gap-2">
-            <div className="flex gap-0.5 rounded-lg bg-[var(--panel-2)] p-0.5 text-[0.7rem]">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <div className="flex shrink-0 gap-0.5 rounded-lg bg-[var(--panel-2)] p-0.5 text-[0.7rem]">
               {(["all", "visited", "wishlist", "blocked"] as const).map((f) => (
                 <button
                   key={f}

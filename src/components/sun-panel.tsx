@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { useTravelStore } from "@/lib/store"
 import { useSun } from "@/lib/use-sun"
+import { localizeText } from "@/lib/localized-country"
 import { useT } from "@/lib/i18n"
 import PanelImage from "@/components/panel-image"
 import PanelHeader from "@/components/panel-header"
@@ -15,6 +16,8 @@ const SUN_PHOTO =
 
 const SunPanel = () => {
   const t = useT()
+  const locale = useTravelStore((s) => s.locale)
+  const text = (value: string) => localizeText(value, locale)
   const open = useTravelStore((s) => s.sunOpen)
   const close = () => useTravelStore.getState().closeSun()
   const sun = useSun()
@@ -58,7 +61,7 @@ const SunPanel = () => {
               color: "var(--accent)",
             }}
           >
-            Live · computed locally
+            {text("Live \u00b7 computed locally")}
           </span>
 
           <div className="grid grid-cols-2 gap-2">
@@ -85,9 +88,7 @@ const SunPanel = () => {
           </div>
 
           <p className="text-sm leading-relaxed text-[var(--ink-dim)]">
-            The marker shows the subsolar point — where the Sun is directly
-            overhead (local solar noon) right now. It tracks west as the Earth
-            turns, and drifts north and south with the seasons.
+            {locale === "zh-TW" ? "標記顯示太陽目前直射地球的位置，會隨地球自轉向西移動，並隨季節在南北之間變化。" : "The marker shows the subsolar point — where the Sun is directly overhead (local solar noon) right now. It tracks west as the Earth turns, and drifts north and south with the seasons."}
           </p>
 
           <a

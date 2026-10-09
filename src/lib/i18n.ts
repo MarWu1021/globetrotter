@@ -10,11 +10,24 @@ export const LOCALES: {
   { id: "fr", label: "Français", short: "FR", flag: "🇫🇷" },
   { id: "es", label: "Español", short: "ES", flag: "🇪🇸" },
   { id: "de", label: "Deutsch", short: "DE", flag: "🇩🇪" },
+  { id: "zh-TW", label: "繁體中文", short: "繁中", flag: "🇹🇼" },
 ]
 
 type Dict = Record<string, string>
 
 const en: Dict = {
+  "language": "Language",
+  "rating.stars": "{n} stars",
+  "visit.remove": "Remove {date}",
+  "advice.official": "Official travel advice",
+  "zoom.in": "Zoom in",
+  "zoom.out": "Zoom out",
+  "zoom.reset": "Reset view",
+  "zoom.lock": "Lock zoom",
+  "zoom.unlock": "Unlock zoom",
+  "zoom.locked": "Zoom locked \u2014 click to unlock",
+  "map.label": "Flat world map",
+
   "mobile.travels": "Search & my travels",
   eyebrow: "Atlas of you",
   tagline: "Where in the world have you been?",
@@ -449,7 +462,122 @@ const de: Dict = {
   "notes.wishlist.ph": "Was ist der Plan — wann, mit wem, Höhepunkte?",
 }
 
-const dict: Record<Locale, Dict> = { en, fr, es, de }
+const zhTW: Dict = {
+  "mobile.travels": "搜尋與我的旅行",
+  "eyebrow": "我的世界地圖",
+  "tagline": "你曾走過世界的哪些地方？",
+  "stat.visited": "已造訪",
+  "stat.wishlist": "想去清單",
+  "stat.world": "探索世界",
+  "avg": "平均 {r} 分 · {n} 筆評分",
+  "search.label": "搜尋國家",
+  "search.placeholder": "輸入國家名稱，例如：日本",
+  "hint": "點選任一國家，查看國家資訊與旅遊安全提醒，並記錄旅行狀態。",
+  "countries.title": "我的旅行",
+  "countries.empty": "你的世界地圖等著你探索！",
+  "countries.none": "沒有符合條件的國家。",
+  "filter.all": "全部",
+  "filter.visited": "已造訪",
+  "filter.wishlist": "想去",
+  "filter.blocked": "暫不考慮",
+  "sort.aria": "排序方式",
+  "sort.name": "依國家名稱",
+  "sort.rating": "依評分",
+  "sort.recent": "依最近造訪",
+  "roll.note": "有筆記",
+  "roll.changeStatus": "切換旅行狀態",
+  "roll.markWishlist": "加入想去清單",
+  "roll.hasNote": "有旅行筆記",
+  "save.title": "備份旅行紀錄",
+  "save.desc": "旅行資料儲存在這個瀏覽器中。匯出備份，就能帶到其他裝置使用。",
+  "export": "匯出",
+  "import": "匯入",
+  "copy": "複製",
+  "paste": "貼上",
+  "paste.placeholder": "在這裡貼上備份檔內容…",
+  "paste.load": "載入備份",
+  "copied": "已複製！",
+  "copy.fail": "無法複製，請改用匯出備份。",
+  "reset": "清除旅行紀錄",
+  "reset.confirm": "確定要清除所有旅行紀錄嗎？此操作無法復原。",
+  "import.confirm": "要以這份備份取代目前的旅行紀錄嗎？（共 {count} 個國家）",
+  "import.error": "無法讀取備份，請確認檔案格式與內容正確。",
+  "footer": "使用 Next.js、three.js 與 D3 製作 · 國家資料 © mledoze · 旅遊警示 © 美國與加拿大 · 航班 © adsb.lol · 照片 © Planespotters · 旅行資料只儲存在你的裝置中",
+  "view.globe": "地球",
+  "view.map": "平面地圖",
+  "autospin": "自動旋轉",
+  "theme.toggle": "切換顯示主題",
+  "theme.system": "跟隨系統",
+  "theme.dark": "深色模式",
+  "theme.light": "淺色模式",
+  "loading": "正在載入地球…",
+  "compass": "切換南北方向",
+  "flight.live": "即時航班",
+  "flight.altitude": "高度",
+  "flight.speed": "速度",
+  "flight.heading": "航向",
+  "flight.position": "位置",
+  "flight.aircraft": "機型",
+  "flight.operator": "航空公司",
+  "flight.registration": "註冊編號",
+  "flight.note": "航班位置可能延遲，僅供參考。",
+  "close": "關閉",
+  "unknown": "未知",
+  "status.notyet": "尚未造訪",
+  "status.wishlist": "想去",
+  "status.visited": "已造訪",
+  "status.blocked": "暫不考慮",
+  "safety.title": "旅遊安全提醒",
+  "safety.none": "目前沒有旅遊警示資料。",
+  "safety.parent": "依 {country} 的旅遊警示",
+  "safety.level": "第 {n} 級 · {short}",
+  "safety.live": "{source} 即時資料 · {date}",
+  "safety.snapshot": "{source} 資料快照 · {date}",
+  "fact.capital": "首都",
+  "fact.region": "地區",
+  "fact.population": "人口",
+  "fact.languages": "語言",
+  "fact.currency": "貨幣",
+  "fact.area": "面積",
+  "fact.partof": "所屬國家",
+  "fact.calling": "國際電話區碼",
+  "fact.tld": "網域",
+  "about": "關於",
+  "wiki.more": "閱讀更多維基百科內容 ↗",
+  "visit.title": "旅行紀錄",
+  "visit.when": "造訪日期",
+  "visit.rating": "你的評分",
+  "visit.return": "還想再去嗎？",
+  "return.yes": "想再去",
+  "return.maybe": "再看看",
+  "return.no": "不考慮",
+  "visit.loved": "喜歡的地方",
+  "visit.loved.ph": "美食、風景、人情味…",
+  "visit.didnt": "不喜歡的地方",
+  "visit.didnt.ph": "人潮、價格，或下次想避開的事…",
+  "visit.besttime": "推薦旅行季節",
+  "visit.besttime.ph": "例如：春末最舒服，避開八月",
+  "visit.addtrip": "新增旅行",
+  "picker.prevYear": "上一年",
+  "picker.nextYear": "下一年",
+  "notes.visited": "旅行筆記",
+  "notes.wishlist": "旅行計畫",
+  "notes.visited.ph": "還有哪些值得記下的回憶？",
+  "notes.wishlist.ph": "預計何時出發、和誰一起去、想看什麼？",
+  "language": "語言",
+  "rating.stars": "{n} 顆星",
+  "visit.remove": "刪除 {date} 的旅行紀錄",
+  "advice.official": "官方旅遊建議",
+  "zoom.in": "放大",
+  "zoom.out": "縮小",
+  "zoom.reset": "重設視角",
+  "zoom.lock": "鎖定縮放",
+  "zoom.unlock": "解除縮放鎖定",
+  "zoom.locked": "縮放已鎖定，點選即可解除",
+  "map.label": "世界平面地圖"
+}
+
+const dict: Record<Locale, Dict> = { en, fr, es, de, "zh-TW": zhTW }
 
 export type Translate = (
   key: keyof typeof en,
@@ -475,6 +603,7 @@ const DATE_LOCALE: Record<Locale, string> = {
   fr: "fr-FR",
   es: "es-ES",
   de: "de-DE",
+  "zh-TW": "zh-TW",
 }
 
 export const dateLocale = (locale: Locale): string => DATE_LOCALE[locale]
@@ -492,6 +621,10 @@ export const statusKey = (
 
 export const detectLocale = (): Locale => {
   if (typeof navigator === "undefined") return "en"
-  const lang = navigator.language.slice(0, 2).toLowerCase()
-  return (LOCALES.some((l) => l.id === lang) ? lang : "en") as Locale
+  for (const tag of navigator.languages?.length ? navigator.languages : [navigator.language]) {
+    if (/^zh-(TW|Hant)(-|$)/i.test(tag)) return "zh-TW"
+    const lang = tag.slice(0, 2).toLowerCase()
+    if (LOCALES.some((l) => l.id === lang)) return lang as Locale
+  }
+  return "en"
 }

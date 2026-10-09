@@ -7,7 +7,7 @@ export type Status = "visited" | "wishlist" | "blocked"
 export type View = "globe" | "map"
 export type ResolvedTheme = "dark" | "light"
 export type Theme = ResolvedTheme | "system"
-export type Locale = "en" | "fr" | "es" | "de"
+export type Locale = "en" | "fr" | "es" | "de" | "zh-TW"
 
 const THEME_CYCLE: Record<Theme, Theme> = {
   system: "light",

@@ -1,5 +1,7 @@
 "use client"
 
+import { useTravelStore } from "@/lib/store"
+import { localizeText } from "@/lib/localized-country"
 import { useEffect, useState } from "react"
 
 // Tongue-in-cheek status lines that cycle while the map spins up.
@@ -45,6 +47,7 @@ const Wave = ({
 )
 
 const MapLoader = () => {
+  const locale = useTravelStore((s) => s.locale)
   const [i, setI] = useState(0)
   useEffect(() => {
     const id = setInterval(() => setI((n) => (n + 1) % MESSAGES.length), 1600)
@@ -55,7 +58,7 @@ const MapLoader = () => {
       className="absolute inset-0 grid place-items-center"
       style={{ background: "var(--stage)" }}
     >
-      <div className="flex flex-col items-center gap-3">
+      <div className="flex max-w-full flex-col items-center gap-3 px-4 text-center">
         {/* A small porthole of water sloshing — two wave layers at different
             speeds give the parallax. */}
         <div
@@ -66,7 +69,7 @@ const MapLoader = () => {
           <Wave fill="#5aa9ff" opacity={0.85} duration={1.7} height={32} />
         </div>
         <span className="min-h-4 text-xs text-[var(--ink-dim)]">
-          {MESSAGES[i]}
+          {localizeText(MESSAGES[i], locale)}
         </span>
       </div>
     </div>

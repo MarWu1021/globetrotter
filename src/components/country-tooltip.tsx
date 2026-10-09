@@ -1,5 +1,7 @@
 "use client"
 
+import { countryName, localizeText } from "@/lib/localized-country"
+import { useTravelStore } from "@/lib/store"
 import { ADVISORY_META } from "@/lib/advisory"
 import { useT, statusKey } from "@/lib/i18n"
 import type { Status } from "@/lib/store"
@@ -27,6 +29,7 @@ const StatusPill = ({ status }: { status: Status | undefined }) => {
 }
 
 export type Hover = {
+  id?: string
   name: string
   flag: string
   status: Status | undefined
@@ -56,6 +59,7 @@ export const RiskMeter = ({ level }: { level: number }) => (
 // Cursor-following country tooltip shared by the flat map and the globe so both
 // hovers look and behave identically.
 export const CountryTooltip = ({ hover }: { hover: Hover }) => {
+  const locale = useTravelStore((s) => s.locale)
   return (
     <HoverTip
       style={{ left: hover.x, top: hover.y }}
@@ -63,13 +67,13 @@ export const CountryTooltip = ({ hover }: { hover: Hover }) => {
       icon={hover.flag}
       title={
         <span className="inline-flex items-center">
-          {hover.name}
+          {hover.id ? countryName(hover.id, locale, hover.name) : localizeText(hover.name, locale)}
           <StatusPill status={hover.status} />
         </span>
       }
       detail={
         hover.capital || hover.subregion
-          ? [hover.capital, hover.subregion].filter(Boolean).join(" · ")
+          ? [hover.capital, hover.subregion].filter(Boolean).map((v) => localizeText(v!, locale)).join(" · ")
           : undefined
       }
     />

@@ -1,5 +1,7 @@
 "use client"
 
+import { useT } from "@/lib/i18n"
+
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { MouseEvent } from "react"
 import { geoMercator, geoPath } from "d3-geo"
@@ -103,6 +105,7 @@ const CountryPaths = memo(function CountryPaths({
 })
 
 const FlatMap = ({ size }: Props) => {
+  const tr = useT()
   const flight = useTravelStore((s) => s.flight)
   const openFlight = useTravelStore((s) => s.openFlight)
   const openISS = useTravelStore((s) => s.openISS)
@@ -172,6 +175,7 @@ const FlatMap = ({ size }: Props) => {
   const onEnter = useCallback(
     (f: CountryFeature, e: MouseEvent) =>
       setHover({
+        id: f.id,
         name: f.properties.name,
         flag: getCountryInfo(f.id)?.flag ?? "",
         status: statuses[f.id],
@@ -425,7 +429,7 @@ const FlatMap = ({ size }: Props) => {
         className="block cursor-grab active:cursor-grabbing"
         style={{ background: palette.ocean }}
         role="img"
-        aria-label="Flat world map"
+        aria-label={tr("map.label")}
       >
         <g
           transform={`${southUp ? `rotate(180 ${size.width / 2} ${size.height / 2}) ` : ""}translate(${t.x},${t.y}) scale(${t.k})`}
@@ -735,21 +739,21 @@ const FlatMap = ({ size }: Props) => {
           <>
             <button
               onClick={() => zoomBy(1.6)}
-              aria-label="Zoom in"
+              aria-label={tr("zoom.in")}
               className="grid h-9 w-9 place-items-center rounded-lg border border-[var(--border)] bg-[var(--panel)]/90 text-[var(--ink)] backdrop-blur hover:border-[var(--accent)]"
             >
               <PlusIcon />
             </button>
             <button
               onClick={() => zoomBy(1 / 1.6)}
-              aria-label="Zoom out"
+              aria-label={tr("zoom.out")}
               className="grid h-9 w-9 place-items-center rounded-lg border border-[var(--border)] bg-[var(--panel)]/90 text-[var(--ink)] backdrop-blur hover:border-[var(--accent)]"
             >
               <MinusIcon />
             </button>
             <button
               onClick={resetZoom}
-              aria-label="Reset view"
+              aria-label={tr("zoom.reset")}
               className="grid h-9 w-9 place-items-center rounded-lg border border-[var(--border)] bg-[var(--panel)]/90 text-[var(--ink)] backdrop-blur hover:border-[var(--accent)]"
             >
               <TargetIcon />
@@ -758,8 +762,8 @@ const FlatMap = ({ size }: Props) => {
         )}
         <button
           onClick={toggleZoomLock}
-          aria-label={zoomLocked ? "Unlock zoom" : "Lock zoom"}
-          title={zoomLocked ? "Zoom locked — click to unlock" : "Lock zoom"}
+          aria-label={zoomLocked ? tr("zoom.unlock") : tr("zoom.lock")}
+          title={zoomLocked ? tr("zoom.locked") : tr("zoom.lock")}
           className={`grid h-9 w-9 place-items-center rounded-lg border backdrop-blur ${
             zoomLocked
               ? "border-[var(--accent)] bg-[var(--accent)]/15 text-[var(--accent)]"

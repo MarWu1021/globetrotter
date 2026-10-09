@@ -1,5 +1,7 @@
 "use client"
 
+import { localizeText } from "@/lib/localized-country"
+import { useTravelStore } from "@/lib/store"
 import { useWeather } from "@/lib/use-weather"
 import {
   weatherDesc,
@@ -20,6 +22,8 @@ const Conditions = ({
   lat: number | null
   lng: number | null
 }) => {
+  const locale = useTravelStore((s) => s.locale)
+  const text = (value: string) => localizeText(value, locale)
   const weather = useWeather(lat, lng)
   if (lat == null || lng == null) return null
   const desc = weather ? weatherDesc(weather.code) : null
@@ -29,35 +33,35 @@ const Conditions = ({
   return (
     <section className="flex flex-col gap-2">
       <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--ink-dim)]">
-        Conditions
+        {text("Conditions")}
       </h3>
       <div className="grid grid-cols-2 gap-2">
         <Stat
-          label="Temperature"
+          label={text("Temperature")}
           value={
             weather
               ? `${Math.round(weather.tempC)}°C ${desc?.emoji ?? ""}`
               : "…"
           }
         />
-        <Stat label="Humidity" value={weather ? `${weather.humidity}%` : "…"} />
+        <Stat label={text("Humidity")} value={weather ? `${weather.humidity}%` : "…"} />
         <Stat
-          label="Wind"
+          label={text("Wind")}
           value={weather ? `${Math.round(weather.windKmh)} km/h` : "…"}
         />
-        <Stat label="Sky" value={weather && desc ? desc.label : "…"} />
-        <Stat label="Season" value={season(lat, month)} />
-        <Stat label="Climate (approx)" value={climateZone(lat)} />
-        <Stat label="Biome (approx)" value={biome(lat, weather?.humidity)} />
-        {monsoon && <Stat label="Rainy season" value="Monsoon" />}
+        <Stat label={text("Sky")} value={weather && desc ? text(desc.label) : "…"} />
+        <Stat label={text("Season")} value={text(season(lat, month))} />
+        <Stat label={text("Climate (approx)")} value={text(climateZone(lat))} />
+        <Stat label={text("Biome (approx)")} value={text(biome(lat, weather?.humidity))} />
+        {monsoon && <Stat label={text("Rainy season")} value={text("Monsoon")} />}
         {weather?.elevationM != null && (
           <Stat
-            label="Elevation"
+            label={text("Elevation")}
             value={`${Math.round(weather.elevationM)} m`}
           />
         )}
         {weather?.timezone && (
-          <Stat label="Timezone" value={weather.timezone.replace(/_/g, " ")} />
+          <Stat label={text("Timezone")} value={weather.timezone.replace(/_/g, " ")} />
         )}
       </div>
     </section>

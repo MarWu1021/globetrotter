@@ -75,6 +75,7 @@ const SpinToggle = () => {
 }
 
 const LanguageSelect = () => {
+  const t = useT()
   const locale = useTravelStore((s) => s.locale)
   const setLocale = useTravelStore((s) => s.setLocale)
   const [open, setOpen] = useState(false)
@@ -93,7 +94,7 @@ const LanguageSelect = () => {
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        aria-label="Language"
+        aria-label={t("language")}
         className="flex h-11 items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--panel)] pl-2.5 pr-2.5 text-sm font-medium text-[var(--ink-dim)] hover:text-[var(--ink)] md:h-9"
       >
         <span className="text-base leading-none">{current.flag}</span>
@@ -222,6 +223,8 @@ const Compass = () => {
 const MapStage = () => {
   const view = useTravelStore((s) => s.view)
   const [ref, size] = useElementSize<HTMLDivElement>()
+  const locale = useTravelStore((s) => s.locale)
+  useEffect(() => { document.documentElement.lang = locale }, [locale])
   const ready = size.width > 0 && size.height > 0
   useFlightPoller()
 

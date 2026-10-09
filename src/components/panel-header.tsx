@@ -1,5 +1,8 @@
 "use client"
 
+import { useTravelStore } from "@/lib/store"
+import { localizeText } from "@/lib/localized-country"
+
 import type { ReactNode } from "react"
 
 // The shared sidebar header: a glyph/icon, then the title, then an optional
@@ -18,29 +21,32 @@ const PanelHeader = ({
   subtitle?: ReactNode
   onClose: () => void
   closeLabel?: string
-}) => (
-  <header className="flex items-start justify-between gap-3">
-    <div className="min-w-0">
-      <h2 className="font-display flex items-start gap-2 text-2xl font-semibold leading-tight">
-        {/* Centre the glyph within a box the height of the title's first line,
-            so it sits on that line whether the title is one line or wraps. */}
-        <span className="flex h-[1.9rem] shrink-0 items-center text-[1.4rem] leading-none">
-          {icon}
-        </span>
-        <span className="min-w-0">{title}</span>
-      </h2>
-      {subtitle && (
-        <p className="mt-1 text-sm text-[var(--ink-dim)]">{subtitle}</p>
-      )}
-    </div>
-    <button
-      onClick={onClose}
-      aria-label={closeLabel}
-      className="shrink-0 rounded-lg border border-[var(--border)] px-2.5 py-1 text-[var(--ink-dim)] hover:border-[var(--accent)] hover:text-[var(--ink)]"
-    >
-      ✕
-    </button>
-  </header>
-)
+}) => {
+  const locale = useTravelStore((s) => s.locale)
+  return (
+    <header className="flex items-start justify-between gap-3">
+      <div className="min-w-0">
+        <h2 className="font-display flex items-start gap-2 text-2xl font-semibold leading-tight">
+          {/* Centre the glyph within a box the height of the title's first line,
+              so it sits on that line whether the title is one line or wraps. */}
+          <span className="flex h-[1.9rem] shrink-0 items-center text-[1.4rem] leading-none">
+            {icon}
+          </span>
+          <span className="min-w-0">{typeof title === "string" ? localizeText(title, locale) : title}</span>
+        </h2>
+        {subtitle && (
+          <p className="mt-1 text-sm text-[var(--ink-dim)]">{typeof subtitle === "string" ? localizeText(subtitle, locale) : subtitle}</p>
+        )}
+      </div>
+      <button
+        onClick={onClose}
+        aria-label={closeLabel}
+        className="shrink-0 rounded-lg border border-[var(--border)] px-2.5 py-1 text-[var(--ink-dim)] hover:border-[var(--accent)] hover:text-[var(--ink)]"
+      >
+        ✕
+      </button>
+    </header>
+  )
+}
 
 export default PanelHeader

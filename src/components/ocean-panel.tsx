@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { useTravelStore } from "@/lib/store"
+import { localizeText } from "@/lib/localized-country"
 import { useT } from "@/lib/i18n"
 import { oceanByName } from "@/lib/oceans"
 import PanelImage from "@/components/panel-image"
@@ -13,6 +14,8 @@ type Summary = { extract: string; url: string; image: string | null }
 
 const OceanPanel = () => {
   const t = useT()
+  const locale = useTravelStore((s) => s.locale)
+  const text = (value: string) => localizeText(value, locale)
   const ocean = useTravelStore((s) => s.ocean)
   const close = () => useTravelStore.getState().closeOcean()
   const meta = ocean ? oceanByName(ocean) : undefined
@@ -104,7 +107,7 @@ const OceanPanel = () => {
           )}
 
           <p className="text-sm leading-relaxed text-[var(--ink-dim)]">
-            {summary ? summary.extract : "Loading…"}
+            {summary ? summary.extract : text("Loading…")}
           </p>
 
           {summary?.url && (

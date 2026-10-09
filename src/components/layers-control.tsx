@@ -1,12 +1,14 @@
 "use client"
 
 import { useTravelStore } from "@/lib/store"
+import { localizeText } from "@/lib/localized-country"
 import { LAYERS } from "@/lib/transport"
 
 // Floating toggles for the travel-gateway overlays (airports / stations /
 // ports). All off by default; each layer's points are drawn on both the flat
 // map and the globe only while its toggle is active.
 const LayersControl = () => {
+  const locale = useTravelStore((s) => s.locale)
   const layers = useTravelStore((s) => s.layers)
   const toggleLayer = useTravelStore((s) => s.toggleLayer)
 
@@ -29,7 +31,7 @@ const LayersControl = () => {
                 borderColor: layer.color,
               }}
             />
-            {layer.label}
+            {localizeText(layer.label, locale)}
           </button>
         )
       })}

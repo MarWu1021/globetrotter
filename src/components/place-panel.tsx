@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { useTravelStore } from "@/lib/store"
 import { KIND_COLOR, KIND_ICON, type TransportPoint } from "@/lib/transport"
+import { localizeText } from "@/lib/localized-country"
 import { useT } from "@/lib/i18n"
 import PanelImage from "@/components/panel-image"
 import PanelHeader from "@/components/panel-header"
@@ -22,6 +23,8 @@ const placeKey = (p: TransportPoint) => `${p.name}@${p.lat},${p.lng}`
 
 const PlacePanel = () => {
   const t = useT()
+  const locale = useTravelStore((s) => s.locale)
+  const text = (value: string) => localizeText(value, locale)
   const place = useTravelStore((s) => s.place)
   const close = () => useTravelStore.getState().closePlace()
   // Keyed by place identity so a stale summary never flashes when switching.
@@ -87,7 +90,7 @@ const PlacePanel = () => {
             title={place.name}
             subtitle={
               <span className="flex items-center gap-1.5">
-                {KIND_LABEL[place.kind]}
+                {text(KIND_LABEL[place.kind])}
                 {place.code && (
                   <span className="rounded bg-[var(--panel-hover)] px-1.5 py-0.5 font-mono text-[11px] text-[var(--ink)]">
                     {place.code}
@@ -119,8 +122,8 @@ const PlacePanel = () => {
 
           <p className="text-sm leading-relaxed text-[var(--ink-dim)]">
             {summary
-              ? summary.extract || "No description available."
-              : "Loading…"}
+              ? summary.extract || text("No description available.")
+              : text("Loading…")}
           </p>
 
           {summary?.url && (

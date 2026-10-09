@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { useTravelStore } from "@/lib/store"
+import { localizeText } from "@/lib/localized-country"
 import { useT } from "@/lib/i18n"
 import { useISS } from "@/lib/use-iss"
 import { ISS_MARKUP } from "@/lib/iss-mark"
@@ -17,6 +18,8 @@ const ISS_PHOTO =
 
 const ISSPanel = () => {
   const t = useT()
+  const locale = useTravelStore((s) => s.locale)
+  const text = (value: string) => localizeText(value, locale)
   const open = useTravelStore((s) => s.issOpen)
   const close = () => useTravelStore.getState().closeISS()
   const iss = useISS()
@@ -70,7 +73,7 @@ const ISSPanel = () => {
               color: "var(--accent)",
             }}
           >
-            Live · wheretheiss.at
+            {text("Live \u00b7 wheretheiss.at")}
           </span>
 
           <section className="text-sm">
@@ -103,7 +106,7 @@ const ISSPanel = () => {
           </a>
 
           <p className="text-[11px] leading-relaxed text-[var(--ink-faint)]">
-            Live position from wheretheiss.at · orbits Earth ~16 times a day.
+            {locale === "zh-TW" ? "即時位置來自 wheretheiss.at · 每天約繞行地球 16 圈。" : "Live position from wheretheiss.at · orbits Earth ~16 times a day."}
           </p>
         </motion.aside>
       )}
