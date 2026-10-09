@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "test:i18n": "node scripts/test-i18n.mjs",
-    "test:travel-core": "node --test scripts/test-travel-core.mjs"
+    "test:travel-core": "node --test scripts/test-travel-core.mjs",
+    "test:airport-data": "node --test scripts/test-airport-data.mjs"
   },
   "dependencies": {
     "@vercel/functions": "3.9.5",
