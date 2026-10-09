@@ -16,6 +16,7 @@ import {
 import { STATUS, badgeStyle } from "@/lib/colors"
 import { buildSaveFile, downloadSaveFile, parseSaveFile } from "@/lib/save-file"
 import About from "@/components/about"
+import TripComposer from "@/components/trip-composer"
 import {
   DownloadIcon,
   UploadIcon,
@@ -375,6 +376,8 @@ const Sidebar = () => {
         </div>
         <About />
       </header>
+
+      <TripComposer />
 
       <div className="grid grid-cols-3 gap-2.5">
         <Stat
