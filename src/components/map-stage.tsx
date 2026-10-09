@@ -8,6 +8,8 @@ import { useAdvisoryStore } from "@/lib/advisory-store"
 import { useElementSize } from "@/lib/use-element-size"
 import { useT, LOCALES, detectLocale } from "@/lib/i18n"
 import { useFlightPoller } from "@/lib/flight"
+import { useTripDraft } from "./trip-draft-provider"
+import TripGlobeControls from "./trip-globe-controls"
 import FlatMap from "@/components/flat-map"
 import MapLoader from "@/components/map-loader"
 import CountryPanel from "@/components/country-panel"
@@ -221,7 +223,9 @@ const Compass = () => {
 }
 
 const MapStage = () => {
-  const view = useTravelStore((s) => s.view)
+  const { picking } = useTripDraft()
+  const storedView = useTravelStore((s) => s.view)
+  const view = picking ? "globe" : storedView
   const [ref, size] = useElementSize<HTMLDivElement>()
   const locale = useTravelStore((s) => s.locale)
   useEffect(() => { document.documentElement.lang = locale }, [locale])
@@ -239,7 +243,7 @@ const MapStage = () => {
       style={{ background: "var(--stage)" }}
     >
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 px-3 pb-2 pt-[max(8px,env(safe-area-inset-top))] md:flex-nowrap md:gap-3 md:px-4 md:py-3.5">
-        <ViewToggle />
+        {!picking && <ViewToggle />}
         <div className="flex flex-wrap items-center gap-2 md:gap-3">
           {view === "globe" && <SpinToggle />}
           <LanguageSelect />
@@ -280,7 +284,9 @@ const MapStage = () => {
         )}
       </div>
       {view === "map" && <Compass />}
-      {ready && <LayersControl />}
+      {ready && !picking && <LayersControl />}
+      {picking && <TripGlobeControls />}
+      <div hidden={picking}>
       <CountryPanel />
       <FlightPanel />
       <ISSPanel />
@@ -288,6 +294,7 @@ const MapStage = () => {
       <SunPanel />
       <OceanPanel />
       <PlacePanel />
+      </div>
     </main>
   )
 }

@@ -1,13 +1,14 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
+import { useTripDraft } from "./trip-draft-provider"
 import { useT } from "@/lib/i18n"
 import { useTravelStore } from "@/lib/store"
 import { countryDisplayName } from "@/lib/airport-data/countries"
 import { airportChinese } from "@/lib/airport-data/localization"
 import type { AirportSearchHit, CatalogAirport } from "@/lib/airport-data/types"
 import type { Presence, TripStatus } from "@/lib/travel-core/models"
-import { addDraftStop, createTripDraft, moveDraftStop, previewTripDraft, removeDraftStop, type TripDraft } from "@/lib/trip-draft/core"
+import { addDraftStop, createTripDraft, moveDraftStop, previewTripDraft, removeDraftStop } from "@/lib/trip-draft/core"
 
 type Result = { hit: AirportSearchHit; airport: CatalogAirport }
 const field = "min-h-11 w-full min-w-0 rounded-lg border border-[var(--border)] bg-[var(--panel-2)] px-3 py-2 text-base text-[var(--ink)]"
@@ -16,10 +17,10 @@ const code = (a: CatalogAirport) => a.iata ?? a.icao ?? a.ident
 
 export default function TripEditor({ open, onClose }: { open: boolean; onClose: () => void }) {
   const t = useT(), locale = useTravelStore(s => s.locale)
-  const [draft, setDraft] = useState<TripDraft>(() => createTripDraft(crypto.randomUUID()))
+  const { draft, setDraft, insertion, setInsertion, setOpened, setPicking, setDrawerOpen, setSearchAirports, setFocusAirport } = useTripDraft()
   const [query, setQuery] = useState(""), [results, setResults] = useState<Result[]>([])
   const [searchState, setSearchState] = useState<"idle" | "loading" | "ready" | "error">("idle")
-  const [retry, setRetry] = useState(0), [insertion, setInsertion] = useState("end")
+  const [retry, setRetry] = useState(0)
   const dialog = useRef<HTMLDialogElement>(null)
   const preview = useMemo(() => previewTripDraft(draft), [draft])
   useEffect(() => {
@@ -34,13 +35,13 @@ export default function TripEditor({ open, onClose }: { open: boolean; onClose: 
         const response = await fetch(`/api/airports?q=${encodeURIComponent(query.trim())}&locale=${locale}`, { signal: controller.signal })
         if (!response.ok) throw new Error("Search unavailable")
         const data = await response.json()
-        if (!controller.signal.aborted) { setResults(data.results); setSearchState("ready") }
+        if (!controller.signal.aborted) { setResults(data.results); setSearchAirports(data.results.map((r: Result) => r.airport)); setSearchState("ready") }
       } catch {
         if (!controller.signal.aborted) setSearchState("error")
       }
     }, 250)
     return () => { clearTimeout(timer); controller.abort() }
-  }, [query, locale, open, retry])
+  }, [query, locale, open, retry, setSearchAirports])
   const changeQuery = (value: string) => {
     setQuery(value); setResults([]); setSearchState(value.trim().length >= 2 ? "loading" : "idle")
   }
@@ -48,7 +49,7 @@ export default function TripEditor({ open, onClose }: { open: boolean; onClose: 
   function add(airport: CatalogAirport) {
     const stopId = crypto.randomUUID()
     setDraft(d => addDraftStop(d, airport, stopId, selectedPosition))
-    setInsertion("end"); changeQuery("")
+    setFocusAirport(airport); setInsertion("end"); changeQuery("")
     dialog.current?.querySelector<HTMLInputElement>("#trip-airport-search")?.focus()
   }
   const updateLeg = (id: string, key: "date" | "airline" | "flightNumber" | "notes", value: string) =>
@@ -74,6 +75,7 @@ export default function TripEditor({ open, onClose }: { open: boolean; onClose: 
       </header>
       <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain px-4 py-5 pb-[calc(20px+env(safe-area-inset-bottom))]">
         <p className="text-sm text-[var(--ink-dim)]">{t("trip.temporary")}</p>
+        <button className={`${button} w-full`} onClick={() => { setOpened(false); setDrawerOpen(false); setPicking(true) }}>{t("trip.globe")}</button>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="min-w-0 space-y-1"><span>{t("trip.title")}</span><input className={field} value={draft.title}
             maxLength={200} onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} /></label>
@@ -104,6 +106,7 @@ export default function TripEditor({ open, onClose }: { open: boolean; onClose: 
             <p className="break-words text-sm text-[var(--ink-dim)]">{hit.city ?? t("trip.cityUnknown")} · {hit.countryName}</p>
             {hit.requiresReview && <p className="mt-1 text-sm">{t("trip.review")}</p>}
             <button className={`${button} mt-2 w-full`} disabled={hit.requiresReview} onClick={() => add(airport)}>{t("trip.add")}</button>
+            <button className={`${button} mt-2 w-full`} disabled={hit.requiresReview} onClick={()=>{setFocusAirport(airport);setOpened(false);setDrawerOpen(false);setPicking(true)}}>{t("trip.locateAirport")}</button>
           </li>)}</ul>
           {results.length > 0 && <p className="text-sm text-[var(--ink-dim)]">{t("trip.limited")}</p>}
         </section>

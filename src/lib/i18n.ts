@@ -853,6 +853,67 @@ Object.assign(zhTW, {
   "trip.close": "關閉編輯器"
 })
 
+Object.assign(en, {
+  "trip.globe": "Select airports on globe",
+  "trip.globeHint": "Tap an airport, then confirm. Drag to rotate; search finds more airports. Auto-spin pauses while selecting.",
+  "trip.confirmAirport": "Confirm adding airport",
+  "trip.cancelAirport": "Cancel selection",
+  "trip.returnEditor": "Return to editor",
+  "trip.exitPreview": "Exit globe preview",
+  "trip.schematic": "Dashed lines are unsaved schematic routes, not live aircraft tracks. Only completed trips preview country colors.",
+  "trip.regionalError": "Nearby airports could not load. Use search or rotate to retry."
+})
+
+Object.assign(fr, {
+  "trip.globe": "Choisir sur le globe",
+  "trip.globeHint": "Touchez un aéroport puis confirmez. Faites glisser pour tourner ; recherchez les autres aéroports. La rotation automatique est suspendue pendant la sélection.",
+  "trip.confirmAirport": "Confirmer l’ajout",
+  "trip.cancelAirport": "Annuler la sélection",
+  "trip.returnEditor": "Retour à l’éditeur",
+  "trip.exitPreview": "Quitter l’aperçu",
+  "trip.schematic": "Les pointillés sont des itinéraires non enregistrés, pas des avions en direct. Seuls les voyages terminés colorent les pays.",
+  "trip.regionalError": "Chargement impossible. Utilisez la recherche ou tournez pour réessayer."
+})
+
+Object.assign(es, {
+  "trip.globe": "Elegir en el globo",
+  "trip.globeHint": "Toca un aeropuerto y confirma. Arrastra para girar; busca más aeropuertos. El giro automático se pausa durante la selección.",
+  "trip.confirmAirport": "Confirmar aeropuerto",
+  "trip.cancelAirport": "Cancelar selección",
+  "trip.returnEditor": "Volver al editor",
+  "trip.exitPreview": "Salir de la vista previa",
+  "trip.schematic": "Líneas discontinuas: rutas sin guardar, no vuelos en vivo. Solo viajes completados colorean países.",
+  "trip.regionalError": "No se pudieron cargar aeropuertos. Busca o gira para reintentar."
+})
+
+Object.assign(de, {
+  "trip.globe": "Auf dem Globus wählen",
+  "trip.globeHint": "Flughafen antippen und bestätigen. Ziehen dreht; Suche findet weitere Flughäfen. Die automatische Drehung pausiert während der Auswahl.",
+  "trip.confirmAirport": "Flughafen hinzufügen",
+  "trip.cancelAirport": "Auswahl abbrechen",
+  "trip.returnEditor": "Zurück zum Editor",
+  "trip.exitPreview": "Globusvorschau beenden",
+  "trip.schematic": "Gestrichelte Linien: ungespeicherte Routen, keine Live-Flüge. Nur abgeschlossene Reisen färben Länder.",
+  "trip.regionalError": "Flughäfen nicht geladen. Suche nutzen oder drehen und erneut versuchen."
+})
+
+Object.assign(zhTW, {
+  "trip.globe": "在地球上選取機場",
+  "trip.globeHint": "點選機場後再確認加入。拖曳可旋轉；其他機場可用搜尋。選取時暫停自動旋轉。",
+  "trip.confirmAirport": "確認加入機場",
+  "trip.cancelAirport": "取消選取",
+  "trip.returnEditor": "返回編輯器",
+  "trip.exitPreview": "離開地球預覽",
+  "trip.schematic": "虛線為未儲存的示意航線，不是即時飛機軌跡。只有已完成旅行會預覽國家顏色。",
+  "trip.regionalError": "無法載入附近機場，請使用搜尋或轉動地球重試。"
+})
+
+Object.assign(en, {"trip.locateAirport": "Locate on globe"})
+Object.assign(fr, {"trip.locateAirport": "Voir sur le globe"})
+Object.assign(es, {"trip.locateAirport": "Localizar en el globo"})
+Object.assign(de, {"trip.locateAirport": "Auf dem Globus zeigen"})
+Object.assign(zhTW, {"trip.locateAirport": "在地球上查看"})
+
 const dict: Record<Locale, Dict> = { en, fr, es, de, "zh-TW": zhTW }
 
 export type Translate = (

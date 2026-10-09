@@ -1,13 +1,20 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
+import { TripDraftProvider, useTripDraft } from "./trip-draft-provider"
+import { TripEditorHost } from "./trip-composer"
 import Sidebar from "@/components/sidebar"
 import MapStage from "@/components/map-stage"
 import { useTravelStore } from "@/lib/store"
 import { useT } from "@/lib/i18n"
 
 export default function TravelWorkspace() {
-  const [open, setOpen] = useState(false)
+  return <TripDraftProvider><Workspace /></TripDraftProvider>
+}
+
+function Workspace() {
+  const { picking, drawerOpen, setDrawerOpen: setOpen } = useTripDraft()
+  const open = drawerOpen && !picking
   const panel = useRef<HTMLDivElement>(null)
   const trigger = useRef<HTMLButtonElement>(null)
   const t = useT()
@@ -27,7 +34,7 @@ export default function TravelWorkspace() {
       mobile.removeEventListener("change", onResize)
       unsubscribe()
     }
-  }, [])
+  }, [setOpen])
 
   useEffect(() => {
     if (!open) return
@@ -56,10 +63,10 @@ export default function TravelWorkspace() {
       document.removeEventListener("keydown", onKey)
       previous?.focus()
     }
-  }, [open])
+  }, [open, setOpen])
 
   return (
-    <div className="grid h-dvh min-w-0 grid-cols-1 grid-rows-1 overflow-hidden md:grid-cols-[340px_1fr]">
+    <><TripEditorHost /><div className="grid h-dvh min-w-0 grid-cols-1 grid-rows-1 overflow-hidden md:grid-cols-[340px_1fr]">
       {open && (
         <div
           className="fixed inset-0 z-40 bg-black/45 md:hidden"
@@ -92,6 +99,7 @@ export default function TravelWorkspace() {
       </div>
       <button
         ref={trigger}
+        style={{ display: picking ? "none" : undefined }}
         onClick={() => setOpen(true)}
         aria-expanded={open}
         aria-controls="travel-panel"
@@ -99,6 +107,6 @@ export default function TravelWorkspace() {
       >
         {t("mobile.travels")}
       </button>
-    </div>
+    </div></>
   )
 }
