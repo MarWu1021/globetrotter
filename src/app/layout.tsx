@@ -1,27 +1,7 @@
 import type { Metadata, Viewport } from "next"
-import { Geist, Geist_Mono, Fraunces } from "next/font/google"
 import "./globals.css"
 import ThemeApplier from "@/components/theme-applier"
 import PwaRegister from "@/components/pwa-register"
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-})
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-})
-
-// Editorial serif for display headings only — gives the app a travel-magazine
-// personality while the sans keeps the tool chrome crisp.
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  style: ["normal", "italic"],
-})
 
 export const metadata: Metadata = {
   title: "Globetrotter — map where you've been",
@@ -56,7 +36,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
+      className="h-full antialiased"
     >
       <body className="min-h-full">
         <script dangerouslySetInnerHTML={{ __html: NO_FLASH }} />

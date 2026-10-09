@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* System fonts keep builds and font rendering independent of network access. */
+:root {
+  --font-geist-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-fraunces: Georgia, "Times New Roman", serif;
+}
+
 :root,
 [data-theme="dark"] {
   --bg: #0b1020;
