@@ -6,13 +6,16 @@ import { previewTripDraft, type TripDraft } from './core'
 
 export function draftGlobePreview(draft: TripDraft) {
   const preview = previewTripDraft(draft)
-  if (preview.kind !== 'ready') return { arcs: [], colors: {} as Record<string,string> }
+  if (preview.kind !== 'ready') return { arcs: [], colors: {} as Record<string,string>, flatColors: {} as Record<string,string> }
   const airports = [...new Map(draft.stops.map(s=>[s.airport.id,s.airport])).values()]
   const arcs = buildArcDescriptors([preview.trip],toCoreAirports(airports),true)
-  const colors: Record<string,string> = {}
-  for (const country of preview.footprint.countries)
-    for (const geoId of resolveCountry(country.countryCode)?.globeGeoIds ?? []) colors[geoId]=country.color
-  return { arcs, colors }
+  const colors: Record<string,string> = {}, flatColors: Record<string,string> = {}
+  for (const country of preview.footprint.countries) {
+    const mapping=resolveCountry(country.countryCode)
+    for (const geoId of mapping?.globeGeoIds ?? []) colors[geoId]=country.color
+    for (const geoId of mapping?.flatGeoIds ?? []) flatColors[geoId]=country.color
+  }
+  return { arcs, colors, flatColors }
 }
 export function markerSubset(groups: readonly (readonly CatalogAirport[])[], limit=48, separation=0): CatalogAirport[] {
   const result=new Map<string,CatalogAirport>()

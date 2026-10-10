@@ -1,5 +1,6 @@
 "use client"
 
+import { useTripDraft } from "./trip-draft-provider"
 import { useT } from "@/lib/i18n"
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -45,6 +46,7 @@ type Transform = { k: number; x: number; y: number }
 const CountryPaths = memo(function CountryPaths({
   paths,
   statuses,
+  previewColors,
   selectedId,
   palette,
   onSelect,
@@ -53,6 +55,7 @@ const CountryPaths = memo(function CountryPaths({
   onLeave,
 }: {
   paths: { f: CountryFeature; d: string }[]
+  previewColors: Record<string,string>
   statuses: Record<string, Status>
   selectedId: string | null
   palette: MapPalette
@@ -69,9 +72,9 @@ const CountryPaths = memo(function CountryPaths({
         // Borders convey STATUS only (wishlist dashed, blocked dotted, in their
         // own colour); selection is the brightened fill — no extra outline,
         // which on island-heavy countries just traced every coast in bright blue.
-        const patterned = status === "wishlist" || status === "blocked"
+        const patterned = !previewColors[f.id] && (status === "wishlist" || status === "blocked")
         const stroke = patterned ? STATUS[status] : palette.polygonStroke
-        const dash =
+        const dash = previewColors[f.id] ? undefined :
           status === "wishlist"
             ? "3 2.5"
             : status === "blocked"
@@ -80,11 +83,12 @@ const CountryPaths = memo(function CountryPaths({
         return (
           <path
             key={f.id}
+            data-country-id={f.id}
             d={d}
             fill={
               selected
-                ? lighten(baseFill(f.id, status, palette), 0.32)
-                : baseFill(f.id, status, palette)
+                ? lighten((previewColors[f.id] ?? baseFill(f.id, status, palette)), 0.32)
+                : (previewColors[f.id] ?? baseFill(f.id, status, palette))
             }
             stroke={stroke}
             strokeWidth={patterned ? 1 : 0.5}
@@ -105,6 +109,8 @@ const CountryPaths = memo(function CountryPaths({
 })
 
 const FlatMap = ({ size }: Props) => {
+  const {previewActive,mapPreview}=useTripDraft()
+  const previewColors=useMemo(()=>previewActive?mapPreview.flatColors:{},[previewActive,mapPreview.flatColors])
   const tr = useT()
   const flight = useTravelStore((s) => s.flight)
   const openFlight = useTravelStore((s) => s.openFlight)
@@ -421,7 +427,7 @@ const FlatMap = ({ size }: Props) => {
       : { left: t.x + p[0] * t.k, top: t.y + p[1] * t.k }
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative h-full w-full" data-flat-preview-colors={JSON.stringify(previewColors)}>
       <svg
         ref={svgRef}
         width={size.width}
@@ -481,10 +487,11 @@ const FlatMap = ({ size }: Props) => {
               <CountryPaths
                 paths={paths}
                 statuses={statuses}
+                previewColors={previewColors}
                 selectedId={selectedId}
                 palette={palette}
-                onSelect={onSelect}
-                onEnter={onEnter}
+                onSelect={previewActive?()=>{}:onSelect}
+                onEnter={previewActive?()=>{}:onEnter}
                 onMove={onMove}
                 onLeave={onLeave}
               />
@@ -790,7 +797,7 @@ const FlatMap = ({ size }: Props) => {
         </button>
       </div>
 
-      {hover && <CountryTooltip hover={hover} />}
+      {!previewActive && hover && <CountryTooltip hover={hover} />}
 
       {oceanHover && (
         <HoverTip

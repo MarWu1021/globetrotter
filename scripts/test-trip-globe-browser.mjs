@@ -59,7 +59,7 @@ async function run(browser,name,options){
   assert.ok(panel.width<=viewport.width&&panel.height<viewport.height*.65)
   await page.screenshot({path:`/tmp/globetrotter-3b-${name}.png`})
   assert.equal(await page.evaluate(()=>localStorage.getItem('globetrotter:v1')),baseline)
-  await page.getByRole('button',{name:'離開地球預覽',exact:true}).click()
+  await page.getByRole('button',{name:'離開旅行預覽',exact:true}).click()
   if(options.isMobile) await page.getByRole('button',{name:'平面地圖',exact:true}).click()
   else {await page.getByRole('button',{name:'平面地圖',exact:true}).click();assert.ok(await page.locator('svg').count()>0)}
   assert.equal(await page.locator('[data-preview-arcs]').count(),0,'Leaving globe unmounts its preview renderer')

@@ -859,7 +859,7 @@ Object.assign(en, {
   "trip.confirmAirport": "Confirm adding airport",
   "trip.cancelAirport": "Cancel selection",
   "trip.returnEditor": "Return to editor",
-  "trip.exitPreview": "Exit globe preview",
+  "trip.exitPreview": "Exit travel preview",
   "trip.schematic": "Dashed lines are unsaved schematic routes, not live aircraft tracks. Only completed trips preview country colors.",
   "trip.regionalError": "Nearby airports could not load. Use search or rotate to retry."
 })
@@ -892,7 +892,7 @@ Object.assign(de, {
   "trip.confirmAirport": "Flughafen hinzufügen",
   "trip.cancelAirport": "Auswahl abbrechen",
   "trip.returnEditor": "Zurück zum Editor",
-  "trip.exitPreview": "Globusvorschau beenden",
+  "trip.exitPreview": "Reisevorschau beenden",
   "trip.schematic": "Gestrichelte Linien: ungespeicherte Routen, keine Live-Flüge. Nur abgeschlossene Reisen färben Länder.",
   "trip.regionalError": "Flughäfen nicht geladen. Suche nutzen oder drehen und erneut versuchen."
 })
@@ -903,7 +903,7 @@ Object.assign(zhTW, {
   "trip.confirmAirport": "確認加入機場",
   "trip.cancelAirport": "取消選取",
   "trip.returnEditor": "返回編輯器",
-  "trip.exitPreview": "離開地球預覽",
+  "trip.exitPreview": "離開旅行預覽",
   "trip.schematic": "虛線為未儲存的示意航線，不是即時飛機軌跡。只有已完成旅行會預覽國家顏色。",
   "trip.regionalError": "無法載入附近機場，請使用搜尋或轉動地球重試。"
 })
@@ -913,6 +913,12 @@ Object.assign(fr, {"trip.locateAirport": "Voir sur le globe"})
 Object.assign(es, {"trip.locateAirport": "Localizar en el globo"})
 Object.assign(de, {"trip.locateAirport": "Auf dem Globus zeigen"})
 Object.assign(zhTW, {"trip.locateAirport": "在地球上查看"})
+
+Object.assign(en, {"trip.viewPreview": "View trip preview", "trip.viewPreviewHint": "Switch between the globe and flat map. The flat map shows country colors; the globe also shows routes. Only completed trips contribute."})
+Object.assign(fr, {"trip.viewPreview": "Voir l’aperçu du voyage", "trip.viewPreviewHint": "Basculez entre le globe et la carte. La carte colore les pays ; le globe affiche aussi les itinéraires. Seuls les voyages terminés comptent."})
+Object.assign(es, {"trip.viewPreview": "Ver vista previa del viaje", "trip.viewPreviewHint": "Alterna entre el globo y el mapa. El mapa muestra colores y el globo también rutas. Solo cuentan los viajes completados."})
+Object.assign(de, {"trip.viewPreview": "Reisevorschau ansehen", "trip.viewPreviewHint": "Zwischen Globus und Karte wechseln. Die Karte zeigt Länderfarben, der Globus auch Routen. Nur abgeschlossene Reisen zählen."})
+Object.assign(zhTW, {"trip.viewPreview": "查看旅行預覽", "trip.viewPreviewHint": "可切換地球與平面地圖。平面地圖顯示國家顏色，地球另顯示航線；只有已完成旅行會預覽足跡。"})
 
 const dict: Record<Locale, Dict> = { en, fr, es, de, "zh-TW": zhTW }
 

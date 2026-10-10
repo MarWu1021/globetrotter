@@ -16,8 +16,9 @@ const button = "min-h-11 min-w-11 rounded-lg border border-[var(--border)] px-3 
 const code = (a: CatalogAirport) => a.iata ?? a.icao ?? a.ident
 
 export default function TripEditor({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const storedView=useTravelStore(s=>s.view)
   const t = useT(), locale = useTravelStore(s => s.locale)
-  const { draft, setDraft, insertion, setInsertion, setOpened, setPicking, setDrawerOpen, setSearchAirports, setFocusAirport } = useTripDraft()
+  const { draft, setDraft, insertion, setInsertion, setOpened, setPicking, setDrawerOpen, setSearchAirports, setFocusAirport, setMode, setPreviewView, setCandidate } = useTripDraft()
   const [query, setQuery] = useState(""), [results, setResults] = useState<Result[]>([])
   const [searchState, setSearchState] = useState<"idle" | "loading" | "ready" | "error">("idle")
   const [retry, setRetry] = useState(0)
@@ -75,6 +76,7 @@ export default function TripEditor({ open, onClose }: { open: boolean; onClose: 
       </header>
       <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain px-4 py-5 pb-[calc(20px+env(safe-area-inset-bottom))]">
         <p className="text-sm text-[var(--ink-dim)]">{t("trip.temporary")}</p>
+        <button className={`${button} w-full`} disabled={preview.kind!=="ready"} onClick={()=>{setCandidate(null);setPreviewView(storedView);setMode("preview");setOpened(false);setDrawerOpen(false)}}>{t("trip.viewPreview")}</button>
         <button className={`${button} w-full`} onClick={() => { setOpened(false); setDrawerOpen(false); setPicking(true) }}>{t("trip.globe")}</button>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="min-w-0 space-y-1"><span>{t("trip.title")}</span><input className={field} value={draft.title}

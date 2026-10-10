@@ -35,8 +35,11 @@ const GlobeView = dynamic(() => import("@/components/globe-view"), {
 
 const ViewToggle = () => {
   const t = useT()
-  const view = useTravelStore((s) => s.view)
-  const setView = useTravelStore((s) => s.setView)
+  const storedView = useTravelStore((s) => s.view)
+  const storedSetView = useTravelStore((s) => s.setView)
+  const { mode, previewView, setPreviewView }=useTripDraft()
+  const view=mode==="preview"?previewView:storedView
+  const setView=mode==="preview"?setPreviewView:storedSetView
   const base =
     "flex min-h-11 items-center gap-1.5 px-2.5 py-2 md:min-h-0 md:px-3.5 rounded-full text-sm transition-colors cursor-pointer"
   const active = "bg-[var(--accent)] text-[var(--accent-ink)] font-semibold"
@@ -223,9 +226,9 @@ const Compass = () => {
 }
 
 const MapStage = () => {
-  const { picking } = useTripDraft()
+  const { picking, previewActive, previewView } = useTripDraft()
   const storedView = useTravelStore((s) => s.view)
-  const view = picking ? "globe" : storedView
+  const view = picking ? "globe" : previewActive ? previewView : storedView
   const [ref, size] = useElementSize<HTMLDivElement>()
   const locale = useTravelStore((s) => s.locale)
   useEffect(() => { document.documentElement.lang = locale }, [locale])
@@ -239,7 +242,7 @@ const MapStage = () => {
 
   return (
     <main
-      className="map-stage relative flex h-full min-h-0 min-w-0 flex-col pb-[calc(76px+env(safe-area-inset-bottom))] md:pb-0"
+      className={`map-stage relative flex h-full min-h-0 min-w-0 flex-col ${previewActive && !picking ? "pb-[env(safe-area-inset-bottom)]" : "pb-[calc(76px+env(safe-area-inset-bottom))]"} md:pb-0`}
       style={{ background: "var(--stage)" }}
     >
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 px-3 pb-2 pt-[max(8px,env(safe-area-inset-top))] md:flex-nowrap md:gap-3 md:px-4 md:py-3.5">
@@ -284,9 +287,9 @@ const MapStage = () => {
         )}
       </div>
       {view === "map" && <Compass />}
-      {ready && !picking && <LayersControl />}
-      {picking && <TripGlobeControls />}
-      <div hidden={picking}>
+      {ready && !previewActive && <LayersControl />}
+      {previewActive && <TripGlobeControls />}
+      <div hidden={previewActive}>
       <CountryPanel />
       <FlightPanel />
       <ISSPanel />

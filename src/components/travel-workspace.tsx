@@ -13,8 +13,8 @@ export default function TravelWorkspace() {
 }
 
 function Workspace() {
-  const { picking, drawerOpen, setDrawerOpen: setOpen } = useTripDraft()
-  const open = drawerOpen && !picking
+  const { previewActive, drawerOpen, setDrawerOpen: setOpen } = useTripDraft()
+  const open = drawerOpen && !previewActive
   const panel = useRef<HTMLDivElement>(null)
   const trigger = useRef<HTMLButtonElement>(null)
   const t = useT()
@@ -99,7 +99,7 @@ function Workspace() {
       </div>
       <button
         ref={trigger}
-        style={{ display: picking ? "none" : undefined }}
+        style={{ display: previewActive ? "none" : undefined }}
         onClick={() => setOpen(true)}
         aria-expanded={open}
         aria-controls="travel-panel"

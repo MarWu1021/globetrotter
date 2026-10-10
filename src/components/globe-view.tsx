@@ -9,7 +9,7 @@ import {
   type MouseEvent,
 } from "react"
 import { useTripDraft } from "./trip-draft-provider"
-import { draftGlobePreview, markerSubset, isAirportTap, markerMotionController, renderedArcAltitude } from "@/lib/trip-draft/globe"
+import { markerSubset, isAirportTap, markerMotionController, renderedArcAltitude } from "@/lib/trip-draft/globe"
 import { countryDisplayName } from "@/lib/airport-data/countries"
 import { airportChinese } from "@/lib/airport-data/localization"
 import type { CatalogAirport } from "@/lib/airport-data/types"
@@ -134,9 +134,8 @@ const MOON_DISC = `<svg width="26" height="26" viewBox="0 0 26 26" style="displa
 const SUN_DISC = `<svg width="30" height="30" viewBox="0 0 30 30" style="display:block"><circle cx="15" cy="15" r="13" fill="#ffd86b" opacity=".2"/><circle cx="15" cy="15" r="8.5" fill="#ffe89a" opacity=".5"/><circle cx="15" cy="15" r="5.5" fill="#fff6da" opacity=".97" stroke="rgba(214,158,46,.7)" stroke-width="1" paint-order="stroke"/></svg>`
 
 const GlobeView = ({ size }: Props) => {
-  const { draft, opened, picking, searchAirports, setCandidate, focusAirport } = useTripDraft()
+  const { draft, opened, picking, previewActive, mapPreview: preview, searchAirports, setCandidate, focusAirport } = useTripDraft()
   const t = useT(), locale = useTravelStore(s=>s.locale)
-  const preview = useMemo(()=>draftGlobePreview(draft),[draft])
   const [regional,setRegional] = useState<CatalogAirport[]>([])
   const [spacing,setSpacing] = useState(5)
   const [regionalError,setRegionalError] = useState(false)
@@ -187,11 +186,11 @@ const GlobeView = ({ size }: Props) => {
   const capColor = useCallback(
     (d: object) => {
       const f = d as CountryFeature
-      const fill = (picking ? preview.colors[f.id] : undefined) ?? baseFill(f.id, statuses[f.id], palette)
+      const fill = (previewActive ? preview.colors[f.id] : undefined) ?? baseFill(f.id, statuses[f.id], palette)
       // Selection keeps the status/ice colour but brightened.
       return f.id === selectedId ? lighten(fill, 0.32) : fill
     },
-    [statuses, selectedId, palette, picking, preview.colors],
+    [statuses, selectedId, palette, previewActive, preview.colors],
   )
 
   // Cursor-following hover, identical to the flat map: track the pointer and,
@@ -203,7 +202,7 @@ const GlobeView = ({ size }: Props) => {
 
   const onPolygonHover = useCallback(
     (d: object | null) => {
-      if (!d || picking) return setHover(null)
+      if (!d || previewActive) return setHover(null)
       const f = d as CountryFeature
       setHover({
         id: f.id,
@@ -217,22 +216,22 @@ const GlobeView = ({ size }: Props) => {
         y: mouse.current.y,
       })
     },
-    [statuses, liveSources, picking],
+    [statuses, liveSources, previewActive],
   )
 
   const handleClick = useCallback(
-    (d: object) => { if (!picking) select((d as CountryFeature).id) },
-    [select, picking],
+    (d: object) => { if (!previewActive) select((d as CountryFeature).id) },
+    [select, previewActive],
   )
 
   const onLabelClick = useCallback(
-    (d: object) => { if(!picking) useTravelStore.getState().openOcean((d as GlobeLabel).text) },
-    [picking],
+    (d: object) => { if(!previewActive) useTravelStore.getState().openOcean((d as GlobeLabel).text) },
+    [previewActive],
   )
 
   const onPointClick = useCallback(
-    (d: object) => { const p=d as GlobePoint; if(p.draftAirport) { if(tap.current.eligible)setCandidate(p.draftAirport) } else useTravelStore.getState().openPlace(p) },
-    [setCandidate],
+    (d: object) => { const p=d as GlobePoint; if(p.draftAirport) { if(picking && tap.current.eligible)setCandidate(p.draftAirport) } else if(!previewActive) useTravelStore.getState().openPlace(p) },
+    [setCandidate, picking, previewActive],
   )
 
   // Hidden while the globe is being rotated/zoomed: each of the ~1.2k points is
@@ -243,10 +242,10 @@ const GlobeView = ({ size }: Props) => {
     () =>
       rotating
         ? []
-        : picking ? draftAirports.map(a=>({kind:"airport" as const,name:a.name,code:a.iata??a.icao??a.ident,city:a.city??"",country:a.sourceCountryCode,lat:a.latitude,lng:a.longitude,wiki:"",color:"#fbbf24",draftAirport:a})) : LAYERS.filter((l) => layerState[l.id]).flatMap((l) =>
+        : previewActive && !picking ? [] : picking ? draftAirports.map(a=>({kind:"airport" as const,name:a.name,code:a.iata??a.icao??a.ident,city:a.city??"",country:a.sourceCountryCode,lat:a.latitude,lng:a.longitude,wiki:"",color:"#fbbf24",draftAirport:a})) : LAYERS.filter((l) => layerState[l.id]).flatMap((l) =>
             l.data.map((p) => ({ ...p, color: l.color })),
           ),
-    [layerState, rotating, picking, draftAirports],
+    [layerState, rotating, picking, previewActive, draftAirports],
   )
 
   // The selected country's capital, if known — drives both the name label and
@@ -319,7 +318,7 @@ const GlobeView = ({ size }: Props) => {
       el.textContent=el.dataset.airportCode
       el.style.cssText="pointer-events:auto;min-width:44px;min-height:44px;border:1px solid #fbbf24;border-radius:12px;background:#141b2e;color:#fbbf24;font:600 12px system-ui;cursor:pointer"
       el.title=`${locale === "zh-TW" ? airportChinese[a.sourceId]?.name??a.name:a.name} · ${a.city??""} · ${countryDisplayName(a.sourceCountryCode,locale)}`
-      el.onclick=e=>{if(e.detail===0||tap.current.eligible)setCandidate(a)}
+      el.onclick=e=>{if(picking && (e.detail===0||tap.current.eligible))setCandidate(a)}
       return el
     }
     // A circular accent ring around a marker whose panel is open — the globe
@@ -349,7 +348,7 @@ const GlobeView = ({ size }: Props) => {
       el.style.position = "relative"
       el.style.padding = "10px"
       el.style.cursor = "pointer"
-      el.style.pointerEvents = picking ? "none" : "auto"
+      el.style.pointerEvents = previewActive ? "none" : "auto"
       el.style.filter = "drop-shadow(0 1px 3px rgba(0,0,0,.5))"
       el.title = `Moon · ${item.phaseName}`
       el.onclick = () => useTravelStore.getState().openMoon()
@@ -363,7 +362,7 @@ const GlobeView = ({ size }: Props) => {
       el.style.position = "relative"
       el.style.padding = "10px"
       el.style.cursor = "pointer"
-      el.style.pointerEvents = picking ? "none" : "auto"
+      el.style.pointerEvents = previewActive ? "none" : "auto"
       el.style.filter = "drop-shadow(0 0 6px rgba(255,200,80,.6))"
       el.title = "Sun · Overhead here"
       el.onclick = () => useTravelStore.getState().openSun()
@@ -378,7 +377,7 @@ const GlobeView = ({ size }: Props) => {
       // Generous padding enlarges the click/hover target around the small icon.
       el.style.padding = "16px"
       el.style.cursor = "pointer"
-      el.style.pointerEvents = picking ? "none" : "auto"
+      el.style.pointerEvents = previewActive ? "none" : "auto"
       el.title = `ISS · ${item.altKm} km · ${item.speedKmh} km/h`
       el.onclick = () => useTravelStore.getState().openISS()
       el.innerHTML = `${ISS_MARKUP}<div class="plane-tip" style="position:absolute;left:50%;bottom:100%;transform:translateX(-50%);margin-bottom:2px;white-space:nowrap;background:var(--panel);color:var(--ink);border:1px solid var(--border-strong);border-radius:8px;padding:4px 8px;box-shadow:0 8px 18px rgba(0,0,0,.35);font:13px var(--font-geist-sans),system-ui,sans-serif"><strong>🛰 ISS</strong><span style="margin-left:6px;color:var(--ink-dim);font-size:11px">${item.altKm} km · ${item.speedKmh} km/h</span></div>`
@@ -396,7 +395,7 @@ const GlobeView = ({ size }: Props) => {
     el.style.padding = "12px"
     // Opt in to pointer events so the click hits the plane (opens the flight
     // panel) instead of falling through to the globe's polygon click.
-    el.style.pointerEvents = picking ? "none" : "auto"
+    el.style.pointerEvents = previewActive ? "none" : "auto"
     el.onclick = () => useTravelStore.getState().openFlight()
     // The plane art points north (up). On a sphere, screen-up isn't local north,
     // so derive the on-screen travel direction from two projected points (the
@@ -417,7 +416,7 @@ const GlobeView = ({ size }: Props) => {
     el.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:block;transform:rotate(${rot}deg);filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))"><path d="${PLANE_PATH}"/></svg><div class="plane-tip" style="position:absolute;left:50%;bottom:100%;transform:translateX(-50%);margin-bottom:2px;white-space:nowrap;background:var(--panel);color:var(--ink);border:1px solid var(--border-strong);border-radius:8px;padding:4px 8px;box-shadow:0 8px 18px rgba(0,0,0,.35);font:13px var(--font-geist-sans),system-ui,sans-serif"><strong>✈ ${f.callsign}</strong><span style="margin-left:6px;color:var(--ink-dim);font-size:11px">${f.speedKmh} km/h</span></div>`
     addRing(el, item.selected)
     return el
-  }, [locale, setCandidate, picking, focusAirport])
+  }, [locale, setCandidate, picking, previewActive, focusAirport])
 
   useEffect(() => {
     const globe = globeRef.current
@@ -480,19 +479,19 @@ const GlobeView = ({ size }: Props) => {
   }, [size.width,picking,fetchRegional])
 
   useEffect(()=>{
-    if(!picking) return
+    if(!previewActive) return
     const target=focusAirport?{lat:focusAirport.latitude,lng:focusAirport.longitude}:DEFAULT_POV
     globeRef.current?.pointOfView({...target,altitude:1.8},0)
-    fetchRegional(target.lat,target.lng)
+    if(picking) fetchRegional(target.lat,target.lng)
     return ()=>request.current?.abort()
-  },[picking,focusAirport,fetchRegional])
+  },[picking,previewActive,focusAirport,fetchRegional])
 
   // HTML labels retain full text clarity. Bound preview raster work on Retina
   // phones; leaving preview restores the library's original DPR cap of 2.
   useEffect(()=>{
     const renderer=globeRef.current?.renderer()
-    if(renderer) renderer.setPixelRatio(picking ? Math.min(1,window.devicePixelRatio) : Math.min(2,window.devicePixelRatio))
-  },[picking,size.width])
+    if(renderer) renderer.setPixelRatio(previewActive ? Math.min(1,window.devicePixelRatio) : Math.min(2,window.devicePixelRatio))
+  },[previewActive,size.width])
 
   // No background WebGL work while the full trip editor covers the globe.
   useEffect(()=>{
@@ -515,7 +514,7 @@ const GlobeView = ({ size }: Props) => {
   }, [focusId])
 
   return (
-    <div className="h-full w-full" data-globe-points={points.length} data-preview-arcs={picking ? preview.arcs.length : 0} data-preview-colors={picking ? JSON.stringify(preview.colors) : "{}"} onMouseMove={onMove}
+    <div className="h-full w-full" data-globe-points={points.length} data-preview-arcs={previewActive ? preview.arcs.length : 0} data-preview-colors={previewActive ? JSON.stringify(preview.colors) : "{}"} onMouseMove={onMove}
       onPointerDownCapture={e=>{if(!tap.current.pointers.size){tap.current.start={x:e.clientX,y:e.clientY};tap.current.multiple=false;tap.current.moved=false}tap.current.pointers.add(e.pointerId);if(tap.current.pointers.size>1)tap.current.multiple=true;tap.current.eligible=false}}
       onPointerMoveCapture={e=>{if(tap.current.pointers.size&&Math.hypot(e.clientX-tap.current.start.x,e.clientY-tap.current.start.y)>8)tap.current.moved=true}}
       onPointerUpCapture={e=>{tap.current.eligible=isAirportTap(tap.current.start,{x:e.clientX,y:e.clientY},tap.current.multiple||tap.current.moved);tap.current.pointers.delete(e.pointerId)}}
@@ -552,7 +551,7 @@ const GlobeView = ({ size }: Props) => {
         labelResolution={2}
         labelAltitude={0.013}
         labelsTransitionDuration={0}
-        arcsData={picking ? preview.arcs : []}
+        arcsData={previewActive ? preview.arcs : []}
         arcStartLat="startLat"
         arcStartLng="startLng"
         arcEndLat="endLat"
@@ -586,7 +585,7 @@ const GlobeView = ({ size }: Props) => {
         htmlAltitude={htmlAltitude}
         htmlElement={htmlElement}
       />
-      {!picking && hover && <CountryTooltip hover={hover} />}
+      {!previewActive && hover && <CountryTooltip hover={hover} />}
     </div>
   )
 }

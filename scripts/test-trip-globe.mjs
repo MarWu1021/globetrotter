@@ -50,3 +50,18 @@ test('pending regions and close-by non-priority markers cannot bypass selection 
  const close={...structuredClone(airport('TPE')),id:'other',sourceId:'other',latitude:airport('TPE').latitude+.01}
  assert.equal(markerSubset([[airport('TPE'),close]],48,5).length,1)
 })
+
+test('completed TPE KCZ uses the same country footprint for globe and flat map',()=>{
+ const d=['TPE','KCZ'].reduce((s,c,i)=>addDraftStop(s,airport(c),'s'+i),createTripDraft('kcz'));d.status='completed'
+ const before=structuredClone(d),p=draftGlobePreview(d)
+ assert.deepEqual(p.colors,{'158':'#22c55e','392':'#22c55e'})
+ assert.deepEqual(p.flatColors,p.colors);assert.equal(p.arcs.length,1)
+ assert.equal(p.arcs[0].endLat,airport('KCZ').latitude);assert.deepEqual(d,before)
+})
+test('completed TPE DXB ATH has identical green and blue previews in both maps',()=>{
+ const d=draft();d.status='completed';d.stops[1].countryPresence='transit';const p=draftGlobePreview(d)
+ assert.deepEqual(p.flatColors,{'158':'#22c55e','300':'#22c55e','784':'#3b82f6'});assert.deepEqual(p.colors,p.flatColors);assert.equal(p.arcs.length,2)
+})
+for(const status of ['draft','planned','in_progress'])test(`${status} contributes no flat-map country preview`,()=>{
+ const d=draft();d.status=status;const p=draftGlobePreview(d);assert.deepEqual(p.flatColors,{});assert.deepEqual(p.colors,{});assert.equal(p.arcs.length,2)
+})
