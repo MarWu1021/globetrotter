@@ -101,7 +101,7 @@ test('duplicate UI writes are busy until acknowledgement; error thrown after com
 })
 test('review SQL scopes both tables and RPCs to owner; no anonymous writes/definer bypass',()=>{
  const sql=fs.readFileSync('sql/review/001_stage_d1.sql','utf8');for(const table of ['trips','country_records'])assert.ok(sql.includes(`alter table public.${table} force row level security`))
- assert.equal((sql.match(/create policy /g)||[]).length,6);assert.ok(sql.includes('with check ((select auth.uid()) = user_id)'));assert.equal((sql.match(/security invoker/g)||[]).length,2);assert.ok(!sql.toLowerCase().includes('security definer'));assert.ok(sql.includes('on delete cascade'));assert.ok(sql.includes('pg_advisory_xact_lock'));assert.ok(sql.includes('last_expected_revision'));assert.ok(sql.includes("p_payload is null then 'delete'"))
+ assert.equal((sql.match(/create policy /g)||[]).length,6);assert.ok(sql.includes('with check ((select auth.uid()) = user_id)'));assert.equal((sql.match(/security invoker/g)||[]).length,3);assert.ok(!sql.toLowerCase().includes('security definer'));assert.ok(sql.includes('on delete cascade'));assert.ok(sql.includes('pg_advisory_xact_lock'));assert.ok(sql.includes('last_expected_revision'));assert.ok(sql.includes("p_payload is null then 'delete'"))
 })
 
 test('session snapshots have stable immutable references for future React subscriptions',async()=>{
