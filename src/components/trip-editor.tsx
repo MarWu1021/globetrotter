@@ -81,7 +81,7 @@ export default function TripEditor({ open, onClose }: { open: boolean; onClose: 
       if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus() }
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus() }
     }}
-    className="fixed inset-0 m-0 h-dvh max-h-none w-screen max-w-none overflow-hidden border-0 bg-[var(--panel)] p-0 text-[var(--ink)] backdrop:bg-black/60 md:m-auto md:h-[90dvh] md:max-w-3xl md:rounded-2xl md:border md:border-[var(--border)]">
+    className="fixed inset-0 m-0 h-dvh max-h-none w-screen max-w-none overflow-hidden border-0 bg-[var(--panel)] p-0 text-[var(--ink)] backdrop:bg-[var(--scrim)] md:m-auto md:h-[90dvh] md:max-w-3xl md:rounded-2xl md:border md:border-[var(--border)]">
     <div className="flex h-full min-w-0 flex-col pt-[env(safe-area-inset-top)]">
       <header className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
         <div className="min-w-0"><h2 id="trip-editor-title" className="text-xl font-semibold">{t("trip.editor")}</h2>
@@ -176,7 +176,7 @@ export default function TripEditor({ open, onClose }: { open: boolean; onClose: 
       <footer className="shrink-0 space-y-2 border-t border-[var(--border)] bg-[var(--panel)] px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))]" aria-live="polite">
         {(saveError || savedTrips.error) && <p role="alert" className="text-sm">{t(`trip.storage.${saveError??savedTrips.error}`)}</p>}
         {isSaved && <p className="text-sm">{t("trip.saved")}</p>}
-        <button className={`${button} w-full bg-[var(--accent)] font-semibold text-black`} disabled={preview.kind!=="ready" || !savedTrips.ready || !!savedTrips.error || isSaved} onClick={save}>{t("trip.save")}</button>
+        <button className={`${button} w-full bg-[var(--accent)] font-semibold text-[var(--accent-ink)]`} disabled={preview.kind!=="ready" || !savedTrips.ready || !!savedTrips.error || isSaved} onClick={save}>{t("trip.save")}</button>
         {savedTrips.error && <button className={`${button} w-full`} onClick={()=>{repository.reload();setSaveError(null)}}>{t("trip.retry")}</button>}
       </footer>
     </div>

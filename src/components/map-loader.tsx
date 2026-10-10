@@ -65,8 +65,8 @@ const MapLoader = () => {
           className="relative h-16 w-16 overflow-hidden rounded-full border border-[var(--border-strong)]"
           style={{ background: "var(--panel)" }}
         >
-          <Wave fill="#2f6fd0" opacity={0.5} duration={2.6} height={38} />
-          <Wave fill="#5aa9ff" opacity={0.85} duration={1.7} height={32} />
+          <Wave fill="var(--sea-blue)" opacity={0.5} duration={2.6} height={38} />
+          <Wave fill="var(--soft-blue)" opacity={0.85} duration={1.7} height={32} />
         </div>
         <span className="min-h-4 text-xs text-[var(--ink-dim)]">
           {localizeText(MESSAGES[i], locale)}

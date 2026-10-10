@@ -273,11 +273,7 @@ const MapStage = () => {
               <div
                 className="absolute inset-0"
                 style={{
-                  // The globe always floats in dark space — dramatic in both
-                  // themes, and a pale light-theme globe pops against it. The
-                  // flat map keeps the themed stage behind this div.
-                  background:
-                    "radial-gradient(circle at 50% 28%, #1b2c52 0%, #090e1d 72%)",
+                  background: "var(--stage)",
                 }}
               >
                 <GlobeView size={size} />

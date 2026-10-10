@@ -69,7 +69,7 @@ function Workspace() {
     <><TripEditorHost /><div className="grid h-dvh min-w-0 grid-cols-1 grid-rows-1 overflow-hidden md:grid-cols-[340px_1fr]">
       {open && (
         <div
-          className="fixed inset-0 z-40 bg-black/45 md:hidden"
+          className="fixed inset-0 z-40 bg-[var(--scrim)] md:hidden"
           onClick={() => setOpen(false)}
           aria-hidden="true"
         />

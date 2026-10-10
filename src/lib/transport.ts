@@ -730,29 +730,18 @@ export type LayerDef = {
   data: TransportPoint[]
 }
 
-export const LAYERS: LayerDef[] = [
-  {
-    id: "airports",
-    label: "Airports",
-    kind: "airport",
-    color: "#5fb0ff",
-    data: AIRPORTS,
-  },
-  {
-    id: "stations",
-    label: "Train stations",
-    kind: "station",
-    color: "#7be0a3",
-    data: STATIONS,
-  },
-  { id: "ports", label: "Ports", kind: "port", color: "#ffd166", data: PORTS },
-]
-
+// Shared renderer / legend colours are muted and visible on mist-blue oceans.
 export const KIND_COLOR: Record<TransportKind, string> = {
-  airport: "#5fb0ff",
-  station: "#7be0a3",
-  port: "#ffd166",
+  airport: "#486B80",
+  station: "#317277",
+  port: "#88601E",
 }
+
+export const LAYERS: LayerDef[] = [
+  { id: "airports", label: "Airports", kind: "airport", color: KIND_COLOR.airport, data: AIRPORTS },
+  { id: "stations", label: "Train stations", kind: "station", color: KIND_COLOR.station, data: STATIONS },
+  { id: "ports", label: "Ports", kind: "port", color: KIND_COLOR.port, data: PORTS },
+]
 
 export const KIND_ICON: Record<TransportKind, string> = {
   airport: "✈",

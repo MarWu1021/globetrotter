@@ -624,7 +624,7 @@ const FlatMap = ({ size }: Props) => {
                 >
                   <circle
                     r={3.5 / t.k}
-                    fill="#ffffff"
+                    fill="var(--accent)"
                     stroke="var(--panel)"
                     strokeWidth={1.3 / t.k}
                     paintOrder="stroke"
@@ -667,7 +667,7 @@ const FlatMap = ({ size }: Props) => {
               <path
                 d={PLANE_PATH}
                 transform={`scale(${1.05 / t.k}) translate(-12,-12)`}
-                fill="#ffffff"
+                fill="var(--accent)"
                 stroke="var(--ink)"
                 strokeWidth={0.5 / t.k}
                 paintOrder="stroke"

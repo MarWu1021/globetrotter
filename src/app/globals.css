@@ -43,41 +43,36 @@
   --font-fraunces: Georgia, "Times New Roman", serif;
 }
 
+/* Shared mist-blue / cream tokens. Keep existing saved theme preferences intact;
+   both variants use soft surfaces, with a slightly deeper blue stage at night. */
 :root,
-[data-theme="dark"] {
-  --bg: #0b1020;
-  --panel: #131a30;
-  --panel-2: #1b2440;
-  --panel-hover: #232d4f;
-  --ink: #e8ecf6;
-  --ink-dim: #97a1bd;
-  --ink-faint: #5d678c;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.16);
-  --accent: #5aa9ff;
-  --accent-ink: #06122b;
-  --danger: #ff6b6b;
-  --stage: radial-gradient(circle at 50% 30%, #131d3d 0%, #0b1020 70%);
-  color-scheme: dark;
+[data-theme="dark"],
+[data-theme="light"] {
+  --cream: #F4F7F8;
+  --mist: #DCE9ED;
+  --soft-blue: #A8C7D1;
+  --sea-blue: #486B80;
+  --bg: var(--cream);
+  --panel: var(--cream);
+  --panel-2: var(--mist);
+  --panel-hover: var(--mist);
+  --ink: #243E4B;
+  --ink-dim: #486272;
+  --ink-faint: #526977;
+  --border: #B1C5CE;
+  --border-strong: #7D9AA8;
+  --accent: var(--sea-blue);
+  --accent-ink: var(--cream);
+  --danger: #A43F43;
+  --rating: #88601E;
+  --scrim: rgba(36, 62, 75, 0.32);
+  --surface-shadow: 0 8px 24px rgba(72, 107, 128, 0.12);
+  --stage: radial-gradient(circle at 50% 28%, var(--cream) 0%, var(--mist) 72%);
+  color-scheme: light;
 }
 
-/* Clean modern light: white panels floating on a soft cool-grey canvas (depth
-   without glare), a single confident blue accent, refined borders. */
-[data-theme="light"] {
-  --bg: #e8ebf1;
-  --panel: #ffffff;
-  --panel-2: #eff2f7;
-  --panel-hover: #e6ebf3;
-  --ink: #1b2435;
-  --ink-dim: #586275;
-  --ink-faint: #8a93a3;
-  --border: rgba(22, 32, 56, 0.1);
-  --border-strong: rgba(22, 32, 56, 0.16);
-  --accent: #2f6ae0;
-  --accent-ink: #ffffff;
-  --danger: #d83a3a;
-  --stage: radial-gradient(circle at 50% 18%, #f1f4f9 0%, #dde3ed 88%);
-  color-scheme: light;
+[data-theme="dark"] {
+  --stage: radial-gradient(circle at 50% 28%, var(--mist) 0%, var(--soft-blue) 85%);
 }
 
 @theme inline {
@@ -175,4 +170,39 @@ button:active:not(:disabled),
 }
 .plane-hit:hover .plane-tip {
   opacity: 1;
+}
+
+/* Native inputs and map-generated HTML share the same accessible surfaces. */
+input::placeholder,
+textarea::placeholder { color: var(--ink-faint); opacity: 1; }
+:where(button, a, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+:where(button):not(:disabled):hover { border-color: var(--accent); }
+dialog::backdrop { background: var(--scrim); }
+.map-tooltip {
+  max-width: min(320px, calc(100vw - 24px));
+  white-space: normal;
+  overflow-wrap: anywhere;
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: var(--ink);
+  box-shadow: var(--surface-shadow);
+  font: 600 13px var(--font-geist-sans), system-ui, sans-serif;
+}
+.map-tooltip-detail { margin-top: 2px; color: var(--ink-dim); font-weight: 400; font-size: 12px; }
+.draft-airport-marker {
+  pointer-events: auto;
+  min-width: 44px;
+  min-height: 44px;
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: var(--surface-shadow);
+  font: 600 12px var(--font-geist-sans), system-ui, sans-serif;
+  cursor: pointer;
 }

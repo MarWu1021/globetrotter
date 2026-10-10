@@ -43,7 +43,7 @@ const About = () => {
             transition={{ duration: 0.12, ease: "easeOut" }}
           >
             <div
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm"
               onClick={() => setOpen(false)}
             />
             <motion.div

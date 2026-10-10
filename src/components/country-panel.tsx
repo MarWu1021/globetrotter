@@ -19,7 +19,7 @@ import {
   ADVISORY_SOURCE_NAME,
 } from "@/lib/advisory"
 import { useAdvisoryStore } from "@/lib/advisory-store"
-import { STATUS, withAlpha } from "@/lib/colors"
+import { STATUS, withAlpha, darken } from "@/lib/colors"
 import { StatusIcon } from "@/components/icons"
 import PanelImage from "@/components/panel-image"
 import PanelHeader from "@/components/panel-header"
@@ -46,7 +46,7 @@ const StatusButton = ({
         ? {
             borderColor: color,
             background: color ? withAlpha(color, 0.18) : undefined,
-            color,
+            color: color ? darken(color, 0.55) : undefined,
           }
         : { borderColor: "var(--border)", color: "var(--ink-dim)" }
     }
@@ -55,7 +55,7 @@ const StatusButton = ({
   </button>
 )
 
-const STAR_GOLD = "#f5b50a"
+const STAR_GOLD = "var(--rating)"
 
 const StarRating = ({
   value,
@@ -108,7 +108,7 @@ const ReturnToggle = ({
                 ? {
                     borderColor: o.color,
                     background: withAlpha(o.color, 0.18),
-                    color: o.color,
+                    color: darken(o.color, 0.55),
                   }
                 : { borderColor: "var(--border)", color: "var(--ink-dim)" }
             }
@@ -486,7 +486,7 @@ const CountryPanel = () => {
                         className="rounded-full px-2.5 py-0.5 text-xs font-bold"
                         style={{
                           background: withAlpha(l.meta.color, 0.18),
-                          color: l.meta.color,
+                          color: darken(l.meta.color, 0.55),
                         }}
                       >
                         {l.flag}{" "}

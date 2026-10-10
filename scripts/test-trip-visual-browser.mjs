@@ -11,7 +11,7 @@ const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', hea
 const samples = { TW: [23.7, 121], JP: [36.2, 138.2], AE: [24.2, 54.4], GR: [39, 22] }
 const names = { TW: '台灣', JP: '日本', AE: '阿拉伯聯合大公國', GR: '希臘' }
 const ids = { TW: '158', JP: '392', AE: '784', GR: '300' }
-const matches = (r,g,b,color) => color === 'green' ? g > 100 && g > r * 1.4 && g > b * 1.25 : color === 'red' ? r > 160 && r > g * 1.5 && r > b * 1.5 : color === 'purple' ? b > 140 && r > 100 && g < r * .8 : b > 120 && b > r * 1.4 && b > g * 1.1
+const matches = (r,g,b,color) => color === 'green' ? g > 100 && g > r * 1.4 && g > b * 1.25 : color === 'red' ? r > 160 && r > g * 1.5 && r > b * 1.5 : color === 'purple' ? b > 140 && r > 100 && g < r * .8 : b > 160 && b - r > 80 && b - g > 60
 async function pixels(buffer, color, point) {
   const { data, info } = await sharp(buffer).removeAlpha().raw().toBuffer({ resolveWithObject: true })
   let count = 0

@@ -23,7 +23,7 @@ import {
 } from "@/lib/geo"
 import { getCountryInfo, getCapitalLatLng } from "@/lib/country-info"
 import { useTravelStore } from "@/lib/store"
-import { MAP_PALETTE, lighten, baseFill } from "@/lib/colors"
+import { MAP_PALETTE, PREVIEW_ROUTE_COLOR, lighten, baseFill } from "@/lib/colors"
 import { OCEANS, oceanTip } from "@/lib/oceans"
 import { LAYERS, KIND_ICON, type TransportPoint } from "@/lib/transport"
 import { useAdvisoryStore, combinedLevel } from "@/lib/advisory-store"
@@ -75,7 +75,9 @@ type HtmlItem =
 // -globe.gl re-digests a layer whenever an accessor's reference changes, and the
 // ISS poll re-renders this component every few seconds.
 const draftArcAltitude = (d:object) => renderedArcAltitude(d as {distanceKm:number;altitude:number})
-const draftArcColor = () => "#fbbf24"
+const draftArcColor = () => PREVIEW_ROUTE_COLOR
+// A string is a feature-field accessor, not a literal colour, in three-globe.
+const polygonStrokeColor = () => MAP_PALETTE.dark.polygonStroke
 const labelLat = (d: object) => (d as GlobeLabel).lat
 const labelLng = (d: object) => (d as GlobeLabel).lng
 const labelText = (d: object) => (d as GlobeLabel).text
@@ -85,7 +87,7 @@ const labelDot = (d: object) => (d as GlobeLabel).dot
 // react-globe.gl renders this HTML string as a hover tooltip on the label.
 const labelLabel = (d: object) => {
   const l = d as GlobeLabel
-  return `<div style="background:rgba(15,20,32,.92);border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:6px 10px;font:600 13px system-ui,sans-serif;color:#eef2f8;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.4)">🌊 ${l.text}<div style="font-weight:400;font-size:11px;opacity:.7;margin-top:1px">${l.tip}</div></div>`
+  return `<div class="map-tooltip">🌊 ${l.text}<div class="map-tooltip-detail">${l.tip}</div></div>`
 }
 
 // Transport-layer points (airports / stations / ports) drawn as GPU dots — a
@@ -97,7 +99,7 @@ const pointColor = (d: object) => (d as GlobePoint).color
 const pointLabel = (d: object) => {
   const p = d as GlobePoint
   const code = p.code ? `${p.code} · ` : ""
-  return `<div style="background:rgba(15,20,32,.92);border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:6px 10px;font:600 13px system-ui,sans-serif;color:#eef2f8;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.4)">${KIND_ICON[p.kind]} ${code}${p.name}<div style="font-weight:400;font-size:11px;opacity:.7;margin-top:1px">${p.city}, ${p.country}</div></div>`
+  return `<div class="map-tooltip">${KIND_ICON[p.kind]} ${code}${p.name}<div class="map-tooltip-detail">${p.city}, ${p.country}</div></div>`
 }
 
 const htmlLat = (d: object) =>
@@ -126,7 +128,7 @@ let cachedViewerLatLng: { lat: number; lng: number } | null = null
 const DEFAULT_POV = { lat: 25, lng: 10, altitude: 2.4 }
 
 // A round gold spot — the capital marker (matches the flat map's capital dot).
-const capitalMarkup = `<svg width="14" height="14" viewBox="0 0 16 16"><circle cx="8" cy="8" r="4.5" fill="#ffffff" stroke="rgba(0,0,0,0.5)" stroke-width="1.2" paint-order="stroke"/></svg>`
+const capitalMarkup = `<svg width="14" height="14" viewBox="0 0 16 16"><circle cx="8" cy="8" r="4.5" fill="var(--accent)" stroke="var(--cream)" stroke-width="1.2" paint-order="stroke"/></svg>`
 
 // Soft glow discs (matching the flat map) — pale-blue Moon, golden Sun — used
 // as the globe markers instead of emoji.
@@ -172,9 +174,8 @@ const GlobeView = ({ size }: Props) => {
   const [rotating, setRotating] = useState(false)
   const mouse = useRef({ x: 0, y: 0 })
 
-  // The globe always uses the dark palette in both UI themes — it's a space
-  // object floating in dark space, so a "light globe" looks mismatched. Only
-  // the surrounding chrome (sidebar/header) follows the theme.
+  // A stable mist palette keeps the ocean lighting and country materials
+  // consistent when switching the surrounding UI theme.
   const palette = MAP_PALETTE.dark
 
   const oceanMaterial = useMemo(
@@ -244,7 +245,7 @@ const GlobeView = ({ size }: Props) => {
     () =>
       rotating
         ? []
-        : previewActive && !picking ? [] : picking ? draftAirports.map(a=>({kind:"airport" as const,name:a.name,code:a.iata??a.icao??a.ident,city:a.city??"",country:a.sourceCountryCode,lat:a.latitude,lng:a.longitude,wiki:"",color:"#fbbf24",draftAirport:a})) : LAYERS.filter((l) => layerState[l.id]).flatMap((l) =>
+        : previewActive && !picking ? [] : picking ? draftAirports.map(a=>({kind:"airport" as const,name:a.name,code:a.iata??a.icao??a.ident,city:a.city??"",country:a.sourceCountryCode,lat:a.latitude,lng:a.longitude,wiki:"",color:PREVIEW_ROUTE_COLOR,draftAirport:a})) : LAYERS.filter((l) => layerState[l.id]).flatMap((l) =>
             l.data.map((p) => ({ ...p, color: l.color })),
           ),
     [layerState, rotating, picking, previewActive, draftAirports],
@@ -318,7 +319,7 @@ const GlobeView = ({ size }: Props) => {
       el.dataset.airportPriority=String(a.id===focusAirport?.id)
       el.type="button";el.dataset.airportCode=a.iata??a.icao??a.ident
       el.textContent=el.dataset.airportCode
-      el.style.cssText="pointer-events:auto;min-width:44px;min-height:44px;border:1px solid #fbbf24;border-radius:12px;background:#141b2e;color:#fbbf24;font:600 12px system-ui;cursor:pointer"
+      el.className="draft-airport-marker"
       el.title=`${locale === "zh-TW" ? airportChinese[a.sourceId]?.name??a.name:a.name} · ${a.city??""} · ${countryDisplayName(a.sourceCountryCode,locale)}`
       el.onclick=e=>{if(picking && (e.detail===0||tap.current.eligible))setCandidate(a)}
       return el
@@ -341,7 +342,7 @@ const GlobeView = ({ size }: Props) => {
       el.style.whiteSpace = "nowrap"
       el.style.filter = "drop-shadow(0 1px 2px rgba(0,0,0,.6))"
       // Name rendered as DOM text (not a sprite label) so accents survive.
-      el.innerHTML = `${capitalMarkup}<span style="font:600 12px var(--font-geist-sans),system-ui,sans-serif;color:#ffffff;text-shadow:0 1px 2px rgba(0,0,0,.7)">${item.name}</span>`
+      el.innerHTML = `${capitalMarkup}<span style="font:600 12px var(--font-geist-sans),system-ui,sans-serif;color:var(--ink);background:var(--panel);border-radius:6px;padding:2px 5px">${item.name}</span>`
       return el
     }
     if (item.kind === "moon") {
@@ -390,7 +391,7 @@ const GlobeView = ({ size }: Props) => {
     const el = document.createElement("div")
     el.className = "plane-hit"
     el.title = flightTooltip(f)
-    el.style.color = "#ffffff"
+    el.style.color = "var(--ink)"
     el.style.cursor = "pointer"
     el.style.position = "relative"
     // Generous padding enlarges the click/hover target around the small icon.
@@ -547,7 +548,7 @@ const GlobeView = ({ size }: Props) => {
         polygonAltitude={0.01}
         polygonCapColor={capColor}
         polygonSideColor="rgba(0,0,0,0)"
-        polygonStrokeColor={palette.polygonStroke}
+        polygonStrokeColor={polygonStrokeColor}
         onPolygonHover={onPolygonHover}
         onPolygonClick={handleClick}
         polygonsTransitionDuration={150}

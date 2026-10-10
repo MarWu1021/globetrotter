@@ -28,7 +28,7 @@ export default function TripRecords({onClose}:{onClose:()=>void}) {
       if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}
       else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}
     }}
-    className="fixed inset-0 m-0 h-dvh max-h-none w-screen max-w-none border-0 bg-[var(--panel)] p-0 text-[var(--ink)] backdrop:bg-black/60 md:m-auto md:h-[90dvh] md:max-w-3xl md:rounded-2xl">
+    className="fixed inset-0 m-0 h-dvh max-h-none w-screen max-w-none border-0 bg-[var(--panel)] p-0 text-[var(--ink)] backdrop:bg-[var(--scrim)] md:m-auto md:h-[90dvh] md:max-w-3xl md:rounded-2xl">
     <div className="flex h-full min-w-0 flex-col pt-[env(safe-area-inset-top)]">
       <header className="flex shrink-0 items-center justify-between gap-2 border-b border-[var(--border)] p-4">
         <h2 id="trip-records-title" className="text-xl font-semibold">{t("trip.records")}</h2>

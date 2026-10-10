@@ -34,9 +34,7 @@ export type MapPalette = {
   sphereStroke: string
   polygonStroke: string
   atmosphere: string
-  // Status fills for the map, per theme — light uses more refined, desaturated
-  // tones (the bright primary green/violet/red read "primitive" on a light map);
-  // the dark theme keeps the vivid STATUS values it was designed around.
+  // Functional status hues stay independent of the visual theme.
   statusVisited: string
   statusWishlist: string
   statusBlocked: string
@@ -48,36 +46,35 @@ export type MapPalette = {
   ice: string
 }
 
+// GPU/SVG colours are plain values (CSS variables cannot colour Three materials).
+// Keep these renderer tokens together; DOM surfaces use globals.css tokens.
+export const PREVIEW_ROUTE_COLOR = "#486B80"
 export const MAP_PALETTE: Record<ResolvedTheme, MapPalette> = {
   dark: {
-    land: "#2a3454",
-    ocean: "#0e1530",
-    graticule: "rgba(120,160,255,0.10)",
-    sphereStroke: "rgba(120,160,255,0.25)",
-    polygonStroke: "#0b1020",
-    atmosphere: "#5aa9ff",
-    oceanLabel: "rgba(150,175,225,0.6)",
-    ice: "#5a6a90",
+    land: "#BCC5C9",
+    ocean: "#A8C7D1",
+    graticule: "rgba(72,107,128,0.12)",
+    sphereStroke: "rgba(72,107,128,0.38)",
+    polygonStroke: "#486B80",
+    atmosphere: "#DCE9ED",
+    oceanLabel: "#243E4B",
+    ice: "#E4ECEF",
     statusVisited: STATUS.visited,
     statusWishlist: STATUS.wishlist,
     statusBlocked: STATUS.blocked,
   },
   light: {
-    // Used only by the flat map (the globe is always dark). A modern, restrained
-    // palette: a calm desaturated blue ocean, clean cool-neutral land, soft
-    // coastlines, and refined emerald/indigo/coral status fills instead of
-    // primary green/violet/red.
-    land: "#edeff2",
-    ocean: "#c2d5ec",
-    graticule: "rgba(40,80,150,0.1)",
-    sphereStroke: "rgba(40,70,120,0.24)",
-    polygonStroke: "#c8d2e0",
-    atmosphere: "#8fb8f0",
-    oceanLabel: "rgba(66,92,138,0.64)",
-    ice: "#d6e6f6",
-    statusVisited: "#2f9e72",
-    statusWishlist: "#7d63e8",
-    statusBlocked: "#db5a52",
+    land: "#BCC5C9",
+    ocean: "#DCE9ED",
+    graticule: "rgba(72,107,128,0.12)",
+    sphereStroke: "rgba(72,107,128,0.38)",
+    polygonStroke: "#486B80",
+    atmosphere: "#A8C7D1",
+    oceanLabel: "#243E4B",
+    ice: "#F4F7F8",
+    statusVisited: STATUS.visited,
+    statusWishlist: STATUS.wishlist,
+    statusBlocked: STATUS.blocked,
   },
 }
 
@@ -122,14 +119,12 @@ export const darken = (hex: string, amount: number) => {
   return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`
 }
 
-// Accessible status-badge styling. The vivid colour reads well on the dark
-// theme's dark-alpha background, but on a light background the same vivid text
-// is too low-contrast — there we keep a soft tint behind a darkened, legible
-// text colour.
-export const badgeStyle = (color: string, theme: ResolvedTheme) =>
-  theme === "light"
-    ? { background: withAlpha(color, 0.15), color: darken(color, 0.42) }
-    : { background: withAlpha(color, 0.18), color }
+// Both mist variants have light surfaces; badges retain the hue with darker,
+// readable text instead of placing vivid green/red text on cream.
+export const badgeStyle = (color: string, theme: ResolvedTheme) => ({
+  background: withAlpha(color, theme === "light" ? 0.15 : 0.18),
+  color: darken(color, 0.55),
+})
 
 // Blend a hex colour toward white by `amount` (0–1). Used to brighten the
 // selected country's status fill so selection reads alongside the status hue.

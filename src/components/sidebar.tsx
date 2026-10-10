@@ -79,7 +79,7 @@ const Stat = ({ value, label }: { value: React.ReactNode; label: string }) => (
 const MiniStars = ({ rating }: { rating: number }) => (
   <span
     className="shrink-0 text-[0.7rem] leading-none tracking-tight"
-    style={{ color: "#f5b50a" }}
+    style={{ color: "var(--rating)" }}
     title={`${rating}/5`}
   >
     {"★".repeat(rating)}
@@ -408,21 +408,18 @@ const Sidebar = () => {
             className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-700 ease-out"
             style={{
               width: `${barFill}%`,
-              background: "linear-gradient(90deg, #2bff88, #29d3ff)",
-              // Subtle neon — a tight glow that hints "wow" without the blur
-              // smearing past the bar.
+              background: "linear-gradient(90deg, var(--sea-blue), var(--soft-blue))",
               boxShadow:
-                "0 0 3px rgba(43,255,136,0.5), 0 0 6px rgba(41,211,255,0.28)",
+                "var(--surface-shadow)",
             }}
           />
-          {/* A clean white knob marking the current position — "you are here"
-              on the journey, with a soft drop shadow and a faint neon halo. */}
+          {/* A cream knob keeps the progress indicator distinct from the map. */}
           <div
-            className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white transition-[left] duration-700 ease-out"
+            className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--cream)] transition-[left] duration-700 ease-out"
             style={{
               left: `${barFill}%`,
               boxShadow:
-                "0 1px 3px rgba(0,0,0,0.45), 0 0 5px rgba(43,255,136,0.45)",
+                "0 1px 4px rgba(72,107,128,0.35)",
             }}
           />
         </div>
@@ -430,7 +427,7 @@ const Sidebar = () => {
 
       {hydrated && ratedCount > 0 && (
         <p className="-mt-2 text-[0.78rem] text-[var(--ink-dim)]">
-          <span style={{ color: "#f5b50a" }}>★</span>{" "}
+          <span style={{ color: "var(--rating)" }}>★</span>{" "}
           {t("avg", { r: avgRating.toFixed(1), n: ratedCount })}
         </p>
       )}
