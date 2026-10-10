@@ -14,7 +14,9 @@
     "test:trip-draft": "node --test scripts/test-trip-draft.mjs",
     "test:trip-globe": "node --test scripts/test-trip-globe.mjs",
     "test:trip-storage": "node --test scripts/test-trip-storage.mjs",
-    "test:trip-map": "node --test scripts/test-trip-map.mjs"
+    "test:trip-map": "node --test scripts/test-trip-map.mjs",
+    "test:cloud-trips": "node --test scripts/test-cloud-trips.mjs",
+    "test:auth-cache": "node --test scripts/test-auth-cache.mjs"
   },
   "dependencies": {
     "@vercel/functions": "3.9.5",
