@@ -920,6 +920,135 @@ Object.assign(es, {"trip.viewPreview": "Ver vista previa del viaje", "trip.viewP
 Object.assign(de, {"trip.viewPreview": "Reisevorschau ansehen", "trip.viewPreviewHint": "Zwischen Globus und Karte wechseln. Die Karte zeigt Länderfarben, der Globus auch Routen. Nur abgeschlossene Reisen zählen."})
 Object.assign(zhTW, {"trip.viewPreview": "查看旅行預覽", "trip.viewPreviewHint": "可切換地球與平面地圖。平面地圖顯示國家顏色，地球另顯示航線；只有已完成旅行會預覽足跡。"})
 
+
+// Stage B: browser-only trip management; permanent footprint integration is deferred.
+Object.assign(en, {
+  "trip.save": "Save trip",
+  "trip.saved": "Saved in this browser",
+  "trip.records": "My trips",
+  "trip.closeRecords": "Close trip records",
+  "trip.view": "View",
+  "trip.edit": "Edit",
+  "trip.delete": "Delete",
+  "trip.deleteConfirm": "Delete this saved trip? Existing country records stay unchanged.",
+  "trip.replaceConfirm": "Discard the current unsaved edits and open this trip?",
+  "trip.localOnly": "Trips are stored only in this browser. No account or cloud sync. Clearing site data removes them.",
+  "trip.mapsLater": "Saved trips do not yet update the permanent map footprint. Use trip preview to inspect colors.",
+  "trip.noTrips": "No saved trips yet.",
+  "trip.untitled": "Untitled trip",
+  "trip.details": "Trip details",
+  "trip.storage.corrupt": "Stored trips are damaged or use an unsupported format. Nothing was overwritten. Keep this browser’s data and ask for help.",
+  "trip.storage.unavailable": "Browser storage is unavailable or full. Changes were not saved; your edits are retained.",
+  "trip.storage.conflict": "Another tab changed this record. Nothing was overwritten. Open the latest saved trip before editing again.",
+  "trip.storage.invalid": "Check the route, dates and field lengths. This trip could not be saved.",
+  "trip.temporary": "New trips record completed travel. Unsaved edits stay in memory until you save.",
+  "trip.scope": "Calculation preview for this trip only. Existing country records are unchanged.",
+  "trip.completedHint": "This previews completed travel. Save stores the trip in this browser; permanent map integration comes later.",
+  "trip.origin": "The first departure country is always counted as actually visited."
+})
+Object.assign(fr, {
+  "trip.save": "Enregistrer le voyage",
+  "trip.saved": "Enregistré dans ce navigateur",
+  "trip.records": "Mes voyages",
+  "trip.closeRecords": "Fermer les voyages",
+  "trip.view": "Voir",
+  "trip.edit": "Modifier",
+  "trip.delete": "Supprimer",
+  "trip.deleteConfirm": "Supprimer ce voyage enregistré ? Les anciens pays restent inchangés.",
+  "trip.replaceConfirm": "Abandonner les modifications non enregistrées et ouvrir ce voyage ?",
+  "trip.localOnly": "Voyages enregistrés uniquement dans ce navigateur, sans compte ni synchronisation. Effacer les données du site les supprime.",
+  "trip.mapsLater": "Les voyages enregistrés ne modifient pas encore la carte permanente. Utilisez l’aperçu pour vérifier les couleurs.",
+  "trip.noTrips": "Aucun voyage enregistré.",
+  "trip.untitled": "Voyage sans titre",
+  "trip.details": "Détails du voyage",
+  "trip.storage.corrupt": "Les voyages stockés sont endommagés ou incompatibles. Rien n’a été écrasé. Conservez les données du navigateur et demandez de l’aide.",
+  "trip.storage.unavailable": "Stockage indisponible ou plein. Rien n’a été enregistré ; vos modifications sont conservées.",
+  "trip.storage.conflict": "Un autre onglet a modifié ce voyage. Rien n’a été écrasé. Rouvrez sa dernière version avant de modifier.",
+  "trip.storage.invalid": "Vérifiez l’itinéraire, les dates et la longueur des champs. Enregistrement impossible.",
+  "trip.temporary": "Les nouveaux voyages sont terminés. Les modifications restent en mémoire jusqu’à l’enregistrement.",
+  "trip.scope": "Aperçu de ce voyage uniquement. Les anciens pays restent inchangés.",
+  "trip.completedHint": "Aperçu d’un voyage terminé. Enregistrer conserve ce voyage dans le navigateur ; l’intégration permanente à la carte viendra plus tard.",
+  "trip.origin": "Le pays du premier départ compte toujours comme réellement visité."
+})
+Object.assign(es, {
+  "trip.save": "Guardar viaje",
+  "trip.saved": "Guardado en este navegador",
+  "trip.records": "Mis viajes",
+  "trip.closeRecords": "Cerrar viajes",
+  "trip.view": "Ver",
+  "trip.edit": "Editar",
+  "trip.delete": "Eliminar",
+  "trip.deleteConfirm": "¿Eliminar este viaje guardado? Los registros de países existentes no cambian.",
+  "trip.replaceConfirm": "¿Descartar los cambios sin guardar y abrir este viaje?",
+  "trip.localOnly": "Los viajes se guardan solo en este navegador, sin cuenta ni sincronización. Borrar los datos del sitio los elimina.",
+  "trip.mapsLater": "Los viajes guardados aún no actualizan el mapa permanente. Usa la vista previa para revisar los colores.",
+  "trip.noTrips": "Aún no hay viajes guardados.",
+  "trip.untitled": "Viaje sin título",
+  "trip.details": "Detalles del viaje",
+  "trip.storage.corrupt": "Los viajes almacenados están dañados o son incompatibles. No se sobrescribió nada. Conserva los datos del navegador y solicita ayuda.",
+  "trip.storage.unavailable": "Almacenamiento no disponible o lleno. No se guardaron cambios; se conservan tus ediciones.",
+  "trip.storage.conflict": "Otra pestaña cambió este viaje. No se sobrescribió nada. Abre la última versión guardada antes de editar.",
+  "trip.storage.invalid": "Revisa la ruta, las fechas y la longitud de los campos. No se pudo guardar el viaje.",
+  "trip.temporary": "Los nuevos viajes se consideran completados. Los cambios siguen en memoria hasta guardar.",
+  "trip.scope": "Cálculos solo de este viaje. Los registros de países existentes no cambian.",
+  "trip.completedHint": "Vista previa de un viaje completado. Guardar lo conserva en este navegador; la integración permanente con el mapa llegará después.",
+  "trip.origin": "El país del primer aeropuerto de salida siempre cuenta como visitado."
+})
+Object.assign(de, {
+  "trip.save": "Reise speichern",
+  "trip.saved": "In diesem Browser gespeichert",
+  "trip.records": "Meine Reisen",
+  "trip.closeRecords": "Reisen schließen",
+  "trip.view": "Ansehen",
+  "trip.edit": "Bearbeiten",
+  "trip.delete": "Löschen",
+  "trip.deleteConfirm": "Diese gespeicherte Reise löschen? Bestehende Ländereinträge bleiben unverändert.",
+  "trip.replaceConfirm": "Ungespeicherte Änderungen verwerfen und diese Reise öffnen?",
+  "trip.localOnly": "Reisen werden nur in diesem Browser gespeichert, ohne Konto oder Synchronisierung. Das Löschen der Websitedaten entfernt sie.",
+  "trip.mapsLater": "Gespeicherte Reisen ändern die dauerhafte Karte noch nicht. Prüfe die Farben in der Reisevorschau.",
+  "trip.noTrips": "Noch keine gespeicherten Reisen.",
+  "trip.untitled": "Reise ohne Titel",
+  "trip.details": "Reisedetails",
+  "trip.storage.corrupt": "Gespeicherte Reisen sind beschädigt oder inkompatibel. Nichts wurde überschrieben. Bewahre die Browserdaten auf und bitte um Hilfe.",
+  "trip.storage.unavailable": "Browserspeicher nicht verfügbar oder voll. Änderungen wurden nicht gespeichert und bleiben erhalten.",
+  "trip.storage.conflict": "Ein anderer Tab hat diese Reise geändert. Nichts wurde überschrieben. Öffne vor dem Bearbeiten die aktuelle gespeicherte Version.",
+  "trip.storage.invalid": "Route, Datum und Feldlängen prüfen. Die Reise konnte nicht gespeichert werden.",
+  "trip.temporary": "Neue Reisen gelten als abgeschlossen. Änderungen bleiben bis zum Speichern im Arbeitsspeicher.",
+  "trip.scope": "Berechnung nur für diese Reise. Bestehende Ländereinträge bleiben unverändert.",
+  "trip.completedHint": "Vorschau einer abgeschlossenen Reise. Speichern sichert sie in diesem Browser; die dauerhafte Kartenintegration folgt später.",
+  "trip.origin": "Das Land des ersten Abflughafens zählt immer als tatsächlich besucht."
+})
+Object.assign(zhTW, {
+  "trip.save": "儲存旅行",
+  "trip.saved": "已儲存在此瀏覽器",
+  "trip.records": "我的旅行紀錄",
+  "trip.closeRecords": "關閉旅行紀錄",
+  "trip.view": "查看",
+  "trip.edit": "編輯",
+  "trip.delete": "刪除",
+  "trip.deleteConfirm": "確定刪除這趟已儲存旅行嗎？原有國家紀錄不會改變。",
+  "trip.replaceConfirm": "要捨棄目前尚未儲存的修改，開啟這趟旅行嗎？",
+  "trip.localOnly": "旅行只保存在目前的瀏覽器，尚無帳號或雲端同步。清除網站資料會移除旅行紀錄。",
+  "trip.mapsLater": "本階段儲存的旅行尚未持續更新地圖足跡；可用「查看旅行預覽」檢查顏色。",
+  "trip.noTrips": "目前沒有已儲存的旅行。",
+  "trip.untitled": "未命名旅行",
+  "trip.details": "旅行詳細資料",
+  "trip.storage.corrupt": "旅行儲存資料損壞或格式不支援，未覆寫任何內容。請保留瀏覽器資料並尋求協助。",
+  "trip.storage.unavailable": "瀏覽器儲存空間不足或無法使用，尚未儲存；編輯內容已保留。",
+  "trip.storage.conflict": "另一個分頁已修改資料，未覆寫任何內容。請重新開啟最新的已儲存旅行再編輯。",
+  "trip.storage.invalid": "請檢查路線、日期及欄位長度，目前無法儲存這趟旅行。",
+  "trip.temporary": "新增旅行一律記錄已完成的旅行。尚未儲存的修改只暫存在頁面，重新整理後會消失。",
+  "trip.scope": "只計算這趟旅行的預覽，原有國家紀錄不會改變。",
+  "trip.completedHint": "這是已完成旅行的足跡預覽；「儲存旅行」會保存在此瀏覽器，持續地圖整合留待下一階段。",
+  "trip.origin": "第一個出發機場所在國家一律算實際到訪。"
+})
+
+Object.assign(en, {"trip.schematic": "Dashed lines are schematic routes, not live aircraft tracks. Map colors are a temporary preview; existing country records stay unchanged."})
+Object.assign(fr, {"trip.schematic": "Les pointillés sont des itinéraires schématiques, pas des avions en direct. Les couleurs sont un aperçu temporaire ; les anciens pays restent inchangés."})
+Object.assign(es, {"trip.schematic": "Las líneas discontinuas son rutas esquemáticas, no vuelos en vivo. Los colores son temporales; los registros de países existentes no cambian."})
+Object.assign(de, {"trip.schematic": "Gestrichelte Linien sind schematische Routen, keine Live-Flüge. Kartenfarben sind eine temporäre Vorschau; bestehende Ländereinträge bleiben unverändert."})
+Object.assign(zhTW, {"trip.schematic": "虛線是示意航線，不是即時飛機軌跡。地圖顏色僅為暫時預覽，原有國家紀錄不會改變。"})
+
 const dict: Record<Locale, Dict> = { en, fr, es, de, "zh-TW": zhTW }
 
 export type Translate = (

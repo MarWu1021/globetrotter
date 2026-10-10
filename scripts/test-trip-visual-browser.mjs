@@ -95,7 +95,7 @@ async function run(name,options) {
       console.log(`PASS pixels ${name} ${country} ${color}`)
     }
     await add('TPE'); await add('KCZ')
-    await editor.getByLabel('整趟旅行狀態',{exact:true}).selectOption('completed')
+    assert.equal(await editor.getByLabel('整趟旅行狀態',{exact:true}).count(),0,'Completed trips need no status selector')
     await editor.getByRole('button',{name:'查看旅行預覽',exact:true}).click()
     await view('map'); await flat('TW','green'); await flat('JP','green')
     await view('globe'); await attachGlobe(page); await page.waitForTimeout(1100)
@@ -142,7 +142,7 @@ async function run(name,options) {
     await page.getByRole('button',{name:'建立旅行',exact:true}).click()
     baseline = await page.evaluate(()=>localStorage.getItem('globetrotter:v1'))
     await add('TPE'); await add('KCZ')
-    await editor.getByLabel('整趟旅行狀態',{exact:true}).selectOption('completed')
+    assert.equal(await editor.getByLabel('整趟旅行狀態',{exact:true}).count(),0,'Completed trips need no status selector')
     await editor.getByRole('button',{name:'查看旅行預覽',exact:true}).click()
     await globe('JP','green')
     const beforeLocation = await page.evaluate(()=>visualGlobe.pointOfView())

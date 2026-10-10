@@ -45,9 +45,10 @@ async function run(browser,name,options){
   await editor.getByLabel('國家停留性質 DXB',{exact:true}).selectOption('transit')
   await editor.getByRole('button',{name:'在地球上選取機場',exact:true}).click()
   await page.waitForFunction(()=>document.querySelector('[data-preview-arcs]')?.dataset.previewArcs==='2')
-  assert.deepEqual(JSON.parse(await globe.getAttribute('data-preview-colors')), {})
+  assert.deepEqual(JSON.parse(await globe.getAttribute('data-preview-colors')),{'158':'#22c55e','300':'#22c55e','784':'#3b82f6'},'New trips preview completed travel by default')
+  assert.equal(await page.evaluate(()=>localStorage.getItem('globetrotter:trips:v1')),null,'Airport picking and color preview do not save a trip')
   await page.getByRole('button',{name:'返回編輯器',exact:true}).click()
-  await editor.getByLabel('整趟旅行狀態',{exact:true}).selectOption('completed')
+  assert.equal(await editor.getByLabel('整趟旅行狀態',{exact:true}).count(),0,'Completed trips need no status selector')
   // Locate Dubai so both route segments are near the visible hemisphere.
   await (await search('DXB')).getByRole('button',{name:'在地球上查看',exact:true}).click()
   await page.waitForFunction(()=>JSON.parse(document.querySelector('[data-preview-colors]')?.dataset.previewColors||'{}')['158']==='#22c55e')

@@ -21,7 +21,7 @@ async function run(name,options){
  async function flatColors(expected){await page.waitForFunction(e=>JSON.stringify(JSON.parse(document.querySelector('[data-flat-preview-colors]').dataset.flatPreviewColors))===JSON.stringify(e),expected);for(const [id,color]of Object.entries(expected))assert.equal(await page.locator(`path[data-country-id="${id}"]`).getAttribute('fill'),color)}
  async function globeColors(expected,arcs){await page.waitForFunction(({expected,arcs})=>{const g=document.querySelector('[data-preview-arcs]');return g?.dataset.previewArcs===String(arcs)&&JSON.stringify(JSON.parse(g.dataset.previewColors))===JSON.stringify(expected)},{expected,arcs});assert.equal(await page.locator('[data-airport-code]').count(),0,'View-only mode does not expose airport selection')}
  async function unchanged(){assert.equal(await page.evaluate(()=>localStorage.getItem('globetrotter:v1')),baseline)}
- await add('TPE');await add('KCZ');await editor.getByLabel('整趟旅行狀態',{exact:true}).selectOption('completed')
+ await add('TPE');await add('KCZ');assert.equal(await editor.getByLabel('整趟旅行狀態',{exact:true}).count(),0,'Completed trips need no status selector')
  // Ordinary close does not imply save or preview; draft survives reopening.
  await editor.getByRole('button',{name:'關閉編輯器',exact:true}).click()
  assert.equal(await page.getByRole('region',{name:'查看旅行預覽',exact:true}).count(),0)
@@ -40,19 +40,15 @@ async function run(name,options){
  await unchanged()
  if(options.isMobile && !await page.getByRole('button',{name:'建立旅行',exact:true}).isVisible())await page.getByRole('button',{name:'搜尋與我的旅行',exact:true}).click()
  await page.getByRole('button',{name:'建立旅行',exact:true}).click();assert.equal(await editor.locator('fieldset').count(),1)
- for(const status of ['draft','planned','in_progress']){
-  await editor.getByLabel('整趟旅行狀態',{exact:true}).selectOption(status)
-  await editor.getByRole('button',{name:'查看旅行預覽',exact:true}).click()
-  await view('map');await flatColors({});await view('globe');await globeColors({},1)
-  await page.getByRole('button',{name:'返回編輯器',exact:true}).click()
- }
+ assert.equal(await editor.getByLabel('整趟旅行狀態',{exact:true}).count(),0)
+ assert.equal(await page.evaluate(()=>localStorage.getItem('globetrotter:trips:v1')),null,'Preview is not saving')
  page.once('dialog',d=>d.accept());await editor.getByRole('button',{name:'清除暫存草稿',exact:true}).click()
- await add('TPE');await add('DXB');await add('ATH');await editor.getByLabel('整趟旅行狀態',{exact:true}).selectOption('completed');await editor.getByLabel('國家停留性質 DXB',{exact:true}).selectOption('transit')
+ await add('TPE');await add('DXB');await add('ATH');assert.equal(await editor.getByLabel('整趟旅行狀態',{exact:true}).count(),0,'Completed trips need no status selector');await editor.getByLabel('國家停留性質 DXB',{exact:true}).selectOption('transit')
  await editor.getByRole('button',{name:'查看旅行預覽',exact:true}).click()
  const colors={'158':'#22c55e','300':'#22c55e','784':'#3b82f6'}
  await view('map');await flatColors(colors);await view('globe');await globeColors(colors,2)
  await page.getByRole('button',{name:'返回編輯器',exact:true}).click();assert.equal(await editor.locator('fieldset').count(),2);await unchanged();assert.deepEqual(errors,[])
- console.log(`PASS ${name}: preview toggle, globe/flat actual fills, TPE/KCZ, transit colors, incomplete states, exit restoration, no accidental stop, unchanged storage`)
+ console.log(`PASS ${name}: preview toggle, globe/flat actual fills, TPE/KCZ, transit colors, completed default, exit restoration, no accidental stop, unchanged storage`)
  }catch(e){await page.screenshot({path:`/tmp/globetrotter-preview-${name}-failure.png`}).catch(()=>{});throw e}finally{await context.close()}
 }
 try{await run('desktop',{viewport:{width:1440,height:1000}});const phone={...devices['iPhone 13']};delete phone.defaultBrowserType;await run('iphone',phone)}finally{await browser.close()}

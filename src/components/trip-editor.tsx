@@ -7,8 +7,9 @@ import { useTravelStore } from "@/lib/store"
 import { countryDisplayName } from "@/lib/airport-data/countries"
 import { airportChinese } from "@/lib/airport-data/localization"
 import type { AirportSearchHit, CatalogAirport } from "@/lib/airport-data/types"
-import type { Presence, TripStatus } from "@/lib/travel-core/models"
-import { addDraftStop, createTripDraft, moveDraftStop, previewTripDraft, removeDraftStop } from "@/lib/trip-draft/core"
+import type { Presence } from "@/lib/travel-core/models"
+import { addDraftStop, moveDraftStop, previewTripDraft, removeDraftStop } from "@/lib/trip-draft/core"
+import { savedTripToken, type StorageError } from "@/lib/trip-storage/core"
 
 type Result = { hit: AirportSearchHit; airport: CatalogAirport }
 const field = "min-h-11 w-full min-w-0 rounded-lg border border-[var(--border)] bg-[var(--panel-2)] px-3 py-2 text-base text-[var(--ink)]"
@@ -18,7 +19,10 @@ const code = (a: CatalogAirport) => a.iata ?? a.icao ?? a.ident
 export default function TripEditor({ open, onClose }: { open: boolean; onClose: () => void }) {
   const storedView=useTravelStore(s=>s.view)
   const t = useT(), locale = useTravelStore(s => s.locale)
-  const { draft, setDraft, insertion, setInsertion, setOpened, setPicking, setDrawerOpen, setSearchAirports, setFocusAirport, setMode, setPreviewView, setCandidate } = useTripDraft()
+  const { draft, setDraft, insertion, setInsertion, setOpened, setPicking, setDrawerOpen, setSearchAirports, setFocusAirport, setMode, setPreviewView, setCandidate,repository,savedTrips,recordToken,setRecordToken,savedDraftJSON,setSavedDraftJSON,newTrip } = useTripDraft()
+  const [saveError,setSaveError]=useState<StorageError|null>(null)
+  const saving=useRef(false)
+  const isSaved=!savedTrips.error && savedDraftJSON===JSON.stringify(draft) && savedTrips.trips.some(r=>r.draft.id===draft.id && savedTripToken(r)===recordToken)
   const [query, setQuery] = useState(""), [results, setResults] = useState<Result[]>([])
   const [searchState, setSearchState] = useState<"idle" | "loading" | "ready" | "error">("idle")
   const [retry, setRetry] = useState(0)
@@ -55,6 +59,16 @@ export default function TripEditor({ open, onClose }: { open: boolean; onClose: 
   }
   const updateLeg = (id: string, key: "date" | "airline" | "flightNumber" | "notes", value: string) =>
     setDraft(d => ({ ...d, legs: d.legs.map(l => l.id === id ? { ...l, [key]: value } : l) }))
+  function save() {
+    if(saving.current)return
+    saving.current=true
+    try {
+      const result=repository.save(draft,recordToken)
+      if(!result.ok){setSaveError(result.error);return}
+      setRecordToken(savedTripToken(result.record));setSavedDraftJSON(JSON.stringify(draft));setSaveError(null)
+      setMode('idle');setCandidate(null)
+    } finally {saving.current=false}
+  }
   return <dialog ref={dialog} aria-labelledby="trip-editor-title" onCancel={onClose}
     onKeyDown={e => {
       if (e.key === "Escape") e.stopPropagation()
@@ -71,7 +85,7 @@ export default function TripEditor({ open, onClose }: { open: boolean; onClose: 
     <div className="flex h-full min-w-0 flex-col pt-[env(safe-area-inset-top)]">
       <header className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
         <div className="min-w-0"><h2 id="trip-editor-title" className="text-xl font-semibold">{t("trip.editor")}</h2>
-          <p className="text-sm font-semibold text-[var(--accent)]">{t("trip.unsaved")}</p></div>
+          <p className="text-sm font-semibold text-[var(--accent)]">{t(isSaved?"trip.saved":"trip.unsaved")}</p></div>
         <button className={button} onClick={onClose} aria-label={t("trip.close")}>✕</button>
       </header>
       <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain px-4 py-5 pb-[calc(20px+env(safe-area-inset-bottom))]">
@@ -81,10 +95,6 @@ export default function TripEditor({ open, onClose }: { open: boolean; onClose: 
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="min-w-0 space-y-1"><span>{t("trip.title")}</span><input className={field} value={draft.title}
             maxLength={200} onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} /></label>
-          <label className="min-w-0 space-y-1"><span>{t("trip.status")}</span><select className={field} value={draft.status} aria-label={t("trip.status")}
-            onChange={e => setDraft(d => ({ ...d, status: e.target.value as TripStatus }))}>
-            {(["draft", "planned", "in_progress", "completed"] as const).map(s => <option key={s} value={s}>{t(`trip.${s}`)}</option>)}
-          </select></label>
         </div>
         <section aria-labelledby="trip-search-title" className="space-y-3">
           <h3 id="trip-search-title" className="font-semibold">{t("trip.search")}</h3>
@@ -160,9 +170,15 @@ export default function TripEditor({ open, onClose }: { open: boolean; onClose: 
           </>}
         </section>
         <button className={`${button} w-full`} onClick={() => {
-          if (window.confirm(t("trip.clearConfirm"))) { setDraft(createTripDraft(crypto.randomUUID())); setInsertion("end"); changeQuery("") }
+          if (window.confirm(t("trip.clearConfirm"))) { newTrip();changeQuery("");setSaveError(null) }
         }}>{t("trip.clear")}</button>
       </div>
+      <footer className="shrink-0 space-y-2 border-t border-[var(--border)] bg-[var(--panel)] px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))]" aria-live="polite">
+        {(saveError || savedTrips.error) && <p role="alert" className="text-sm">{t(`trip.storage.${saveError??savedTrips.error}`)}</p>}
+        {isSaved && <p className="text-sm">{t("trip.saved")}</p>}
+        <button className={`${button} w-full bg-[var(--accent)] font-semibold text-black`} disabled={preview.kind!=="ready" || !savedTrips.ready || !!savedTrips.error || isSaved} onClick={save}>{t("trip.save")}</button>
+        {savedTrips.error && <button className={`${button} w-full`} onClick={()=>{repository.reload();setSaveError(null)}}>{t("trip.retry")}</button>}
+      </footer>
     </div>
   </dialog>
 }
