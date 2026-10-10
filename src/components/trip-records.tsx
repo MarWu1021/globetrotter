@@ -1,4 +1,5 @@
 "use client"
+import { useAuth } from "./auth-provider"
 import { useEffect, useRef, useState } from "react"
 import { useTripDraft } from "./trip-draft-provider"
 import { useT } from "@/lib/i18n"
@@ -11,6 +12,7 @@ import { savedTripToken, type StorageError } from "@/lib/trip-storage/core"
 const button="min-h-11 rounded-lg border border-[var(--border)] px-3 py-2"
 export default function TripRecords({onClose}:{onClose:()=>void}) {
   const {savedTrips,repository,loadSaved,draft,savedDraftJSON,setRecordToken,setSavedDraftJSON,setMode}=useTripDraft()
+  const {enabled:authEnabled}=useAuth()
   const t=useT(),locale=useTravelStore(s=>s.locale)
   const dialog=useRef<HTMLDialogElement>(null)
   const [selected,setSelected]=useState<string|null>(null),[error,setError]=useState<StorageError|null>(null)
@@ -35,7 +37,7 @@ export default function TripRecords({onClose}:{onClose:()=>void}) {
         <button className={button} aria-label={t("trip.closeRecords")} onClick={onClose}>✕</button>
       </header>
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-4 pb-[calc(16px+env(safe-area-inset-bottom))]">
-        <p>{t("trip.localOnly")}</p><p className="text-sm">{t("trip.mapsLater")}</p>
+        <p>{t(authEnabled?"auth.storagePending":"trip.localOnly")}</p><p className="text-sm">{t("trip.mapsLater")}</p>
         {(error||savedTrips.error) && <div role="alert"><p>{t(`trip.storage.${error??savedTrips.error}`)}</p><button className={button} onClick={()=>{repository.reload();setError(null)}}>{t("trip.retry")}</button></div>}
         {savedTrips.ready && !records.length && !savedTrips.error && <p>{t("trip.noTrips")}</p>}
         <ul className="space-y-3">{records.map(r=><li key={r.draft.id} className="space-y-2 rounded-xl border border-[var(--border)] p-3">

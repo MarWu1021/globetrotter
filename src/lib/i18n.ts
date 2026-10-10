@@ -1106,3 +1106,13 @@ export const detectLocale = (): Locale => {
   }
   return "en"
 }
+
+Object.assign(en, {"auth.login": "Sign in with Google", "auth.logout": "Sign out", "auth.guest": "Guest", "auth.loading": "Checking sign-in…", "auth.error": "Sign-in unavailable or cancelled. Please try again.", "auth.unconfigured": "Google sign-in is not configured here.", "auth.storagePending": "Cloud trip saving will be available in the next stage. Old browser test trips are not loaded or uploaded."})
+
+Object.assign(fr, {"auth.login": "Se connecter avec Google", "auth.logout": "Se déconnecter", "auth.guest": "Visiteur", "auth.loading": "Vérification…", "auth.error": "Connexion indisponible ou annulée. Réessayez.", "auth.unconfigured": "La connexion Google n’est pas configurée ici.", "auth.storagePending": "L’enregistrement dans le cloud sera disponible à la prochaine étape. Les anciens voyages de test ne sont ni chargés ni envoyés."})
+
+Object.assign(es, {"auth.login": "Iniciar sesión con Google", "auth.logout": "Cerrar sesión", "auth.guest": "Visitante", "auth.loading": "Verificando sesión…", "auth.error": "Inicio de sesión no disponible o cancelado. Inténtalo de nuevo.", "auth.unconfigured": "Google no está configurado aquí.", "auth.storagePending": "El guardado en la nube llegará en la próxima etapa. No se cargan ni suben los viajes de prueba antiguos."})
+
+Object.assign(de, {"auth.login": "Mit Google anmelden", "auth.logout": "Abmelden", "auth.guest": "Gast", "auth.loading": "Anmeldung wird geprüft…", "auth.error": "Anmeldung fehlgeschlagen oder abgebrochen. Bitte erneut versuchen.", "auth.unconfigured": "Google-Anmeldung ist hier nicht eingerichtet.", "auth.storagePending": "Cloud-Speicherung folgt im nächsten Schritt. Alte Testreisen werden weder geladen noch hochgeladen."})
+
+Object.assign(zhTW, {"auth.login": "使用 Google 登入", "auth.logout": "登出", "auth.guest": "訪客模式", "auth.loading": "正在確認登入狀態…", "auth.error": "登入失敗或已取消，請重試。", "auth.unconfigured": "此環境尚未設定 Google 登入。", "auth.storagePending": "雲端旅行儲存將於下一階段開放；不會讀取或上傳舊的瀏覽器測試旅行。"})

@@ -1,5 +1,6 @@
 "use client"
 
+import { useAuth } from "./auth-provider"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useTripDraft } from "./trip-draft-provider"
 import { useT } from "@/lib/i18n"
@@ -17,6 +18,7 @@ const button = "min-h-11 min-w-11 rounded-lg border border-[var(--border)] px-3 
 const code = (a: CatalogAirport) => a.iata ?? a.icao ?? a.ident
 
 export default function TripEditor({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const {enabled:authEnabled}=useAuth()
   const storedView=useTravelStore(s=>s.view)
   const t = useT(), locale = useTravelStore(s => s.locale)
   const { draft, setDraft, insertion, setInsertion, setOpened, setPicking, setDrawerOpen, setSearchAirports, setFocusAirport, setMode, setPreviewView, setCandidate,repository,savedTrips,recordToken,setRecordToken,savedDraftJSON,setSavedDraftJSON,newTrip } = useTripDraft()
@@ -60,7 +62,7 @@ export default function TripEditor({ open, onClose }: { open: boolean; onClose: 
   const updateLeg = (id: string, key: "date" | "airline" | "flightNumber" | "notes", value: string) =>
     setDraft(d => ({ ...d, legs: d.legs.map(l => l.id === id ? { ...l, [key]: value } : l) }))
   function save() {
-    if(saving.current)return
+    if(authEnabled || saving.current)return
     saving.current=true
     try {
       const result=repository.save(draft,recordToken)
@@ -175,8 +177,9 @@ export default function TripEditor({ open, onClose }: { open: boolean; onClose: 
       </div>
       <footer className="shrink-0 space-y-2 border-t border-[var(--border)] bg-[var(--panel)] px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))]" aria-live="polite">
         {(saveError || savedTrips.error) && <p role="alert" className="text-sm">{t(`trip.storage.${saveError??savedTrips.error}`)}</p>}
+        {authEnabled && <p className="text-sm" role="status">{t("auth.storagePending")}</p>}
         {isSaved && <p className="text-sm">{t("trip.saved")}</p>}
-        <button className={`${button} w-full bg-[var(--accent)] font-semibold text-[var(--accent-ink)]`} disabled={preview.kind!=="ready" || !savedTrips.ready || !!savedTrips.error || isSaved} onClick={save}>{t("trip.save")}</button>
+        <button className={`${button} w-full bg-[var(--accent)] font-semibold text-[var(--accent-ink)]`} disabled={authEnabled || preview.kind!=="ready" || !savedTrips.ready || !!savedTrips.error || isSaved} onClick={save}>{t("trip.save")}</button>
         {savedTrips.error && <button className={`${button} w-full`} onClick={()=>{repository.reload();setSaveError(null)}}>{t("trip.retry")}</button>}
       </footer>
     </div>

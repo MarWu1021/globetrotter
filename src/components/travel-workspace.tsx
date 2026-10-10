@@ -1,5 +1,6 @@
 "use client"
 
+import { AuthProvider, useAuth } from "./auth-provider"
 import { useEffect, useRef } from "react"
 import { TripDraftProvider, useTripDraft } from "./trip-draft-provider"
 import { TripEditorHost } from "./trip-composer"
@@ -9,7 +10,12 @@ import { useTravelStore } from "@/lib/store"
 import { useT } from "@/lib/i18n"
 
 export default function TravelWorkspace() {
-  return <TripDraftProvider><Workspace /></TripDraftProvider>
+  return <AuthProvider><AuthenticatedWorkspace /></AuthProvider>
+}
+
+function AuthenticatedWorkspace() {
+  const {generation}=useAuth()
+  return <TripDraftProvider key={generation}><Workspace /></TripDraftProvider>
 }
 
 function Workspace() {

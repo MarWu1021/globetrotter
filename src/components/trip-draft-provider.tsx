@@ -1,4 +1,5 @@
 "use client"
+import { useAuth } from "./auth-provider"
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore, type Dispatch, type SetStateAction, type ReactNode } from 'react'
 import { createTripDraft, type TripDraft } from '@/lib/trip-draft/core'
 import { draftGlobePreview } from '@/lib/trip-draft/globe'
@@ -30,9 +31,10 @@ type Session = {
 }
 const Context=createContext<Session|null>(null)
 export function TripDraftProvider({children}:{children:ReactNode}) {
+  const {enabled:authEnabled}=useAuth()
   const [drawerOpen,setDrawerOpen]=useState(false),[started,setStarted]=useState(false)
   const [draft,setDraft]=useState<TripDraft>(()=>({...createTripDraft('temporary-trip'),status:'completed'}))
-  const [repository]=useState(()=>new TripRepository(()=>window.localStorage))
+  const [repository]=useState(()=>new TripRepository(()=>window.localStorage, !authEnabled))
   const savedTrips=useSyncExternalStore(repository.subscribe,repository.getSnapshot,repository.getServerSnapshot)
   const statuses=useTravelStore(s=>s.statuses)
   const savedMap=useMemo(()=>savedTripMap(savedTrips.trips,statuses),[savedTrips.trips,statuses])
@@ -40,10 +42,10 @@ export function TripDraftProvider({children}:{children:ReactNode}) {
   const [recordsOpen,setRecordsOpen]=useState(false)
   const [editorVersion,setEditorVersion]=useState(0)
   useEffect(()=>{
-    const refresh=(event:StorageEvent)=>{if(event.key===TRIPS_KEY || event.key===null)repository.reload()}
+    const refresh=(event:StorageEvent)=>{if(!authEnabled && (event.key===TRIPS_KEY || event.key===null))repository.reload()}
     window.addEventListener('storage',refresh)
     return ()=>window.removeEventListener('storage',refresh)
-  },[repository])
+  },[repository,authEnabled])
   const [insertion,setInsertion]=useState("end")
   const [opened,setOpened]=useState(false)
   const [mode,setMode]=useState<Session["mode"]>("idle")

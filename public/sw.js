@@ -1,5 +1,5 @@
-const CACHE = "globetrotter-v2"
-const SHELL = ["/", "/manifest.webmanifest", "/icons/icon-192.png"]
+const CACHE = "globetrotter-v3"
+const SHELL = [ "/manifest.webmanifest", "/icons/icon-192.png"]
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

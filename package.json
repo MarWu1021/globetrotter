@@ -16,9 +16,12 @@
     "test:trip-storage": "node --test scripts/test-trip-storage.mjs",
     "test:trip-map": "node --test scripts/test-trip-map.mjs",
     "test:cloud-trips": "node --test scripts/test-cloud-trips.mjs",
-    "test:auth-cache": "node --test scripts/test-auth-cache.mjs"
+    "test:auth-cache": "node --test scripts/test-auth-cache.mjs",
+    "test:google-auth": "node --test scripts/test-google-auth.mjs"
   },
   "dependencies": {
+    "@supabase/ssr": "0.12.7",
+    "@supabase/supabase-js": "2.117.3",
     "@vercel/functions": "3.9.5",
     "d3-geo": "3.1.1",
     "d3-selection": "3.0.0",

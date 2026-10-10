@@ -8,7 +8,7 @@ export class TripRepository {
   private snapshot: TripSnapshot = INITIAL
   private raw: string | null = null
   private listeners = new Set<() => void>()
-  constructor(private storage: () => StoragePort) {}
+  constructor(private storage: () => StoragePort, private enabled = true) {}
   getSnapshot = () => this.snapshot
   getServerSnapshot = () => INITIAL
   subscribe = (listener: () => void) => {
@@ -18,6 +18,7 @@ export class TripRepository {
   }
   private publish(snapshot: TripSnapshot) { this.snapshot = snapshot; this.listeners.forEach(fn => fn()) }
   reload = () => {
+    if (!this.enabled) { this.publish({ready:true,trips:[],error:null}); return }
     try {
       const result = readTripFile(this.storage())
       if (result.ok) { this.raw = result.raw; this.publish({ ready: true, trips: result.file.trips, error: null }) }
@@ -27,6 +28,7 @@ export class TripRepository {
   save = (draft: TripDraft, expectedRecord: string | null): WriteResult => this.write(draft.id, expectedRecord, draft)
   remove = (id: string, expectedRecord: string): WriteResult => this.write(id, expectedRecord, null)
   private write(id: string, expectedRecord: string | null, draft: TripDraft | null): WriteResult {
+    if (!this.enabled) return {ok:false,error:"unavailable"}
     if (!this.snapshot.ready || this.snapshot.error) return { ok: false, error: this.snapshot.error ?? "unavailable" }
     let result: WriteResult
     try { result = writeTrip(this.storage(), this.raw, id, expectedRecord, draft, new Date().toISOString()) }
