@@ -13,7 +13,8 @@
     "test:airport-data": "node --test scripts/test-airport-data.mjs",
     "test:trip-draft": "node --test scripts/test-trip-draft.mjs",
     "test:trip-globe": "node --test scripts/test-trip-globe.mjs",
-    "test:trip-storage": "node --test scripts/test-trip-storage.mjs"
+    "test:trip-storage": "node --test scripts/test-trip-storage.mjs",
+    "test:trip-map": "node --test scripts/test-trip-map.mjs"
   },
   "dependencies": {
     "@vercel/functions": "3.9.5",

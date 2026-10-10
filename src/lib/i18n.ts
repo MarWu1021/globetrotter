@@ -921,7 +921,7 @@ Object.assign(de, {"trip.viewPreview": "Reisevorschau ansehen", "trip.viewPrevie
 Object.assign(zhTW, {"trip.viewPreview": "查看旅行預覽", "trip.viewPreviewHint": "可切換地球與平面地圖。平面地圖顯示國家顏色，地球另顯示航線；只有已完成旅行會預覽足跡。"})
 
 
-// Stage B: browser-only trip management; permanent footprint integration is deferred.
+// Browser-only trip management and saved footprint integration.
 Object.assign(en, {
   "trip.save": "Save trip",
   "trip.saved": "Saved in this browser",
@@ -1090,6 +1090,12 @@ export const statusKey = (
       : status === "blocked"
         ? "status.blocked"
         : "status.notyet"
+
+Object.assign(en, {"trip.mapsLater": "Saved trips automatically appear on both maps. Unsaved edits remain separate.", "trip.completedHint": "Saving updates both maps. Unsaved edits only affect an explicit preview.", "stat.trips": "Trips", "stat.flights": "Flight legs"})
+Object.assign(fr, {"trip.mapsLater": "Les voyages enregistrés apparaissent automatiquement sur les deux cartes. Les modifications non enregistrées restent séparées.", "trip.completedHint": "Enregistrer actualise les deux cartes. Les modifications non enregistrées ne concernent que l’aperçu.", "stat.trips": "Voyages", "stat.flights": "Vols"})
+Object.assign(es, {"trip.mapsLater": "Los viajes guardados aparecen automáticamente en ambos mapas. Los cambios sin guardar permanecen separados.", "trip.completedHint": "Guardar actualiza ambos mapas. Los cambios sin guardar solo afectan a la vista previa.", "stat.trips": "Viajes", "stat.flights": "Tramos de vuelo"})
+Object.assign(de, {"trip.mapsLater": "Gespeicherte Reisen erscheinen automatisch auf beiden Karten. Ungespeicherte Änderungen bleiben getrennt.", "trip.completedHint": "Speichern aktualisiert beide Karten. Ungespeicherte Änderungen betreffen nur die Vorschau.", "stat.trips": "Reisen", "stat.flights": "Flugstrecken"})
+Object.assign(zhTW, {"trip.mapsLater": "已儲存旅行會自動顯示於地球與平面地圖；未儲存的編輯內容保持獨立。", "trip.completedHint": "儲存成功後會更新兩種地圖；未儲存的編輯內容只用於明確開啟的預覽。", "stat.trips": "旅行次數", "stat.flights": "飛行航段"})
 
 export const detectLocale = (): Locale => {
   if (typeof navigator === "undefined") return "en"

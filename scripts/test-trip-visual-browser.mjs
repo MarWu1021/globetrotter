@@ -6,6 +6,8 @@ import assert from 'node:assert/strict'
 const require = createRequire(import.meta.url)
 const { chromium, devices } = require('playwright')
 const sharp = require('sharp')
+const {geoContains}=require('d3-geo')
+const {writeFileSync}=require('node:fs')
 const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', headless: true,
   args: ['--no-sandbox', '--no-proxy-server', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] })
 const samples = { TW: [23.7, 121], JP: [36.2, 138.2], AE: [24.2, 54.4], GR: [39, 22] }
@@ -28,11 +30,47 @@ async function attachGlobe(page) {
       const k = Object.keys(el).find(k => k.startsWith('__reactFiber$'))
       if (!k) continue
       for (let f = el[k]; f; f = f.return) if (f.ref?.current?.pointOfView) {
-        window.visualGlobe = f.ref.current; return true
+        window.visualGlobe = f.ref.current;
+        const renderer=visualGlobe.renderer()
+        if(!renderer.visualTracked){
+          renderer.visualTracked=true
+          const render=renderer.render.bind(renderer)
+          renderer.render=(scene,camera)=>{
+            render(scene,camera)
+            if(scene!==visualGlobe.scene())return
+            const colors={}
+            scene.traverse(obj=>{
+              if(obj.__globeObjType==='polygon'){
+                const id=obj.__data?.data?.id,material=obj.children[0]?.material?.at(-1)
+                if(id&&material?.color)colors[id]='#'+material.color.getHexString()
+              }
+            })
+            window.visualLastRender={sequence:(window.visualLastRender?.sequence??0)+1,
+              frame:renderer.info.render.frame,camera:camera.position.toArray(),colors,
+              width:renderer.domElement.width,height:renderer.domElement.height}
+          }
+        }
+        return true
       }
     }
     return false
   })
+}
+const focus = {TW:[25.0777,121.233002],JP:[33.545217,133.670166],AE:[25.24979,55.370992],GR:[37.936401,23.9445]}
+async function paintedFrame(page,country,after) {
+  await page.evaluate(()=>visualGlobe.resumeAnimation())
+  await page.waitForFunction(({target,after})=>{
+    const g=visualGlobe,r=g.renderer(),last=window.visualLastRender,pov=g.pointOfView()
+    const expected=JSON.parse(document.querySelector('[data-preview-colors]').dataset.previewColors)
+    if(!last||last.sequence<=after||Math.abs(pov.lat-target[0])>1e-4||Math.abs(pov.lng-target[1])>1e-4)return false
+    if(!g.camera().position.toArray().every((v,i)=>Math.abs(v-last.camera[i])<1e-7))return false
+    if(last.width!==r.domElement.width||last.height!==r.domElement.height||r.getContext().isContextLost())return false
+    if(!Object.entries(expected).every(([id,color])=>last.colors[id]===color))return false
+    // Freeze ONLY after the renderer has completed the matching camera/material frame.
+    g.pauseAnimation()
+    r.getContext().finish()
+    return true
+  },{target:focus[country],after},{timeout:30000})
 }
 async function run(name,options) {
   const context = await browser.newContext({ ...options, locale: 'zh-TW' })
@@ -41,7 +79,7 @@ async function run(name,options) {
   // Fresh, isolated browser fixture; never touches an existing user's browser.
   await page.addInitScript(() => {
     localStorage.setItem('globetrotter:v1',JSON.stringify({ version:4, state:{
-      statuses:{'158':'blocked','392':'wishlist','784':'visited'}, notes:{'158':'原筆記'}, reviews:{'158':{rating:5}},
+      statuses:{'158':'blocked','392':'wishlist','250':'visited'}, notes:{'158':'原筆記'}, reviews:{'158':{rating:5}},
       theme:'dark',locale:'zh-TW',localePinned:true,autoSpin:false,layers:{airports:false,stations:false,ports:false} } }))
     navigator.geolocation.getCurrentPosition = success => { window.lateLocation = success }
   })
@@ -75,8 +113,9 @@ async function run(name,options) {
       assert.ok(await pixels(image,color) >= 1, `${name}: ${country} actually visible in flat-map screenshot`)
     }
     async function globe(country,color) {
+      const after=await page.evaluate(()=>window.visualLastRender?.sequence??0)
       await page.getByRole('button',{name:`查看旅行預覽 · ${names[country]}`,exact:true}).click()
-      await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))
+      await paintedFrame(page,country,after)
       const coordinates = await page.evaluate(([lat,lng])=>{visualGlobe.pauseAnimation();return visualGlobe.getScreenCoords(lat,lng)},samples[country])
       const canvas = page.locator('canvas').first(), box = await canvas.boundingBox()
       if(options.isMobile) {
@@ -88,17 +127,35 @@ async function run(name,options) {
       }
       // Screenshot reads the rendered WebGL frame, not React data-* / accessor output.
       const image = await page.screenshot({path:`/tmp/trip-visual-${name}-${country}.png`})
-      await page.evaluate(()=>visualGlobe.resumeAnimation())
       const scale = await page.evaluate(()=>devicePixelRatio)
+      const diagnostic=await page.evaluate(({sample,ids,wantedId})=>{
+        const g=visualGlobe,r=g.renderer(),c=r.domElement,controls=g.controls();let geometry
+        g.scene().traverse(obj=>{if(obj.__globeObjType==='polygon'&&obj.__data?.data?.id===wantedId)geometry=obj.__data.data.geometry})
+        return {geometry,
+          pov:g.pointOfView(),sample,projected:g.getScreenCoords(...sample),frame:r.info.render.frame,
+          devicePixelRatio,rendererPixelRatio:r.getPixelRatio(),canvas:{width:c.width,height:c.height,box:c.getBoundingClientRect().toJSON()},
+          camera:g.camera().position.toArray(),autoRotate:controls.autoRotate,damping:controls.enableDamping,
+          lastRendered:window.visualLastRender?{...window.visualLastRender,colors:Object.fromEntries(Object.values(ids).map(id=>[id,window.visualLastRender.colors[id]]))}:null,contextLost:r.getContext().isContextLost(),previewColors:document.querySelector('[data-preview-colors]')?.dataset.previewColors,
+          sampleHit:document.elementFromPoint(c.getBoundingClientRect().x+g.getScreenCoords(...sample).x,c.getBoundingClientRect().y+g.getScreenCoords(...sample).y)?.tagName
+        }
+      },{sample:samples[country],ids,wantedId:ids[country]})
+      assert.ok(geoContains(diagnostic.geometry,[samples[country][1],samples[country][0]]),'Sample coordinate is inside the rendered country geometry')
+      delete diagnostic.geometry
+      assert.equal(diagnostic.sampleHit,'CANVAS','Projected inland sample is not covered by a toolbar or marker')
+      assert.ok(coordinates.x>0&&coordinates.x<box.width&&coordinates.y>0&&coordinates.y<box.height,'Inland sample remains inside the actual canvas')
+      diagnostic.pixelCount=await pixels(image,color,{x:(box.x+coordinates.x)*scale,y:(box.y+coordinates.y)*scale})
+      console.log('DIAGNOSTIC',name,country,JSON.stringify(diagnostic))
+      writeFileSync(`/tmp/stage-c-diagnostic-${name}-${country}.json`,JSON.stringify(diagnostic,null,2))
       assert.ok(await pixels(image,color,{x:(box.x+coordinates.x)*scale,y:(box.y+coordinates.y)*scale}) >= 4,
         `${name}: ${country} rendered ${color} at known inland coordinates`)
       console.log(`PASS pixels ${name} ${country} ${color}`)
+      await page.evaluate(()=>visualGlobe.resumeAnimation())
     }
     await add('TPE'); await add('KCZ')
     assert.equal(await editor.getByLabel('整趟旅行狀態',{exact:true}).count(),0,'Completed trips need no status selector')
     await editor.getByRole('button',{name:'查看旅行預覽',exact:true}).click()
     await view('map'); await flat('TW','green'); await flat('JP','green')
-    await view('globe'); await attachGlobe(page); await page.waitForTimeout(1100)
+    await view('globe'); await attachGlobe(page); await globe('JP','green')
     const initial = await page.evaluate(()=>visualGlobe.pointOfView())
     assert.ok(Math.abs(initial.lng-133.67)<1,'Travel camera is not overridden by Argentina focus')
     await globe('TW','green')
@@ -123,6 +180,21 @@ async function run(name,options) {
     await editor.getByRole('button',{name:'查看旅行預覽',exact:true}).click()
     await view('map'); await flat('TW','green'); await flat('GR','green'); await flat('AE','blue')
     await view('globe'); await attachGlobe(page)
+    await globe('AE','blue')
+    // Deterministic regression: RAF callbacks still execute when no WebGL frame
+    // is drawn. The former two-RAF wait must not accept this stale blue frame.
+    await page.evaluate(()=>visualGlobe.pauseAnimation())
+    const staleSequence=await page.evaluate(()=>window.visualLastRender.sequence)
+    await page.getByRole('button',{name:'查看旅行預覽 · 台灣',exact:true}).click()
+    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))
+    const stale=await page.evaluate(()=>({pov:visualGlobe.pointOfView(),camera:visualGlobe.camera().position.toArray(),last:window.visualLastRender,
+      projected:visualGlobe.getScreenCoords(23.7,121),box:visualGlobe.renderer().domElement.getBoundingClientRect().toJSON(),scale:devicePixelRatio}))
+    assert.equal(stale.last.sequence,staleSequence,'Two browser RAFs do not prove a WebGL render')
+    assert.ok(stale.last.camera.some((v,i)=>Math.abs(v-stale.camera[i])>1), 'Stale frame retains the previous camera')
+    const staleImage=await page.screenshot({path:`/tmp/stage-c-stale-frame-${name}.png`})
+    writeFileSync(`/tmp/stage-c-stale-frame-${name}.json`,JSON.stringify(stale,null,2))
+    assert.ok(await pixels(staleImage,'green',{x:(stale.box.x+stale.projected.x)*stale.scale,y:(stale.box.y+stale.projected.y)*stale.scale})<4,'Stale blue frame fails the original four-pixel assertion')
+    await paintedFrame(page,'TW',staleSequence)
     await globe('TW','green'); await globe('GR','green'); await globe('AE','blue')
     await page.getByRole('button',{name:'離開旅行預覽',exact:true}).click()
     await unchanged()

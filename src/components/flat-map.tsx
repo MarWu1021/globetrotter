@@ -1,11 +1,13 @@
 "use client"
 
+import { mergeMapColors } from '@/lib/trip-map/core'
+import { PREVIEW_ROUTE_COLOR } from '@/lib/colors'
 import { useTripDraft } from "./trip-draft-provider"
 import { useT } from "@/lib/i18n"
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { MouseEvent } from "react"
-import { geoMercator, geoPath } from "d3-geo"
+import { geoMercator, geoPath, geoInterpolate } from "d3-geo"
 import { select } from "d3-selection"
 import { zoom as d3zoom, zoomIdentity, type ZoomBehavior } from "d3-zoom"
 import "d3-transition"
@@ -109,8 +111,9 @@ const CountryPaths = memo(function CountryPaths({
 })
 
 const FlatMap = ({ size }: Props) => {
-  const {previewActive,mapPreview}=useTripDraft()
+  const {savedMap,previewActive,mapPreview}=useTripDraft()
   const previewColors=useMemo(()=>previewActive?mapPreview.flatColors:{},[previewActive,mapPreview.flatColors])
+  const displayColors=useMemo(()=>mergeMapColors(savedMap.flatColors,previewColors),[savedMap.flatColors,previewColors])
   const tr = useT()
   const flight = useTravelStore((s) => s.flight)
   const openFlight = useTravelStore((s) => s.openFlight)
@@ -234,6 +237,13 @@ const FlatMap = ({ size }: Props) => {
     }
   }, [size.width, size.height])
 
+  const routePaths=useMemo(()=>savedMap.renderedArcs.map(arc=>{
+    const interpolate=geoInterpolate([arc.startLng,arc.startLat],[arc.endLng,arc.endLat])
+    const coordinates=Array.from({length:65},(_,i)=>interpolate(i/64))
+    return {arc,d:geoPath(project)({type:'LineString',coordinates})??''}
+  }),[savedMap.renderedArcs,project])
+
+  const savedCameraKey=useRef("")
   const previewBounds = useMemo(() => boundsFor(Object.keys(previewColors)), [boundsFor, previewColors])
 
   const capital = useMemo(() => {
@@ -414,6 +424,24 @@ const FlatMap = ({ size }: Props) => {
     }
   }, [previewActive, size.width, size.height, previewBounds, zoomLocked])
 
+  // Fit committed routes only when their source changes; preserve subsequent pan/zoom.
+  useEffect(()=>{
+    if(previewActive || !svgRef.current || !zoomRef.current) return
+    const key=JSON.stringify([size.width,size.height,savedMap.renderedArcs.map(a=>[a.tripId,a.flightId,a.startLat,a.startLng,a.endLat,a.endLng])])
+    if(key===savedCameraKey.current)return
+    savedCameraKey.current=key
+    if(!savedMap.renderedArcs.length)return
+    const coordinates=savedMap.renderedArcs.map(a=>{
+      const interpolate=geoInterpolate([a.startLng,a.startLat],[a.endLng,a.endLat])
+      return Array.from({length:65},(_,i)=>interpolate(i/64))
+    })
+    const [[x0,y0],[x1,y1]]=geoPath(project).bounds({type:'MultiLineString',coordinates})
+    if(![x0,y0,x1,y1].every(Number.isFinite))return
+    const k=zoomLocked?1:Math.max(1,Math.min(8,(size.width-64)/Math.max(1,x1-x0),(size.height-64)/Math.max(1,y1-y0)))
+    const transform=zoomLocked?zoomIdentity:zoomIdentity.translate(size.width/2-k*(x0+x1)/2,size.height/2-k*(y0+y1)/2).scale(k)
+    select(svgRef.current).interrupt().call(zoomRef.current.transform,transform)
+  },[savedMap.renderedArcs,previewActive,project,size.width,size.height,zoomLocked])
+
   const zoomBy = (factor: number) => {
     if (!svgRef.current || !zoomRef.current) return
     select(svgRef.current)
@@ -460,7 +488,7 @@ const FlatMap = ({ size }: Props) => {
       : { left: t.x + p[0] * t.k, top: t.y + p[1] * t.k }
 
   return (
-    <div className="relative h-full w-full" data-flat-preview-colors={JSON.stringify(previewColors)}>
+    <div className="relative h-full w-full" data-saved-colors={JSON.stringify(savedMap.flatColors)} data-saved-arcs={savedMap.arcs.length} data-flat-preview-colors={JSON.stringify(previewColors)}>
       <svg
         ref={svgRef}
         width={size.width}
@@ -520,7 +548,7 @@ const FlatMap = ({ size }: Props) => {
               <CountryPaths
                 paths={paths}
                 statuses={statuses}
-                previewColors={previewColors}
+                previewColors={displayColors}
                 selectedId={selectedId}
                 palette={palette}
                 onSelect={previewActive?()=>{}:onSelect}
@@ -528,6 +556,9 @@ const FlatMap = ({ size }: Props) => {
                 onMove={onMove}
                 onLeave={onLeave}
               />
+              <g data-saved-routes="true" pointerEvents="none" fill="none" stroke={PREVIEW_ROUTE_COLOR} strokeWidth={1.8/t.k} strokeOpacity={0.85}>
+                {routePaths.map(({arc,d})=><path key={`${arc.tripId}:${arc.flightId}`} d={d} data-flight-count={arc.count} />)}
+              </g>
               {clusters.map((cl) => {
                 if (cl.members.length === 1) {
                   const { p, color, x, y } = cl.members[0]

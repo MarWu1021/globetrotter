@@ -16,6 +16,7 @@ import {
 import { STATUS, badgeStyle } from "@/lib/colors"
 import { buildSaveFile, downloadSaveFile, parseSaveFile } from "@/lib/save-file"
 import About from "@/components/about"
+import { useTripDraft } from "./trip-draft-provider"
 import TripComposer from "@/components/trip-composer"
 import {
   DownloadIcon,
@@ -219,7 +220,8 @@ const Sidebar = () => {
     })
   }
 
-  const { visited, wishlist, marked, avgRating, ratedCount } = useMemo(() => {
+  const {savedMap,savedTrips}=useTripDraft()
+  const { wishlist, marked, avgRating, ratedCount } = useMemo(() => {
     const entries = Object.entries(statuses)
     const ids = new Set([
       ...Object.keys(statuses),
@@ -255,6 +257,7 @@ const Sidebar = () => {
     }
   }, [statuses, notes, reviews, locale])
 
+  const visited=savedMap.countryCount
   const percent = Math.min(100, Math.round((visited / WORLD_COUNTRIES) * 100))
 
   // Animate the progress bar from 0 up to the real value — on load (once
@@ -392,6 +395,11 @@ const Sidebar = () => {
           value={hydrated ? <CountUp value={percent} suffix="%" /> : "—"}
           label={t("stat.world")}
         />
+      </div>
+
+      <div className="grid grid-cols-2 gap-2.5" data-trip-statistics={JSON.stringify({countries:visited,trips:savedMap.tripCount,flights:savedMap.flightCount})}>
+        <Stat value={savedTrips.ready ? <CountUp value={savedMap.tripCount} /> : "—"} label={t("stat.trips")} />
+        <Stat value={savedTrips.ready ? <CountUp value={savedMap.flightCount} /> : "—"} label={t("stat.flights")} />
       </div>
 
       <div className="flex flex-col gap-1.5">

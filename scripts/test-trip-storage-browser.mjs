@@ -48,7 +48,8 @@ async function run(name,options){
  await page.screenshot({path:`/tmp/globetrotter-storage-${name}.png`})
  let file=await page.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);assert.equal(file.trips.length,1);assert.equal(file.trips[0].draft.status,'completed');assert.equal(file.trips[0].draft.legs[0].flightNumber,'EK367');assert.equal(file.trips[0].draft.legs[1].notes,'第二段獨立備註')
  await editor.getByRole('button',{name:'關閉編輯器',exact:true}).click()
- for(const [id,fill]of Object.entries(originals))assert.equal(await page.locator(`path[data-country-id="${id}"]`).getAttribute('fill'),fill,'Saving is not permanent map integration')
+ for(const id of ['158','784','300'])assert.equal(await page.locator(`path[data-country-id="${id}"]`).getAttribute('fill'),'#22c55e','Committed footprint merges with manual visited')
+ assert.equal(await page.locator('path[data-country-id="392"]').getAttribute('fill'),originals['392'],'Unrelated wishlist remains visible')
  await unchanged();await page.reload({waitUntil:'domcontentloaded'});await menu('我的旅行紀錄')
  const item=()=>records.locator('li').filter({has:page.getByRole('heading',{name:'台灣杜拜希臘',exact:true})})
  await item().waitFor({state:'visible'});assert.equal(await item().count(),1);await item().getByRole('button',{name:'查看',exact:true}).click()
@@ -73,7 +74,7 @@ async function run(name,options){
  page.once('dialog',d=>d.accept());await current.getByRole('button',{name:'刪除',exact:true}).click();await records.getByText('目前沒有已儲存的旅行。',{exact:true}).waitFor()
  assert.equal((await page.evaluate(k=>JSON.parse(localStorage.getItem(k)),key)).trips.length,0)
  await records.getByRole('button',{name:'關閉旅行紀錄',exact:true}).click();await page.reload({waitUntil:'domcontentloaded'});await menu('我的旅行紀錄');await records.getByText('目前沒有已儲存的旅行。',{exact:true}).waitFor()
- await unchanged();assert.deepEqual(errors,[]);console.log(`PASS ${name}: save/reload/view/edit/delete, quota failure, stale-tab protection, legacy bytes, unchanged map, visible save button`)
+ await unchanged();assert.deepEqual(errors,[]);console.log(`PASS ${name}: save/reload/view/edit/delete, quota failure, stale-tab protection, legacy bytes, committed map colors, visible save button`)
  }catch(e){await page.screenshot({path:`/tmp/globetrotter-storage-${name}-failure.png`}).catch(()=>{});throw e}finally{await context.close()}
 }
 async function damaged(){

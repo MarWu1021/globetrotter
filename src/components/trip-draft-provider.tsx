@@ -3,10 +3,13 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, u
 import { createTripDraft, type TripDraft } from '@/lib/trip-draft/core'
 import { draftGlobePreview } from '@/lib/trip-draft/globe'
 import type { CatalogAirport } from '@/lib/airport-data/types'
+import { savedTripMap } from '@/lib/trip-map/core'
+import { useTravelStore } from '@/lib/store'
 import { TripRepository } from '@/lib/trip-storage/repository'
 import { TRIPS_KEY, savedTripToken, type SavedTrip } from '@/lib/trip-storage/core'
 type Session = {
   mode:"idle"|"preview"|"picking"; setMode:Dispatch<SetStateAction<"idle"|"preview"|"picking">>
+  savedMap:ReturnType<typeof savedTripMap>
   previewActive:boolean; mapPreview:ReturnType<typeof draftGlobePreview>
   previewView:"map"|"globe"; setPreviewView:Dispatch<SetStateAction<"map"|"globe">>
   drawerOpen:boolean; setDrawerOpen:Dispatch<SetStateAction<boolean>>
@@ -31,6 +34,8 @@ export function TripDraftProvider({children}:{children:ReactNode}) {
   const [draft,setDraft]=useState<TripDraft>(()=>({...createTripDraft('temporary-trip'),status:'completed'}))
   const [repository]=useState(()=>new TripRepository(()=>window.localStorage))
   const savedTrips=useSyncExternalStore(repository.subscribe,repository.getSnapshot,repository.getServerSnapshot)
+  const statuses=useTravelStore(s=>s.statuses)
+  const savedMap=useMemo(()=>savedTripMap(savedTrips.trips,statuses),[savedTrips.trips,statuses])
   const [recordToken,setRecordToken]=useState<string|null>(null),[savedDraftJSON,setSavedDraftJSON]=useState<string|null>(null)
   const [recordsOpen,setRecordsOpen]=useState(false)
   const [editorVersion,setEditorVersion]=useState(0)
@@ -59,8 +64,8 @@ export function TripDraftProvider({children}:{children:ReactNode}) {
     setDraft(structuredClone(record.draft));setRecordToken(savedTripToken(record));setSavedDraftJSON(JSON.stringify(record.draft))
     setInsertion('end');setCandidate(null);setSearchAirports([]);setFocusAirport(null);setMode('idle');setRecordsOpen(false);setStarted(true);setOpened(true)
   },[])
-  const session=useMemo(()=>({mode,setMode,previewActive,mapPreview,previewView,setPreviewView,drawerOpen,setDrawerOpen,started,setStarted,insertion,setInsertion,draft,setDraft,opened,setOpened,picking,setPicking,candidate,setCandidate,searchAirports,setSearchAirports,focusAirport,setFocusAirport,repository,savedTrips,recordToken,setRecordToken,savedDraftJSON,setSavedDraftJSON,recordsOpen,setRecordsOpen,editorVersion,loadSaved,newTrip}),
-    [mode,previewActive,mapPreview,previewView,drawerOpen,started,insertion,draft,opened,picking,setPicking,candidate,searchAirports,focusAirport,repository,savedTrips,recordToken,savedDraftJSON,recordsOpen,editorVersion,loadSaved,newTrip])
+  const session=useMemo(()=>({savedMap,mode,setMode,previewActive,mapPreview,previewView,setPreviewView,drawerOpen,setDrawerOpen,started,setStarted,insertion,setInsertion,draft,setDraft,opened,setOpened,picking,setPicking,candidate,setCandidate,searchAirports,setSearchAirports,focusAirport,setFocusAirport,repository,savedTrips,recordToken,setRecordToken,savedDraftJSON,setSavedDraftJSON,recordsOpen,setRecordsOpen,editorVersion,loadSaved,newTrip}),
+    [savedMap,mode,previewActive,mapPreview,previewView,drawerOpen,started,insertion,draft,opened,picking,setPicking,candidate,searchAirports,focusAirport,repository,savedTrips,recordToken,savedDraftJSON,recordsOpen,editorVersion,loadSaved,newTrip])
   return <Context.Provider value={session}>{children}</Context.Provider>
 }
 export function useTripDraft() { const session=useContext(Context); if(!session) throw new Error('Missing draft provider');return session }
