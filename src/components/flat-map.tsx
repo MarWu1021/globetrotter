@@ -67,7 +67,7 @@ const CountryPaths = memo(function CountryPaths({
   return (
     <>
       {paths.map(({ f, d }) => {
-        const selected = f.id === selectedId
+        const selected = !previewColors[f.id] && f.id === selectedId
         const status = statuses[f.id]
         // Borders convey STATUS only (wishlist dashed, blocked dotted, in their
         // own colour); selection is the brightened fill — no extra outline,
@@ -168,6 +168,7 @@ const FlatMap = ({ size }: Props) => {
   const tkRef = useRef(t.k)
   const svgRef = useRef<SVGSVGElement>(null)
   const zoomRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null)
+  const beforePreview = useRef<Transform | null>(null)
   // True while a pan/zoom gesture is in progress — transport markers are hidden
   // then so ~1.1k circles don't re-render every frame (big FPS win).
   const [interacting, setInteracting] = useState(false)
@@ -200,7 +201,7 @@ const FlatMap = ({ size }: Props) => {
   )
   const onLeave = useCallback(() => setHover(null), [])
 
-  const { paths, oceans, project } = useMemo(() => {
+  const { paths, oceans, project, boundsFor } = useMemo(() => {
     // Web Mercator: a strictly rectangular grid (vertical meridians, horizontal
     // parallels) so the map reads as a flat wall map with no polar curvature.
     const scale = size.width / (2 * Math.PI)
@@ -229,8 +230,11 @@ const FlatMap = ({ size }: Props) => {
       paths: countryFeatures.map((f) => ({ f, d: path(f) ?? "" })),
       oceans,
       project: projection,
+      boundsFor: (ids: string[]) => path.bounds({ type: "FeatureCollection", features: countryFeatures.filter(f => ids.includes(f.id)) }),
     }
   }, [size.width, size.height])
+
+  const previewBounds = useMemo(() => boundsFor(Object.keys(previewColors)), [boundsFor, previewColors])
 
   const capital = useMemo(() => {
     if (!selectedId) return null
@@ -360,7 +364,7 @@ const FlatMap = ({ size }: Props) => {
   // already zoomed in — at the full world view it leaves the overview alone and
   // pans at the *current* zoom rather than forcing a new level.
   useEffect(() => {
-    if (!focusId || !svgRef.current || !zoomRef.current) return
+    if (previewActive || !focusId || !svgRef.current || !zoomRef.current) return
     const c = countryById.get(focusId)
     if (!c) return
     const p = project(c.centroid)
@@ -380,6 +384,35 @@ const FlatMap = ({ size }: Props) => {
     // Pan only when the focused country changes, not on every resize/re-render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusId])
+
+  // Travel preview must not inherit an unrelated country zoom. Keep the old
+  // transform locally and restore it on exit; never change the country store.
+  useEffect(() => {
+    if (!svgRef.current || !zoomRef.current) return
+    const svg = select(svgRef.current)
+    svg.interrupt()
+    if (previewActive) {
+      if (!beforePreview.current) {
+        const transform = (svgRef.current as SVGSVGElement & { __zoom?: Transform }).__zoom
+        beforePreview.current = transform ? { k: transform.k, x: transform.x, y: transform.y } : { k: 1, x: 0, y: 0 }
+      }
+      // Desktop review controls occupy the right 256px; fit countries in
+      // the unobscured map area. Mobile controls are below the viewport.
+      const availableWidth = window.matchMedia("(min-width: 768px)").matches
+        ? Math.max(1, size.width - 280) : size.width
+      const [[x0, y0], [x1, y1]] = previewBounds
+      const finite = [x0,y0,x1,y1].every(Number.isFinite) && x1 > x0 && y1 > y0
+      const k = finite ? Math.max(1,Math.min(zoomLocked ? 1 : 24,
+        Math.max(1,availableWidth-32)/(x1-x0), Math.max(1,size.height-32)/(y1-y0))) : 1
+      const transform = finite && !zoomLocked ? zoomIdentity
+        .translate(availableWidth/2-k*(x0+x1)/2, size.height/2-k*(y0+y1)/2).scale(k) : zoomIdentity
+      svg.call(zoomRef.current.transform, transform)
+    } else if (beforePreview.current) {
+      const saved = beforePreview.current
+      beforePreview.current = null
+      svg.call(zoomRef.current.transform, zoomIdentity.translate(saved.x, saved.y).scale(saved.k))
+    }
+  }, [previewActive, size.width, size.height, previewBounds, zoomLocked])
 
   const zoomBy = (factor: number) => {
     if (!svgRef.current || !zoomRef.current) return

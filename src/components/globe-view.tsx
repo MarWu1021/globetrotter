@@ -151,6 +151,8 @@ const GlobeView = ({ size }: Props) => {
   const flight = useTravelStore((s) => s.flight)
   const liveSources = useAdvisoryStore((s) => s.sources)
   const globeRef = useRef<GlobeMethods | undefined>(undefined)
+  const previewActiveRef = useRef(previewActive)
+  useEffect(() => { previewActiveRef.current = previewActive }, [previewActive])
   const statuses = useTravelStore((s) => s.statuses)
   const autoSpin = useTravelStore((s) => s.autoSpin)
   const zoomLocked = useTravelStore((s) => s.zoomLocked)
@@ -188,7 +190,7 @@ const GlobeView = ({ size }: Props) => {
       const f = d as CountryFeature
       const fill = (previewActive ? preview.colors[f.id] : undefined) ?? baseFill(f.id, statuses[f.id], palette)
       // Selection keeps the status/ice colour but brightened.
-      return f.id === selectedId ? lighten(fill, 0.32) : fill
+      return !previewActive && f.id === selectedId ? lighten(fill, 0.32) : fill
     },
     [statuses, selectedId, palette, previewActive, preview.colors],
   )
@@ -448,6 +450,8 @@ const GlobeView = ({ size }: Props) => {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
         }
+        // A late location result must not replace the active trip camera.
+        if (previewActiveRef.current) return
         globeRef.current?.pointOfView(
           { ...cachedViewerLatLng, altitude: fitAltitude(1.8) },
           1200,
@@ -481,7 +485,15 @@ const GlobeView = ({ size }: Props) => {
   useEffect(()=>{
     if(!previewActive) return
     const target=focusAirport?{lat:focusAirport.latitude,lng:focusAirport.longitude}:DEFAULT_POV
-    globeRef.current?.pointOfView({...target,altitude:1.8},0)
+    const globe = globeRef.current
+    if (!globe) return
+    // An intentional preview jump must not inherit the last drag's angular
+    // delta. Flush it once, then restore the user's normal smooth controls.
+    const controls = globe.controls(), damping = controls.enableDamping
+    controls.enableDamping = false
+    controls.update()
+    controls.enableDamping = damping
+    globe.pointOfView({...target,altitude:1.8},0)
     if(picking) fetchRegional(target.lat,target.lng)
     return ()=>request.current?.abort()
   },[picking,previewActive,focusAirport,fetchRegional])
@@ -506,12 +518,12 @@ const GlobeView = ({ size }: Props) => {
   }, [zoomLocked, size.width])
 
   useEffect(() => {
-    if (!focusId) return
+    if (previewActive || !focusId) return
     const target = countryById.get(focusId)
     if (!target) return
     const [lng, lat] = target.centroid
     globeRef.current?.pointOfView({ lat, lng, altitude: 1.6 }, 900)
-  }, [focusId])
+  }, [focusId, previewActive])
 
   return (
     <div className="h-full w-full" data-globe-points={points.length} data-preview-arcs={previewActive ? preview.arcs.length : 0} data-preview-colors={previewActive ? JSON.stringify(preview.colors) : "{}"} onMouseMove={onMove}

@@ -45,3 +45,48 @@ node scripts/test-trip-editor-browser.mjs
 Provider 只計算一次 `draftGlobePreview`，兩個渲染器共用結果。`colors` 使用確認的 globeGeoIds，`flatColors` 使用 flatGeoIds；皆來自同一個 2A 足跡計算。地球提供示意弧線，平面地圖本階段只顯示國家顏色。未完成狀態沒有衍生國家顏色，原有到訪顏色仍保留。離開預覽／返回編輯器恢復原狀，記憶體草稿保留；單純關閉編輯器不代表保存或啟用預覽。
 
 新增回歸驗證：`node scripts/test-trip-preview-browser.mjs`（本機正式建置伺服器啟動後）。涵蓋 TPE→KCZ、TPE→DXB→ATH、三種未完成狀態、兩種渲染器、退出恢復、草稿保留、防誤觸，以及 `globetrotter:v1` 逐字不變。Safari 實機效能與雙指縮放仍待驗證。
+
+## Stage A: visible country preview regression
+
+Reproduction on the production build: select Argentina from the existing country
+search, create completed TPE → KCZ, open the travel preview, then switch to globe.
+The legacy focus effect ran after the trip camera effect, showing Argentina while
+Taiwan/Japan had correct green materials on the far side. The flat map retained
+its previous Argentina zoom: Japan's path was outside the viewport despite a
+green fill. This demonstrates a visibility failure, not an ISO mapping failure.
+
+Preview now isolates the legacy focus and late geolocation camera updates, uses
+a flat view fitted to the footprint countries (restoring the previous transform on exit), and offers
+country buttons to view each footprint on the globe. Preview colors do not use
+the legacy selected-country lightening. All buttons reuse existing locale keys.
+
+Run `node scripts/test-trip-visual-browser.mjs` against a local production server
+(default port 3005, overridable with TEST_URL). It uses a fresh browser context,
+real search/editor/button actions, projected inland points, and screenshot pixel
+assertions for green/blue WebGL and SVG output, plus exit restoration and unchanged
+legacy data. React ref traversal is confined to the test; no production test
+hooks are added. The renderer is briefly paused after rendered frames to capture
+stable screenshots. Chromium software WebGL and iPhone-sized emulation are not
+real iPhone Safari or hardware performance acceptance. No persistence or status
+selector changes are included in this phase.
+
+Country bounds determine preview framing instead of resetting to world zoom 1.
+The desktop fit excludes the review controls: the three-country regression
+placed Taiwan underneath that panel even with a correct SVG fill. The iPhone browser profile uses its native DPR; the application
+retains its existing preview WebGL DPR cap. Desktop review controls sit at the
+right edge so their expanded country list does not cover the focused country.
+
+SVG pixel assertions wait for the existing 150ms CSS fill transition to finish
+(computed color, not only the fill attribute) before capturing the painted result.
+
+Mobile country buttons use names and color dots to preserve globe height; the
+desktop retains the longer presence labels. Repeated buttons refocus after
+manual camera movement without changing the draft. The screenshot regression
+includes a real pointer drag before clicking the same country again. A separate
+production-browser check with the legacy airport layer enabled retained visible
+green Taiwan; that layer was not removed or rewritten.
+
+The repeated-focus regression also measured residual OrbitControls damping:
+TPE longitude 121.233 drifted to 113.592 after a drag and refocus. Preview jumps
+flush the pending angular delta once, restoring enableDamping immediately;
+ordinary drag/zoom and auto-spin configuration remain unchanged.

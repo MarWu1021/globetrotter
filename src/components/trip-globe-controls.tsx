@@ -7,10 +7,10 @@ import { airportChinese } from '@/lib/airport-data/localization'
 import { addDraftStop, previewTripDraft } from '@/lib/trip-draft/core'
 const button='min-h-11 rounded-lg border border-[var(--border)] px-3 py-2'
 export default function TripGlobeControls() {
-  const {draft,setDraft,setOpened,setPicking,candidate,setCandidate,insertion,setInsertion,picking}=useTripDraft()
+  const {draft,setDraft,setOpened,setPicking,candidate,setCandidate,insertion,setInsertion,picking,previewView,setFocusAirport}=useTripDraft()
   const t=useT(),locale=useTravelStore(s=>s.locale)
   const preview=previewTripDraft(draft)
-  return <section aria-label={t(picking?'trip.globe':'trip.viewPreview')} className={`${picking ? "absolute inset-x-3 bottom-[calc(78px+env(safe-area-inset-bottom))] mx-auto md:bottom-4" : "relative mx-3 mb-3 shrink-0 md:absolute md:inset-x-3 md:bottom-4 md:mx-auto md:mb-0"} z-20 max-w-lg space-y-2 rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-3 text-[var(--ink)] shadow-xl`}>
+  return <section aria-label={t(picking?'trip.globe':'trip.viewPreview')} className={`${picking ? "absolute inset-x-3 bottom-[calc(78px+env(safe-area-inset-bottom))] mx-auto md:bottom-4" : "relative mx-3 mb-3 shrink-0 md:absolute md:right-3 md:bottom-4 md:mx-0 md:mb-0 md:w-64"} z-20 max-w-lg space-y-2 rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-3 text-[var(--ink)] shadow-xl`}>
     <p className="font-semibold">{t('trip.unsaved')}</p>
     <p className="text-sm">{t(picking?'trip.globeHint':'trip.viewPreviewHint')}</p>
     {picking && candidate && <div className="space-y-2 border-t border-[var(--border)] pt-2" data-testid="airport-confirmation">
@@ -22,6 +22,14 @@ export default function TripGlobeControls() {
       }}>{t('trip.confirmAirport')}</button><button className={button} onClick={()=>setCandidate(null)}>{t('trip.cancelAirport')}</button></div>
     </div>}
     <p className="text-sm">{t('trip.counts',{flights:draft.legs.length,stops:draft.stops.length})}</p>
+    {!picking && previewView === 'globe' && preview.kind === 'ready' && <div className="flex flex-wrap gap-2">
+      {preview.footprint.countries.map(country => <button key={country.countryCode} className={button}
+        aria-label={`${t('trip.viewPreview')} · ${countryDisplayName(country.countryCode,locale)}`}
+        onClick={()=>{const stop=draft.stops.find(s=>s.airport.isoCountryCode===country.countryCode);if(stop)setFocusAirport(structuredClone(stop.airport))}}>
+        <span className="mr-1 inline-block h-3 w-3 rounded-full" style={{background:country.color}} aria-hidden="true" />
+        {countryDisplayName(country.countryCode,locale)}<span className="hidden md:inline"> · {t(country.presence==='visited'?'trip.visited':'trip.transit')}</span>
+      </button>)}
+    </div>}
     <p className="text-xs text-[var(--ink-dim)]">{t('trip.schematic')}</p>
     {preview.kind!=='ready' && <p className="text-sm" role="status">{t(`trip.${preview.kind}`)}</p>}
     <div className="flex flex-wrap gap-2"><button className={button} onClick={()=>{setPicking(false);setOpened(true);setCandidate(null)}}>{t('trip.returnEditor')}</button>
