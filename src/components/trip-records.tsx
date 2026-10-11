@@ -39,7 +39,6 @@ export default function TripRecords({onClose}:{onClose:()=>void}) {
         <button className={button} aria-label={t("trip.closeRecords")} onClick={onClose}>✕</button>
       </header>
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-4 pb-[calc(16px+env(safe-area-inset-bottom))]">
-        <p>{t(authEnabled?"cloud.accountOnly":"trip.localOnly")}</p><p className="text-sm">{t("trip.mapsLater")}</p>
         {(error||savedTrips.error) && <div role="alert"><p>{t(`${authEnabled?"cloud.error":"trip.storage"}.${error??savedTrips.error}`)}</p><button className={button} onClick={()=>{if(authEnabled)void account.reload();else repository.reload();setError(null)}}>{t("trip.retry")}</button></div>}
         {savedTrips.ready && !records.length && !savedTrips.error && <p>{t("trip.noTrips")}</p>}
         <ul className="space-y-3">{records.map(r=><li key={r.draft.id} className="space-y-2 rounded-xl border border-[var(--border)] p-3">

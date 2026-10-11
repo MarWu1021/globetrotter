@@ -93,6 +93,5 @@ export function AuthControls(){
     <p className="break-words">{state.user?.email??t(state.phase==='loading'||state.phase==='signing-out'?'auth.loading':'auth.guest')}</p>
     {(state.phase==='error')&&<p role="alert">{t(sessionExpired?'cloud.error.unauthenticated':'auth.error')}</p>}
     <button className="min-h-11 w-full rounded-lg border border-[var(--border-strong)] px-3 py-2" disabled={state.phase==='loading'||state.phase==='signing-out'} onClick={()=>void(state.user?logout():login())}>{t(state.user?'auth.logout':'auth.login')}</button>
-    <p className="text-sm">{t('cloud.accountOnly')}</p>
   </section>
 }

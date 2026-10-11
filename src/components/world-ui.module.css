@@ -11,7 +11,6 @@
 .progress { padding: 12px; border: 1px solid var(--border); border-radius: 16px; background: #fdfdf6; }
 .composer { display: flex; flex-direction: column; gap: 9px; }
 .composer > section:first-child { border-radius: 17px; background: #edf3ed; padding: 12px; font-size: 12px; }
-.composer > section:first-child > p:last-child { font-size: 11px; line-height: 1.6; }
 .composer > section:first-child > button { background: #fffef7; border-color: var(--border); min-height: 40px; }
 .action { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 0; border-radius: 16px; background: #fffef7; box-shadow: 0 3px 0 #d3e0dc, 0 5px 12px #486b800c; }
 .action > svg { width: 30px; height: 30px; flex-shrink: 0; }

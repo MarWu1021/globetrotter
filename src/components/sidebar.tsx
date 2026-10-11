@@ -485,10 +485,6 @@ const Sidebar = () => {
         </div>
       </label>
 
-      <p className="text-[0.78rem] leading-relaxed text-[var(--ink-dim)]">
-        {t("hint")}
-      </p>
-
       <section className="flex min-h-0 flex-1 flex-col">
         <h2 className="mb-2 text-xs uppercase tracking-wide text-[var(--ink-dim)]">
           {t("countries.title")}{" "}
@@ -684,9 +680,6 @@ const Sidebar = () => {
         </button>
       </section>)}
 
-      <footer className="text-[0.7rem] leading-relaxed text-[var(--ink-faint)]">
-        {t(account.enabled?"cloud.footer":"footer")}
-      </footer>
     </aside>
   )
 }
