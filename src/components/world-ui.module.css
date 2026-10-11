@@ -1,0 +1,49 @@
+.workspace { background: var(--bg); }
+.sidebar { border: 1px solid var(--border); background: linear-gradient(155deg, #fcfcf5, #f3f7f2); box-shadow: var(--surface-shadow); }
+.mast { position: relative; min-height: 106px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.mast > div { position: relative; z-index: 1; }
+.mast h1 { font-size: 26px; }
+.mast h1 svg { width: 32px; height: 32px; }
+.mast p:last-child { max-width: 182px; font-family: var(--font-geist-sans); font-size: 12px; font-style: normal; line-height: 1.7; }
+.village { position: absolute; right: -9px; bottom: -8px; width: 100px; height: 70px; pointer-events: none; }
+.stat { border: 1px solid #dbe5dc; border-radius: 16px; background: linear-gradient(140deg, #ffffff, #edf3e9); box-shadow: 0 3px 0 #dce5de, 0 5px 12px #466c7410; }
+.stat > span:first-child { color: var(--sea-blue); }
+.progress { padding: 12px; border: 1px solid var(--border); border-radius: 16px; background: #fdfdf6; }
+.composer { display: flex; flex-direction: column; gap: 9px; }
+.composer > section:first-child { border-radius: 17px; background: #edf3ed; padding: 12px; font-size: 12px; }
+.composer > section:first-child > p:last-child { font-size: 11px; line-height: 1.6; }
+.composer > section:first-child > button { background: #fffef7; border-color: var(--border); min-height: 40px; }
+.action { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 0; border-radius: 16px; background: #fffef7; box-shadow: 0 3px 0 #d3e0dc, 0 5px 12px #486b800c; }
+.action > svg { width: 30px; height: 30px; flex-shrink: 0; }
+.primary { background: var(--accent); color: var(--accent-ink); border-color: #47717b; box-shadow: 0 3px 0 #2f5663, 0 6px 12px #486b801c; }
+.primary > svg { filter: brightness(1.1); }
+.sync > button { display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 14px; font-size: 12px; background: #f1f6f1; }
+.sync > button > svg { width: 25px; height: 25px; flex-shrink: 0; }
+.stage { overflow: hidden; }
+.toolbar { position: relative; z-index: 20; background: linear-gradient(180deg, #f5f9f2e6, #eef5f2a6); border-bottom: 1px solid #d3e2dd; }
+.viewToggle { border: 1px solid #ccdeda; background: #fbfcf7; box-shadow: 0 3px 0 #d6e2dc, 0 5px 14px #486b8010; }
+.viewToggle > button { min-height: 38px; }
+.viewToggle > button > svg { width: 25px; height: 25px; }
+.stage :global([data-map-zoom]) > button { width: 44px; height: 44px; border-radius: 15px; border-color: #c0d6d3; background: #fcfdf6; box-shadow: 0 3px 0 #d3e2dc, 0 6px 10px #486b800c; backdrop-filter: none; }
+.stage :global([data-layer-control]) { border-radius: 20px; background: #f8fbf4eb; box-shadow: 0 3px 0 #d1e0dc, 0 8px 20px #486b8010; backdrop-filter: none; }
+.stage :global([data-layer-control]) > button { min-height: 44px; }
+.navigation { border: 1px solid #c5d8d4; background: #fbfcf3f5; box-shadow: 0 3px 0 #b2cac8, 0 8px 24px #486b8020; }
+.navigation button { border-radius: 14px; }
+.navigation svg { width: 29px; height: 29px; }
+
+@media (min-width: 768px) {
+  .workspace { padding: 14px; gap: 14px; }
+  .sidebar { border-radius: 24px; }
+  .stage { border: 1px solid #c3d8d6; border-radius: 24px; box-shadow: var(--surface-shadow); }
+}
+@media (max-width: 767px) {
+  .sidebar { border: 0; box-shadow: none; }
+  .village { display: none; }
+  .mast { min-height: auto; }
+  .mast p:last-child { max-width: none; }
+  .navigation { backdrop-filter: none; }
+  .viewToggle > button { min-height: 44px; }
+  .toolbar { z-index: 20; }
+  /* Keep the entire zoom stack clear even when translated layer labels wrap. */
+  .stage :global([data-layer-control]) { right: 76px; }
+}

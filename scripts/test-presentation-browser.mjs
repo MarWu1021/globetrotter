@@ -29,15 +29,12 @@ try{for(const width of [1280,390,320]){
   rows.set(c.id,record);return reply({ok:true,value:record})
  })
  await page.goto(origin+'/login',{waitUntil:'domcontentloaded'});await page.locator('[data-login-page]').waitFor()
- await page.locator('[data-login-cover="animated"]').waitFor()
- await page.locator('[data-login-globe] canvas').waitFor()
+ await page.locator('[data-login-island][data-island-motion="animated"]').waitFor()
  const loginButton=page.getByRole('button',{name:'使用 Google 登入',exact:true}),box=await loginButton.boundingBox();assert.ok(box.x>=0&&box.x+box.width<=width)
- // Context loss or policy changes must keep the real Google button usable.
- const canvas=page.locator('[data-login-globe] canvas');if(await canvas.count()){
-  await page.waitForFunction(()=>{const c=document.querySelector('[data-login-globe] canvas');return !c||Number(c.closest('[data-login-globe]').lastElementChild.style.opacity)===1})
-  if(await canvas.count()){await page.screenshot({path:`/tmp/globetrotter-upgrade-login-animated-${width}.png`});await page.evaluate(()=>document.querySelector('[data-login-globe] canvas')?.dispatchEvent(new Event('webglcontextlost',{cancelable:true})));await page.locator('[data-login-static]').waitFor()}}
+ assert.equal(await page.locator('canvas').count(),0,'Illustrated login has no WebGL runtime')
  assert.equal(await loginButton.isEnabled(),true)
- await page.emulateMedia({reducedMotion:'reduce'});await page.locator('[data-login-cover="static"]').waitFor();assert.equal(await page.locator('[data-login-globe] canvas').count(),0)
+ await page.emulateMedia({reducedMotion:'reduce'});await page.locator('[data-island-motion="static"]').waitFor()
+ assert.equal(await page.locator('[data-island-plane]').evaluate(el=>getComputedStyle(el).animationName),'none')
  await page.screenshot({path:`/tmp/globetrotter-upgrade-login-${width}.png`});groups++
  await page.emulateMedia({reducedMotion:'no-preference'})
  user={id:'00000000-0000-0000-0000-000000000001',email:'a@example.invalid'}
@@ -86,7 +83,7 @@ try{for(const width of [1280,390,320]){
  if(width<768)await page.getByRole('button',{name:'開啟設定',exact:true}).click()
  user=null;await page.getByRole('button',{name:'登出',exact:true}).click();await page.waitForURL('**/login');await page.locator('[data-login-page]').waitFor()
  assert.equal(await page.locator('[data-journey-leg]').count(),0);assert.equal(await page.evaluate(()=>localStorage.getItem('globetrotter:trips:v1')),'OLD TEST DATA');assert.deepEqual(errors,[]);groups++
- console.log(`PASS ${width}px: cover fallback, conflict/pending guard, ordered flight/skip, mobile navigation/edit, 2D selection/reload, reduced save, logout`)
+ console.log(`PASS ${width}px: island/reduced-motion, conflict/pending guard, ordered flight/skip, mobile navigation/edit, 2D selection/reload, reduced save, logout`)
  await context.close()
 }
 console.log(`PASS ${groups} upgrade browser groups; synthetic Supabase, real UI/WebGL`)

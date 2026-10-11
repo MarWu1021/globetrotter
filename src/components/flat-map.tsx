@@ -804,7 +804,7 @@ const FlatMap = ({ size }: Props) => {
         </g>
       </svg>
 
-      <div className="absolute bottom-4 right-4 flex flex-col gap-1.5">
+      <div data-map-zoom className="absolute bottom-4 right-4 flex flex-col gap-1.5">
         {!zoomLocked && (
           <>
             <button

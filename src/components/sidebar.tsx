@@ -19,6 +19,8 @@ import { buildSaveFile, downloadSaveFile, parseSaveFile } from "@/lib/save-file"
 import About from "@/components/about"
 import { useTripDraft } from "./trip-draft-provider"
 import TripComposer from "@/components/trip-composer"
+import { TravelVillage, TravelTile } from './travel-illustration'
+import ui from './world-ui.module.css'
 import {
   DownloadIcon,
   UploadIcon,
@@ -27,7 +29,6 @@ import {
   StatusIcon,
   CopyIcon,
   PasteIcon,
-  GlobeIcon,
 } from "@/components/icons"
 
 // The everyday "countries in the world" figure: 193 UN members + 2 observer
@@ -70,7 +71,7 @@ const CountUp = ({
 }
 
 const Stat = ({ value, label }: { value: React.ReactNode; label: string }) => (
-  <div className="glass-card rounded-xl bg-[var(--panel-2)] px-2 py-3 text-center">
+  <div className={`${ui.stat} glass-card rounded-xl bg-[var(--panel-2)] px-2 py-3 text-center`}>
     <span className="block text-2xl font-bold leading-none">{value}</span>
     <span className="mt-1 block text-[0.7rem] uppercase tracking-wide text-[var(--ink-dim)]">
       {label}
@@ -361,18 +362,14 @@ const Sidebar = () => {
   }
 
   return (
-    <aside className="travel-sidebar flex h-full flex-col gap-4 overflow-y-auto border-r border-[var(--border)] bg-[var(--panel)] p-5">
-      <header className="flex items-start justify-between gap-3">
+    <aside className={`${ui.sidebar} travel-sidebar flex h-full flex-col gap-4 overflow-y-auto border-r border-[var(--border)] bg-[var(--panel)] p-5`}>
+      <header className={`${ui.mast} flex items-start justify-between gap-3`}>
         <div className="min-w-0">
           <p className="text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-[var(--accent)]">
             ✦ {t("eyebrow")}
           </p>
           <h1 className="font-display mt-1.5 flex items-center gap-2 text-[1.7rem] font-semibold leading-none tracking-tight">
-            <GlobeIcon
-              width={24}
-              height={24}
-              className="text-[var(--accent)]"
-            />
+            <TravelTile kind="globe" />
             Globetrotter
           </h1>
           <p className="font-display mt-1.5 text-sm italic text-[var(--ink-dim)]">
@@ -380,6 +377,7 @@ const Sidebar = () => {
           </p>
         </div>
         <About />
+        <TravelVillage className={ui.village} />
       </header>
 
       <TripComposer />
@@ -404,7 +402,7 @@ const Sidebar = () => {
         <Stat value={savedTrips.ready ? <CountUp value={savedMap.flightCount} /> : "—"} label={t("stat.flights")} />
       </div>
 
-      <div className="flex flex-col gap-1.5">
+      <div className={`${ui.progress} flex flex-col gap-1.5`}>
         <div className="flex items-baseline justify-between text-[0.7rem]">
           <span className="uppercase tracking-wide text-[var(--ink-dim)]">
             {t("stat.visited")}

@@ -1203,6 +1203,12 @@ Object.assign(de, {"cloud.footer": "Erstellt mit Next.js, Three.js und D3. Priva
 
 Object.assign(zhTW, {"cloud.footer": "使用 Next.js、Three.js 與 D3 製作；登入後的私人紀錄儲存在你的帳號。"})
 
+Object.assign(en, {'login.manifesto':'Travel · Record · Explore', 'login.begin':'Your journey starts here'})
+Object.assign(fr, {'login.manifesto':'Voyager · Noter · Explorer', 'login.begin':'Votre voyage commence ici'})
+Object.assign(es, {'login.manifesto':'Viajar · Recordar · Explorar', 'login.begin':'Tu viaje empieza aquí'})
+Object.assign(de, {'login.manifesto':'Reisen · Festhalten · Entdecken', 'login.begin':'Hier beginnt deine Reise'})
+Object.assign(zhTW, {'login.manifesto':'旅行 · 記錄 · 探索', 'login.begin':'開始你的旅程'})
+
 Object.assign(en, {'login.eyebrow':'Your personal travel atlas', 'login.title':'Keep your journeys together.', 'login.description':'Record your flights and explore the countries you have visited on your own travel globe.', 'login.privacy':'Sign in to privately save your trips and see the same map across devices.', 'login.footer':'Every journey leaves a footprint.'})
 Object.assign(fr, {'login.eyebrow':'Votre atlas de voyages personnel', 'login.title':'Retrouvez tous vos voyages.', 'login.description':'Notez vos vols et explorez les pays visités sur votre globe personnel.', 'login.privacy':'Connectez-vous pour enregistrer vos voyages privés et retrouver la même carte sur tous vos appareils.', 'login.footer':'Chaque voyage laisse une empreinte.'})
 Object.assign(es, {'login.eyebrow':'Tu atlas personal de viajes', 'login.title':'Todos tus viajes en un lugar.', 'login.description':'Registra tus vuelos y explora los países que has visitado en tu propio globo.', 'login.privacy':'Inicia sesión para guardar tus viajes de forma privada y ver el mismo mapa en todos tus dispositivos.', 'login.footer':'Cada viaje deja una huella.'})

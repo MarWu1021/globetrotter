@@ -4,6 +4,8 @@ import {useTripDraft} from './trip-draft-provider'
 import {useTravelStore,type Locale} from '@/lib/store'
 import {LOCALES,useT} from '@/lib/i18n'
 import {AuthControls} from './auth-provider'
+import {TravelTile} from './travel-illustration'
+import ui from './world-ui.module.css'
 export default function MobileNavigation(){
  const t=useT(),session=useTripDraft(),locale=useTravelStore(s=>s.locale),setLocale=useTravelStore(s=>s.setLocale),cycleTheme=useTravelStore(s=>s.cycleTheme)
  const [panel,setPanel]=useState<'stats'|'settings'|null>(null)
@@ -29,8 +31,8 @@ export default function MobileNavigation(){
     </div>}
    </section>
   </div>}
-  <nav data-mobile-navigation aria-label={t('nav.label')} className="glass-card fixed inset-x-3 bottom-[calc(8px+env(safe-area-inset-bottom))] z-30 grid grid-cols-5 gap-1 rounded-2xl p-1.5 md:hidden">
-   {items.map(([id,icon])=><button key={id} aria-label={t(`nav.go.${id}`)} onClick={()=>go(id)} className={`flex min-h-12 min-w-0 flex-col items-center justify-center rounded-xl px-0.5 py-1 text-[10px] leading-tight ${id==='add'?'bg-[var(--accent)] text-[var(--accent-ink)]':'text-[var(--ink)]'}`}><span aria-hidden="true" className="text-xl leading-6">{icon}</span><span className="max-w-full break-words">{t(`nav.${id}`)}</span></button>)}
+  <nav data-mobile-navigation aria-label={t('nav.label')} className={`${ui.navigation} glass-card fixed inset-x-3 bottom-[calc(8px+env(safe-area-inset-bottom))] z-30 grid grid-cols-5 gap-1 rounded-2xl p-1.5 md:hidden`}>
+   {items.map(([id])=><button key={id} aria-label={t(`nav.go.${id}`)} onClick={()=>go(id)} className={`flex min-h-12 min-w-0 flex-col items-center justify-center rounded-xl px-0.5 py-1 text-[10px] leading-tight ${id==='add'?'bg-[var(--accent)] text-[var(--accent-ink)]':'text-[var(--ink)]'}`}><TravelTile kind={id}/><span className="max-w-full break-words">{t(`nav.${id}`)}</span></button>)}
   </nav>
  </>
 }

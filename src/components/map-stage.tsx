@@ -10,6 +10,8 @@ import { useT, LOCALES, detectLocale } from "@/lib/i18n"
 import { useFlightPoller } from "@/lib/flight"
 import { useTripDraft } from "./trip-draft-provider"
 import JourneyNotice from "./journey-notice"
+import ui from './world-ui.module.css'
+import { TravelTile } from './travel-illustration'
 import TripGlobeControls from "./trip-globe-controls"
 import FlatMap from "@/components/flat-map"
 import MapLoader from "@/components/map-loader"
@@ -22,8 +24,6 @@ import OceanPanel from "@/components/ocean-panel"
 import PlacePanel from "@/components/place-panel"
 import LayersControl from "@/components/layers-control"
 import {
-  GlobeIcon,
-  MapIcon,
   SunIcon,
   MoonIcon,
   MonitorIcon,
@@ -46,18 +46,18 @@ const ViewToggle = () => {
   const active = "bg-[var(--accent)] text-[var(--accent-ink)] font-semibold"
   const idle = "text-[var(--ink-dim)] hover:text-[var(--ink)]"
   return (
-    <div className="inline-flex gap-1 rounded-full bg-[var(--panel)] p-1">
+    <div className={`${ui.viewToggle} inline-flex gap-1 rounded-full bg-[var(--panel)] p-1`}>
       <button
         className={`${base} ${view === "map" ? active : idle}`}
         onClick={() => setView("map")}
       >
-        <MapIcon width={16} height={16} /> {t("view.map")}
+        <TravelTile kind="map" /> {t("view.map")}
       </button>
       <button
         className={`${base} ${view === "globe" ? active : idle}`}
         onClick={() => setView("globe")}
       >
-        <GlobeIcon width={16} height={16} /> {t("view.globe")}
+        <TravelTile kind="globe" /> {t("view.globe")}
       </button>
     </div>
   )
@@ -243,10 +243,10 @@ const MapStage = () => {
 
   return (
     <main
-      className={`map-stage relative flex h-full min-h-0 min-w-0 flex-col ${previewActive && !picking ? "pb-[env(safe-area-inset-bottom)]" : "pb-[calc(76px+env(safe-area-inset-bottom))]"} md:pb-0`}
+      className={`${ui.stage} map-stage relative flex h-full min-h-0 min-w-0 flex-col ${previewActive && !picking ? "pb-[env(safe-area-inset-bottom)]" : "pb-[calc(76px+env(safe-area-inset-bottom))]"} md:pb-0`}
       style={{ background: "var(--stage)" }}
     >
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 px-3 pb-2 pt-[max(8px,env(safe-area-inset-top))] md:flex-nowrap md:gap-3 md:px-4 md:py-3.5">
+      <div className={`${ui.toolbar} flex shrink-0 flex-wrap items-center justify-between gap-2 px-3 pb-2 pt-[max(8px,env(safe-area-inset-top))] md:flex-nowrap md:gap-3 md:px-4 md:py-3.5`}>
         {!picking && <ViewToggle />}
         <div className="flex flex-wrap items-center gap-2 md:gap-3">
           {view === "globe" && <SpinToggle />}

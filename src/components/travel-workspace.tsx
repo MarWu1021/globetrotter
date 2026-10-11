@@ -11,6 +11,7 @@ import MobileNavigation from "./mobile-navigation"
 import MapStage from "@/components/map-stage"
 import { useTravelStore } from "@/lib/store"
 import { useT } from "@/lib/i18n"
+import ui from './world-ui.module.css'
 
 export default function TravelWorkspace() {
   return <AuthGate><AuthenticatedWorkspace /></AuthGate>
@@ -76,7 +77,7 @@ function Workspace() {
   }, [open, setOpen])
 
   return (
-    <><TripEditorHost /><MobileNavigation /><div className="grid h-dvh min-w-0 grid-cols-1 grid-rows-1 overflow-hidden md:grid-cols-[340px_1fr]">
+    <><TripEditorHost /><MobileNavigation /><div data-world-ui className={`${ui.workspace} grid h-dvh min-w-0 grid-cols-1 grid-rows-1 overflow-hidden md:grid-cols-[340px_1fr]`}>
       {open && (
         <div
           className="fixed inset-0 z-40 bg-[var(--scrim)] md:hidden"

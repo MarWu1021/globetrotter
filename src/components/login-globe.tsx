@@ -4,11 +4,12 @@ import Globe,{type GlobeMethods} from 'react-globe.gl'
 import {MeshPhongMaterial} from 'three'
 import {globeCountryFeatures} from '@/lib/geo'
 import {useElementSize} from '@/lib/use-element-size'
-const coverArcs=[{startLat:25,startLng:121,endLat:35,endLng:139},{startLat:25,startLng:55,endLat:38,endLng:23},{startLat:51,startLng:0,endLat:41,endLng:-74}]
+const coverArcs=[{startLat:25,startLng:121,endLat:35,endLng:139},{startLat:35,startLng:139,endLat:1.3,endLng:103.8},{startLat:25,startLng:121,endLat:49,endLng:2.5}]
+const coverPoints=[{lat:25,lng:121},{lat:35,lng:139},{lat:1.3,lng:103.8},{lat:49,lng:2.5}]
 export default function LoginGlobe({fallback}:{fallback:ReactNode}) {
  const [ref,size]=useElementSize<HTMLDivElement>(),globe=useRef<GlobeMethods|undefined>(undefined)
  const [failed,setFailed]=useState(false),[ready,setReady]=useState(false)
- const material=useMemo(()=>new MeshPhongMaterial({color:'#A8C7D1',shininess:6}),[])
+ const material=useMemo(()=>new MeshPhongMaterial({color:'#8CB8C9',shininess:18}),[])
  useEffect(()=>()=>{globe.current?.pauseAnimation();material.dispose()},[material])
  useEffect(()=>{
   if(!ready)return
@@ -26,6 +27,6 @@ export default function LoginGlobe({fallback}:{fallback:ReactNode}) {
  },[ready])
  return <div ref={ref} className="relative h-full w-full" data-login-globe>
   {(!ready||failed)&&<div className="absolute inset-0">{fallback}</div>}
-  {!failed&&size.width>0&&<div style={{opacity:ready?1:0}}><Globe ref={globe} width={size.width} height={size.height} animateIn={false} onGlobeReady={()=>{globe.current?.pointOfView({lat:25,lng:30,altitude:2.2},0);setReady(true)}} globeMaterial={material} backgroundColor="rgba(0,0,0,0)" showAtmosphere atmosphereColor="#DCE9ED" atmosphereAltitude={.12} polygonsData={globeCountryFeatures} polygonCapColor={()=> '#D8E0E3'} polygonSideColor={()=> '#DCE9ED'} polygonStrokeColor={()=> '#A8C7D1'} polygonAltitude={.005} polygonsTransitionDuration={0} enablePointerInteraction={false} arcsData={coverArcs} arcColor={()=> '#6F9E91'} arcAltitudeAutoScale={.35} arcStroke={.3} arcDashLength={.25} arcDashGap={2.5} arcDashInitialGap={d=>coverArcs.indexOf(d as typeof coverArcs[number])*.8} arcDashAnimateTime={12000} arcCurveResolution={32} arcsTransitionDuration={0}/></div>}
+  {!failed&&size.width>0&&<div style={{opacity:ready?1:0}}><Globe ref={globe} width={size.width} height={size.height} animateIn={false} onGlobeReady={()=>{globe.current?.pointOfView({lat:22,lng:112,altitude:1.45},0);setReady(true)}} globeMaterial={material} backgroundColor="rgba(0,0,0,0)" showAtmosphere atmosphereColor="#D5ECF2" atmosphereAltitude={.065} polygonsData={globeCountryFeatures} polygonCapColor={()=> '#E8F0EC'} polygonSideColor={()=> '#C5DCE1'} polygonStrokeColor={()=> '#A1C2CA'} polygonAltitude={.005} polygonsTransitionDuration={0} enablePointerInteraction={false} arcsData={coverArcs} arcColor={()=> '#FFFBE8'} arcAltitudeAutoScale={.28} arcStroke={.35} arcDashLength={.3} arcDashGap={1.8} arcDashInitialGap={d=>coverArcs.indexOf(d as typeof coverArcs[number])*.8} arcDashAnimateTime={16000} arcCurveResolution={32} arcsTransitionDuration={0} pointsData={coverPoints} pointColor={()=> '#FFF8DC'} pointAltitude={.012} pointRadius={.35} pointResolution={8} pointsMerge/></div>}
  </div>
 }

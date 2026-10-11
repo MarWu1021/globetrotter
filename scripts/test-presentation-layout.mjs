@@ -27,8 +27,8 @@ try{for(const width of [1280,390,320]){
  }
  await page.screenshot({path:`/tmp/globetrotter-upgrade-home-${width}.png`,timeout:60000,animations:'disabled'});groups++
  if(width<768)await page.getByRole('button',{name:'開啟設定',exact:true}).click()
- user=null;await page.getByRole('button',{name:'登出',exact:true}).click();await page.waitForURL('**/login');await page.locator('[data-login-cover="static"]').waitFor()
- await page.emulateMedia({reducedMotion:'no-preference'});await page.reload({waitUntil:'domcontentloaded'});await page.locator('[data-login-cover="static"]').waitFor();assert.equal(await page.locator('[data-login-globe]').count(),0)
+ user=null;await page.getByRole('button',{name:'登出',exact:true}).click();await page.waitForURL('**/login');await page.locator('[data-island-motion="static"]').waitFor()
+ await page.emulateMedia({reducedMotion:'no-preference'});await page.reload({waitUntil:'domcontentloaded'});await page.locator('[data-island-motion="static"]').waitFor();assert.equal(await page.locator('canvas').count(),0)
  assert.equal(await page.getByRole('button',{name:'使用 Google 登入',exact:true}).isEnabled(),true);groups++
  await context.close();console.log(`PASS ${width}px: five-locale navigation bounds and low-power static login`)
 }

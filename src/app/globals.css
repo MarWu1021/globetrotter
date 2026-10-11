@@ -48,26 +48,26 @@
 :root,
 [data-theme="dark"],
 [data-theme="light"] {
-  --cream: #F4F7F8;
-  --mist: #DCE9ED;
+  --cream: #F7F8F3;
+  --mist: #E3EDE8;
   --soft-blue: #A8C7D1;
-  --sea-blue: #486B80;
+  --sea-blue: #416F7C;
   --bg: var(--cream);
   --panel: var(--cream);
-  --panel-2: var(--mist);
+  --panel-2: #ECF2E9;
   --panel-hover: var(--mist);
-  --ink: #243E4B;
-  --ink-dim: #486272;
-  --ink-faint: #526977;
-  --border: #B1C5CE;
-  --border-strong: #7D9AA8;
+  --ink: #24444D;
+  --ink-dim: #4B6970;
+  --ink-faint: #526E74;
+  --border: #CFDDDA;
+  --border-strong: #87AAA9;
   --accent: var(--sea-blue);
   --accent-ink: var(--cream);
   --danger: #A43F43;
   --rating: #88601E;
   --scrim: rgba(36, 62, 75, 0.32);
-  --surface-shadow: 0 8px 24px rgba(72, 107, 128, 0.12);
-  --stage: radial-gradient(circle at 50% 28%, var(--cream) 0%, var(--mist) 72%);
+  --surface-shadow: 0 10px 28px rgba(59, 100, 108, 0.10);
+  --stage: radial-gradient(circle at 50% 28%, #F7F9F1 0%, #E1EEF0 75%);
   color-scheme: light;
 }
 
@@ -208,16 +208,24 @@ dialog::backdrop { background: var(--scrim); }
 }
 
 /* Restrained glass: solid fallback, a single shallow blur, readable opaque ink. */
-:root { --glass: rgba(244,247,248,.92); --glass-shadow: 0 6px 24px rgba(72,107,128,.10); }
+:root { --glass: rgba(249,250,244,.94); --glass-shadow: 0 3px 0 #d7e2dc, 0 8px 24px rgba(72,107,128,.10); }
 .glass-card { background:var(--panel); box-shadow:var(--glass-shadow); }
 @supports (backdrop-filter: blur(6px)) {
   .glass-card { background:var(--glass); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); }
 }
 @media (max-width:767px) {
-  .glass-card { backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); }
+  .glass-card { backdrop-filter:none; -webkit-backdrop-filter:none; }
 }
 @media (prefers-reduced-motion:reduce) {
   .glass-card { backdrop-filter:none; -webkit-backdrop-filter:none; }
 }
 [data-country-selected="true"] { animation: country-outline 1.8s ease-out; }
 @keyframes country-outline { 0%,25% { stroke:var(--sea-blue); stroke-width:2; } 100% { stroke:var(--sea-blue); } }
+
+/* Paper surfaces and gently raised controls; no changes to map fill data. */
+.travel-sidebar .glass-card { backdrop-filter:none; -webkit-backdrop-filter:none; }
+dialog[open] { box-shadow: 0 12px 45px #365f702b; }
+dialog[open] > div > header { background: linear-gradient(140deg, #f9faf2, #e5efe8); }
+dialog[open] input, dialog[open] select, dialog[open] textarea { border-radius: 13px; background-color: #fcfdf8; }
+[data-country-panel] { border-color: var(--border); box-shadow: -8px 0 30px #365f7014; }
+.map-tooltip { border-radius: 14px; background: #fcfdf6; }
