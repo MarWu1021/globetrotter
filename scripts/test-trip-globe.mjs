@@ -23,7 +23,7 @@ test('same draft supports mixed selections and two correct independent arc coord
  assert.notEqual(p.arcs[0].flightId,p.arcs[1].flightId);assert.ok(p.arcs.every(a=>a.altitude>0));assert.deepEqual(p.colors,{})
 })
 for(const status of ['draft','planned','in_progress'])test(`${status} arcs are preview only and have no country colors`,()=>{const d=draft();d.status=status;const p=draftGlobePreview(d);assert.equal(p.arcs.length,2);assert.deepEqual(p.colors,{})})
-test('completed uses 2A colors via confirmed ISO geometry; no store mutation',()=>{const d=draft();d.status='completed';d.stops[1].countryPresence='transit';const before=structuredClone(d),p=draftGlobePreview(d);assert.equal(p.colors['158'],'#22c55e');assert.equal(p.colors['784'],'#3b82f6');assert.equal(p.colors['300'],'#22c55e');assert.deepEqual(d,before)})
+test('completed uses 2A colors via confirmed ISO geometry; no store mutation',()=>{const d=draft();d.status='completed';d.stops[1].countryPresence='transit';const before=structuredClone(d),p=draftGlobePreview(d);assert.equal(p.colors['158'],'#6F9E91');assert.equal(p.colors['784'],'#8BB6CE');assert.equal(p.colors['300'],'#6F9E91');assert.deepEqual(d,before)})
 test('date-line and long routes have positive schematic altitude',()=>{for(const codes of [['NRT','LAX'],['TPE','JFK']]){const d=codes.reduce((s,c,i)=>addDraftStop(s,airport(c),'s'+i),createTripDraft('long'));const a=draftGlobePreview(d).arcs[0];assert.ok(a.distanceKm>5000);assert.ok(a.altitude>=0.05&&a.altitude<=0.5)}})
 test('repeated directional flights retained individually',()=>{const d=['TPE','DXB','TPE','DXB'].reduce((s,c,i)=>addDraftStop(s,airport(c),'s'+i),createTripDraft('repeat'));const arcs=draftGlobePreview(d).arcs;assert.equal(arcs.length,3);assert.notEqual(arcs[0].flightId,arcs[2].flightId)})
 test('marker budget bounds 9940 records and gives selected airports priority',()=>{const a=airport('TPE');const subset=markerSubset([[a],catalog]);assert.equal(subset.length,48);assert.equal(subset[0].id,a.id);assert.equal(new Set(subset.map(a=>a.id)).size,48)})
@@ -54,13 +54,13 @@ test('pending regions and close-by non-priority markers cannot bypass selection 
 test('completed TPE KCZ uses the same country footprint for globe and flat map',()=>{
  const d=['TPE','KCZ'].reduce((s,c,i)=>addDraftStop(s,airport(c),'s'+i),createTripDraft('kcz'));d.status='completed'
  const before=structuredClone(d),p=draftGlobePreview(d)
- assert.deepEqual(p.colors,{'158':'#22c55e','392':'#22c55e'})
+ assert.deepEqual(p.colors,{'158':'#6F9E91','392':'#6F9E91'})
  assert.deepEqual(p.flatColors,p.colors);assert.equal(p.arcs.length,1)
  assert.equal(p.arcs[0].endLat,airport('KCZ').latitude);assert.deepEqual(d,before)
 })
 test('completed TPE DXB ATH has identical green and blue previews in both maps',()=>{
  const d=draft();d.status='completed';d.stops[1].countryPresence='transit';const p=draftGlobePreview(d)
- assert.deepEqual(p.flatColors,{'158':'#22c55e','300':'#22c55e','784':'#3b82f6'});assert.deepEqual(p.colors,p.flatColors);assert.equal(p.arcs.length,2)
+ assert.deepEqual(p.flatColors,{'158':'#6F9E91','300':'#6F9E91','784':'#8BB6CE'});assert.deepEqual(p.colors,p.flatColors);assert.equal(p.arcs.length,2)
 })
 for(const status of ['draft','planned','in_progress'])test(`${status} contributes no flat-map country preview`,()=>{
  const d=draft();d.status=status;const p=draftGlobePreview(d);assert.deepEqual(p.flatColors,{});assert.deepEqual(p.colors,{});assert.equal(p.arcs.length,2)

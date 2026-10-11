@@ -23,14 +23,14 @@ test('successful exchange returns exact current preview origin only',async()=>{
 })
 test('cancelled login never exchanges or echoes provider error details',async()=>{
  let calls=0;const url=await exchangeCallback('https://preview.example/auth/callback?error=access_denied&error_description=sensitive-fixture',async()=>{calls++;return true})
- assert.equal(calls,0);assert.equal(url.href,'https://preview.example/?auth_error=failed')
+ assert.equal(calls,0);assert.equal(url.href,'https://preview.example/login?auth_error=failed')
 })
 test('missing authorization code fails without exchange',async()=>{
  await exchangeCallback('https://preview.example/auth/callback',async()=>assert.fail('must not exchange'))
 })
 test('failed exchange produces generic same origin error',async()=>{
  const url=await exchangeCallback('https://preview.example/auth/callback?code=fixture',async()=>false)
- assert.equal(url.href,'https://preview.example/?auth_error=failed')
+ assert.equal(url.href,'https://preview.example/login?auth_error=failed')
 })
 test('network failure does not report success',async()=>{
  assert.equal((await exchangeCallback('https://preview.example/auth/callback?code=fixture',async()=>{throw Error('network')})).search,'?auth_error=failed')
@@ -63,7 +63,7 @@ test('Google flow uses same origin callback, clears editor on logout and has sta
  assert.match(fs.readFileSync('src/components/travel-workspace.tsx','utf8'),/TripDraftProvider key={generation}/)
 })
 test('Service Worker upgrade does not precache private root HTML',()=>{
- const code=fs.readFileSync('public/sw.js','utf8');assert.match(code,/globetrotter-v3/);assert.doesNotMatch(code,/const SHELL = \["\/"/)
+ const code=fs.readFileSync('public/sw.js','utf8');assert.match(code,/globetrotter-v4/);assert.doesNotMatch(code,/const SHELL = \["\/"/)
 })
 
 test('callback retains actual website host when Next normalizes an internal URL',()=>{

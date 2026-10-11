@@ -8,8 +8,11 @@ import ts from 'typescript'
 const source = ts.transpileModule(fs.readFileSync('src/lib/travel-core/core.ts', 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText
+const palette = {}
+const paletteSource = ts.transpileModule(fs.readFileSync('src/lib/travel-core/palette.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText
+new vm.Script(`(function(exports){${paletteSource}\n})`).runInThisContext()(palette)
 const api = {}
-new vm.Script(`(function(exports){${source}\n})`).runInThisContext()(api)
+new vm.Script(`(function(exports,require){${source}\n})`).runInThisContext()(api,name=>{assert.equal(name,'./palette');return palette})
 const { buildTripFromRoute, validateTrip, deriveFootprint, deriveCountryFootprint,
   deriveAirportUsage, deriveRouteGroups, buildArcDescriptors, splitAirportStop,
   mergeAirportStops, countryRecordsFromLegacy, validateAirports } = api
@@ -39,8 +42,8 @@ test('route generates one trip, two flights, three shared events and two arcs',(
 test('TPE-DXB-ATH totals, Taiwan identity, colors and transfer deduplication',()=>{
   const f=deriveFootprint([trip()],[],master)
   assert.deepEqual(f.countryTotals,{total:3,visited:2,transit:1})
-  assert.equal(byCountry(f,'TW').color,'#22c55e');assert.equal(byCountry(f,'GR').color,'#22c55e')
-  assert.equal(byCountry(f,'AE').color,'#3b82f6')
+  assert.equal(byCountry(f,'TW').color,'#6F9E91');assert.equal(byCountry(f,'GR').color,'#6F9E91')
+  assert.equal(byCountry(f,'AE').color,'#8BB6CE')
   assert.deepEqual(f.airportTotals,{distinct:3,total:3,connection:1,terminal:2})
   const d=f.airports.find(a=>a.airportId==='DXB');assert.equal(d.total,1);assert.equal(d.connection,1)
   assert.equal(d.events[0].flightIds.length,2)

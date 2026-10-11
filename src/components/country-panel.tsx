@@ -1,4 +1,7 @@
 "use client"
+import { useTripDraft } from "./trip-draft-provider"
+import { resolveCountry } from "@/lib/airport-data/countries"
+import { useAccount, useCountryData } from "./account-provider"
 
 import { useEffect, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
@@ -284,14 +287,11 @@ const SourceLinks = ({ info }: { info: CountryInfo }) => (
 )
 
 const CountryPanel = () => {
+  const {savedTrips,loadSaved}=useTripDraft()
   const t = useT()
   const selectedId = useTravelStore((s) => s.selectedId)
-  const statuses = useTravelStore((s) => s.statuses)
-  const notes = useTravelStore((s) => s.notes)
-  const setStatus = useTravelStore((s) => s.setStatus)
-  const setNote = useTravelStore((s) => s.setNote)
-  const reviews = useTravelStore((s) => s.reviews)
-  const setReview = useTravelStore((s) => s.setReview)
+  const {statuses,notes,reviews,setStatus,setNote,setReview}=useCountryData(true)
+  const account=useAccount()
   const close = () => useTravelStore.getState().select(null)
 
   useEffect(() => {
@@ -406,13 +406,13 @@ const CountryPanel = () => {
   return (
     <AnimatePresence>
       {selectedId && (
-        <motion.aside
+        <motion.aside data-country-panel
           key={selectedId}
           initial={{ x: "100%", opacity: 0.4 }}
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: "100%", opacity: 0 }}
           transition={{ type: "spring", stiffness: 320, damping: 34 }}
-          className="absolute right-0 top-0 z-20 flex h-full w-[min(360px,92vw)] flex-col gap-5 overflow-y-auto border-l border-[var(--border)] bg-[var(--panel)] p-5 shadow-2xl"
+          className="glass-card absolute right-0 top-0 z-20 flex h-full w-[min(360px,92vw)] flex-col gap-5 overflow-y-auto border-l border-[var(--border)] bg-[var(--panel)] p-5 pb-[calc(96px+env(safe-area-inset-bottom))] shadow-2xl md:pb-5"
         >
           <PanelHeader
             icon={info?.flag ?? "🗺"}
@@ -434,6 +434,12 @@ const CountryPanel = () => {
             closeLabel={t("close")}
           />
 
+          <section className="rounded-xl border border-[var(--border)] p-3" data-country-trips>
+            <h3 className="font-semibold">{t('trip.records')}</h3>
+            {savedTrips.trips.filter(r=>r.draft.stops.some(stop=>resolveCountry(stop.airport.sourceCountryCode)?.globeGeoIds.includes(selectedId!))).map(r=><button key={r.draft.id} className="min-h-11 w-full text-left text-sm" onClick={()=>loadSaved(r)}>{r.draft.title||r.draft.stops.map(s=>s.airport.iata??s.airport.ident).join(' → ')}</button>)}
+          </section>
+
+          <fieldset disabled={account.enabled && (!account.snapshot.ready || account.snapshot.busy)} className="contents">
           <PanelImage
             key={wiki?.image ?? "placeholder"}
             src={wiki?.image ?? null}
@@ -671,6 +677,16 @@ const CountryPanel = () => {
               className="resize-none rounded-lg border border-[var(--border)] bg-[var(--panel-2)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
             />
           </label>
+          </fieldset>
+          {account.enabled && <section className="space-y-2" aria-live="polite">
+            <p className="text-sm">{t(!account.snapshot.userId?'cloud.loginRequired':selectedId && !account.countryDrafts[selectedId] && account.snapshot.countries.some(r=>r.geoId===selectedId)?'cloud.saved':'cloud.countryHint')}</p>
+            {account.snapshot.error && <p role="alert">{t(`cloud.error.${account.snapshot.error}`)}</p>}
+            {account.snapshot.error==='conflict' && <button className="min-h-11 w-full rounded-lg border border-[var(--border)] px-3 py-2"
+              onClick={()=>{if(selectedId && window.confirm(t('cloud.discardConfirm'))){account.discardCountry(selectedId);void account.reload()}}}>{t('cloud.reloadCountry')}</button>}
+            <button className="min-h-11 w-full rounded-lg bg-[var(--accent)] px-3 py-2 font-semibold text-[var(--accent-ink)]"
+              disabled={!selectedId || !account.countryDrafts[selectedId] || !account.snapshot.ready || account.snapshot.busy}
+              onClick={()=>{if(selectedId)void account.saveCountry(selectedId)}}>{t(account.snapshot.busy?'cloud.syncing':'cloud.saveCountry')}</button>
+          </section>}
         </motion.aside>
       )}
     </AnimatePresence>

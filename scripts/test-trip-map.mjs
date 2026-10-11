@@ -24,13 +24,13 @@ function record(id,codes=['TPE','DXB','ATH']){
 }
 test('TPE KCZ committed colors and routes are identical on both maps',()=>{
  const m=savedTripMap([record('one',['TPE','KCZ'])],{})
- assert.equal(m.colors['158'],'#22c55e');assert.equal(m.colors['392'],'#22c55e')
+ assert.equal(m.colors['158'],'#6F9E91');assert.equal(m.colors['392'],'#6F9E91')
  assert.deepEqual(m.colors,m.flatColors);assert.equal(m.arcs.length,1)
  assert.equal(m.arcs[0].endLng,airport('KCZ').longitude);assert.equal(m.countryCount,2)
 })
 test('multi-stop completed trip has green TW GR, blue AE and two independent legs',()=>{
  const m=savedTripMap([record('one')],{})
- assert.deepEqual(m.colors,{'158':'#22c55e','784':'#3b82f6','300':'#22c55e'})
+ assert.deepEqual(m.colors,{'158':'#6F9E91','784':'#8BB6CE','300':'#6F9E91'})
  assert.deepEqual(m.colors,m.flatColors);assert.equal(m.arcs.length,2)
  assert.equal(m.visitedCount,2);assert.equal(m.transitCount,1);assert.equal(m.tripCount,1)
 })
@@ -45,19 +45,19 @@ test('manual visited outranks transit; all legacy preferences are immutable',()=
  const statuses={'784':'visited','392':'wishlist','158':'blocked'},original=structuredClone(statuses)
  const records=[record('a')],saved=structuredClone(records)
  const m=savedTripMap(records,statuses)
- assert.equal(m.colors['784'],'#22c55e');assert.equal(m.countryCount,3)
+ assert.equal(m.colors['784'],'#6F9E91');assert.equal(m.countryCount,3)
  assert.deepEqual(statuses,original);assert.deepEqual(records,saved)
  const deleted=savedTripMap([],statuses);assert.equal(deleted.countryCount,1)
- assert.equal(deleted.colors['784'],'#22c55e');assert.equal(deleted.colors['392'],undefined)
+ assert.equal(deleted.colors['784'],'#6F9E91');assert.equal(deleted.colors['392'],undefined)
 })
 test('manual and trip countries deduplicate; unresolved manual areas keep original counting',()=>{
  const m=savedTripMap([record('a',['TPE','KCZ'])],{'158':'visited','392':'visited','9999':'visited'})
- assert.equal(m.countryCount,3);assert.equal(m.colors['9999'],'#22c55e')
+ assert.equal(m.countryCount,3);assert.equal(m.colors['9999'],'#6F9E91')
 })
 test('edit/delete recomputes blue to green and preserves contributions from other trips',()=>{
  const a=record('a'),b=record('b');b.draft.stops[1].countryPresence='visited'
- assert.equal(savedTripMap([a,b],{}).colors['784'],'#22c55e')
- assert.equal(savedTripMap([a],{}).colors['784'],'#3b82f6')
+ assert.equal(savedTripMap([a,b],{}).colors['784'],'#6F9E91')
+ assert.equal(savedTripMap([a],{}).colors['784'],'#8BB6CE')
  assert.equal(savedTripMap([],{}).countryCount,0)
  assert.equal(savedTripMap([b],{}).flightCount,2)
 })
@@ -70,8 +70,8 @@ test('incomplete and invalid drafts produce no committed footprint or routes',()
 })
 test('preview composition is separate and visited wins; exiting restores saved-only values',()=>{
  const saved=savedTripMap([record('a')],{}),original=structuredClone(saved)
- const display=mergeMapColors(saved.colors,{'392':'#22c55e','784':'#22c55e','158':'#3b82f6'})
- assert.equal(display['158'],'#22c55e');assert.equal(display['784'],'#22c55e')
+ const display=mergeMapColors(saved.colors,{'392':'#6F9E91','784':'#6F9E91','158':'#8BB6CE'})
+ assert.equal(display['158'],'#6F9E91');assert.equal(display['784'],'#6F9E91')
  assert.deepEqual(saved,original);assert.equal(saved.colors['392'],undefined)
 })
 test('repository quota failure never publishes unsaved footprint; refresh restores success',()=>{

@@ -1,4 +1,5 @@
 "use client"
+import { useCountryData } from "./account-provider"
 
 import { mergeMapColors } from '@/lib/trip-map/core'
 import { PREVIEW_ROUTE_COLOR } from '@/lib/colors'
@@ -30,7 +31,6 @@ import {
   MAP_PALETTE,
   STATUS,
   baseFill,
-  lighten,
   type MapPalette,
 } from "@/lib/colors"
 import { useAdvisoryStore, combinedLevel } from "@/lib/advisory-store"
@@ -71,9 +71,8 @@ const CountryPaths = memo(function CountryPaths({
       {paths.map(({ f, d }) => {
         const selected = !previewColors[f.id] && f.id === selectedId
         const status = statuses[f.id]
-        // Borders convey STATUS only (wishlist dashed, blocked dotted, in their
-        // own colour); selection is the brightened fill — no extra outline,
-        // which on island-heavy countries just traced every coast in bright blue.
+        // Keep the functional fill fixed. Selection slightly strengthens the
+        // existing outline; wishlist/blocked retain their own border pattern.
         const patterned = !previewColors[f.id] && (status === "wishlist" || status === "blocked")
         const stroke = patterned ? STATUS[status] : palette.polygonStroke
         const dash = previewColors[f.id] ? undefined :
@@ -85,15 +84,11 @@ const CountryPaths = memo(function CountryPaths({
         return (
           <path
             key={f.id}
-            data-country-id={f.id}
+            data-country-id={f.id} data-country-selected={selectedId===f.id} style={{transition:"fill 650ms ease"}}
             d={d}
-            fill={
-              selected
-                ? lighten((previewColors[f.id] ?? baseFill(f.id, status, palette)), 0.32)
-                : (previewColors[f.id] ?? baseFill(f.id, status, palette))
-            }
+            fill={previewColors[f.id] ?? baseFill(f.id, status, palette)}
             stroke={stroke}
-            strokeWidth={patterned ? 1 : 0.5}
+            strokeWidth={selected ? 1.25 : patterned ? 1 : 0.5}
             strokeDasharray={dash}
             strokeLinejoin="round"
             strokeLinecap="round"
@@ -131,7 +126,7 @@ const FlatMap = ({ size }: Props) => {
   const zoomLocked = useTravelStore((s) => s.zoomLocked)
   const toggleZoomLock = useTravelStore((s) => s.toggleZoomLock)
   const liveSources = useAdvisoryStore((s) => s.sources)
-  const statuses = useTravelStore((s) => s.statuses)
+  const { statuses } = useCountryData()
   const theme = useResolvedTheme()
   const selectedId = useTravelStore((s) => s.selectedId)
   const focusId = useTravelStore((s) => s.focusId)
@@ -346,6 +341,7 @@ const FlatMap = ({ size }: Props) => {
     zoomRef.current = behavior
     svg.call(behavior)
     return () => {
+      svg.interrupt()
       svg.on(".zoom", null)
       if (raf) cancelAnimationFrame(raf)
     }
@@ -391,14 +387,17 @@ const FlatMap = ({ size }: Props) => {
           .translate(size.width / 2 - k * x, size.height / 2 - k * y)
           .scale(k),
       )
-    // Pan only when the focused country changes, not on every resize/re-render.
+    // A resize replaces the zoom behavior and projection. Restart the focus
+    // with the new viewport rather than leaving an interrupted partial zoom.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [focusId])
+  }, [focusId, size.width, size.height])
 
   // Travel preview must not inherit an unrelated country zoom. Keep the old
   // transform locally and restore it on exit; never change the country store.
   useEffect(() => {
     if (!svgRef.current || !zoomRef.current) return
+    // Unrelated idle updates must not cancel a country focus or user zoom.
+    if (!previewActive && !beforePreview.current) return
     const svg = select(svgRef.current)
     svg.interrupt()
     if (previewActive) {

@@ -1,7 +1,7 @@
 export type Identity = { id: string; email?: string }
 export type AuthState = { phase: 'loading'|'signed-out'|'ready'|'error'|'signing-out'; user: Identity|null }
 export function callbackDestination(requestURL: string, success: boolean) {
-  const url = new URL('/', new URL(requestURL).origin)
+  const url = new URL(success ? '/' : '/login', new URL(requestURL).origin)
   if (!success) url.searchParams.set('auth_error', 'failed')
   return url
 }

@@ -86,7 +86,7 @@ async function run(name,options){
  await save.click();await editor.getByText(t('trip.saved'),{exact:true}).first().waitFor();await editor.getByRole('button',{name:t('trip.close'),exact:true}).click()
  await menu(t,t('trip.records'));const records=page.getByRole('dialog',{name:t('trip.records'),exact:true});await records.locator('li').waitFor();await noOverflow(records);await page.screenshot({path:`/tmp/globetrotter-mist-${name}-records.png`});await records.getByRole('button',{name:t('trip.closeRecords'),exact:true}).click();await closeDrawer(t)
  await page.getByRole('button',{name:t('view.map'),exact:true}).click();const map=page.getByRole('img',{name:t('map.label'),exact:true});await map.waitFor();await within(map);assert.equal(await map.evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(220, 233, 237)')
- assert.equal(await page.locator('path[data-country-id="158"]').getAttribute('fill'),'#22c55e');assert.equal(await page.locator('path[data-country-id="392"]').getAttribute('fill'),'#22c55e')
+ assert.equal(await page.locator('path[data-country-id="158"]').getAttribute('fill'),'#6F9E91');assert.equal(await page.locator('path[data-country-id="392"]').getAttribute('fill'),'#6F9E91')
  await page.screenshot({path:`/tmp/globetrotter-mist-${name}-flat.png`})
  assert.deepEqual(await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('globetrotter:v1')).state;return {statuses:s.statuses,notes:s.notes,reviews:s.reviews}}),original)
  assert.deepEqual(errors,[]);console.log(`PASS ${name}: both mist variants, AA text contrast, functional colors, five locales, globe/editor/records/map screenshots, preserved legacy records`)

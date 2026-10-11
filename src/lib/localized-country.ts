@@ -10,6 +10,7 @@ const territories: Record<string, string> = {
   "fr-myt": "馬約特", "it-sic": "西西里島", "it-sar": "薩丁尼亞島",
   "pt-mad": "馬德拉群島", "pt-azo": "亞速群島", "gb-eng": "英格蘭",
   "gb-sct": "蘇格蘭", "gb-wls": "威爾斯", "gb-nir": "北愛爾蘭",
+  "826-eng": "英格蘭", "826-sco": "蘇格蘭", "826-wal": "威爾斯", "826-nir": "北愛爾蘭",
 }
 
 export const countryName = (id: string, locale: Locale, fallback = id): string => {

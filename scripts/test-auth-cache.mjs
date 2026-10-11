@@ -13,14 +13,14 @@ function worker() {
   if(reply)await reply;await Promise.all(waits);return !!reply
  }}
 }
-for(const path of ['/auth','/auth/callback?code=fake-test-code','/auth/logout','/api/trips','/api/countries','/account','/?_rsc=1','/?code=fake-test-code'])test(`private path ${path} bypasses SW response/cache`,async()=>{
+for(const path of ['/', '/login', '/login?auth_error=failed', '/auth','/auth/callback?code=fake-test-code','/auth/logout','/api/trips','/api/countries','/account','/?_rsc=1','/?code=fake-test-code'])test(`private path ${path} bypasses SW response/cache`,async()=>{
  const w=worker();assert.equal(await w.dispatch(path),false);assert.equal(w.requests,0);assert.deepEqual(w.writes,[])
 })
 test('RSC header bypasses even root',async()=>{const w=worker();assert.equal(await w.dispatch('/','navigate',{RSC:'1'}),false)})
 for(const directive of ['private, no-store','no-cache','no-store'])test(`root ${directive} response is not cached`,async()=>{
- const w=worker();w.response.headers.set('Cache-Control',directive);assert.equal(await w.dispatch('/'),true);assert.deepEqual(w.writes,[])
+ const w=worker();w.response.headers.set('Cache-Control',directive);assert.equal(await w.dispatch('/'),false);assert.deepEqual(w.writes,[])
 })
-test('anonymous successful root shell can still support offline cache',async()=>{const w=worker();await w.dispatch('/');assert.deepEqual(w.writes,['/'])})
+test('root never falls back to a cached pre-login shell',async()=>{const w=worker();assert.equal(await w.dispatch('/'),false);assert.equal(w.requests,0);assert.deepEqual(w.writes,[])})
 test('non-HTML and error root responses are not cached',async()=>{
  const a=worker();a.response.ok=false;await a.dispatch('/');assert.deepEqual(a.writes,[])
  const b=worker();b.response.headers.set('Content-Type','application/json');await b.dispatch('/');assert.deepEqual(b.writes,[])

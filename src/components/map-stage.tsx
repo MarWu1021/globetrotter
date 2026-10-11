@@ -9,6 +9,7 @@ import { useElementSize } from "@/lib/use-element-size"
 import { useT, LOCALES, detectLocale } from "@/lib/i18n"
 import { useFlightPoller } from "@/lib/flight"
 import { useTripDraft } from "./trip-draft-provider"
+import JourneyNotice from "./journey-notice"
 import TripGlobeControls from "./trip-globe-controls"
 import FlatMap from "@/components/flat-map"
 import MapLoader from "@/components/map-loader"
@@ -282,6 +283,7 @@ const MapStage = () => {
           </>
         )}
       </div>
+      <JourneyNotice />
       {view === "map" && <Compass />}
       {ready && !previewActive && <LayersControl />}
       {previewActive && <TripGlobeControls />}

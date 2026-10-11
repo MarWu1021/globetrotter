@@ -18,7 +18,7 @@ async function run(name,options){
  const editor=page.getByRole('dialog',{name:'旅行編輯',exact:true})
  async function add(code){await editor.getByRole('searchbox',{name:'搜尋機場',exact:true}).fill(code);await editor.locator('li').filter({has:page.getByRole('button',{name:'加入路線',exact:true})}).first().getByRole('button',{name:'加入路線',exact:true}).click()}
  async function view(v){await page.getByRole('button',{name:v==='map'?'平面地圖':'地球',exact:true}).click()}
- async function flatColors(expected){await page.waitForFunction(e=>JSON.stringify(JSON.parse(document.querySelector('[data-flat-preview-colors]').dataset.flatPreviewColors))===JSON.stringify(e),expected);for(const [id,color]of Object.entries(expected))assert.equal(await page.locator(`path[data-country-id="${id}"]`).getAttribute('fill'),id==='784'&&color==='#3b82f6'?'#22c55e':color,'Manual visited stays green while the trip-only preview remains transit')}
+ async function flatColors(expected){await page.waitForFunction(e=>JSON.stringify(JSON.parse(document.querySelector('[data-flat-preview-colors]').dataset.flatPreviewColors))===JSON.stringify(e),expected);for(const [id,color]of Object.entries(expected))assert.equal(await page.locator(`path[data-country-id="${id}"]`).getAttribute('fill'),id==='784'&&color==='#8BB6CE'?'#6F9E91':color,'Manual visited stays green while the trip-only preview remains transit')}
  async function globeColors(expected,arcs){await page.waitForFunction(({expected,arcs})=>{const g=document.querySelector('[data-preview-arcs]');return g?.dataset.previewArcs===String(arcs)&&JSON.stringify(JSON.parse(g.dataset.previewColors))===JSON.stringify(expected)},{expected,arcs});assert.equal(await page.locator('[data-airport-code]').count(),0,'View-only mode does not expose airport selection')}
  async function unchanged(){assert.equal(await page.evaluate(()=>localStorage.getItem('globetrotter:v1')),baseline)}
  await add('TPE');await add('KCZ');assert.equal(await editor.getByLabel('整趟旅行狀態',{exact:true}).count(),0,'Completed trips need no status selector')
@@ -28,9 +28,9 @@ async function run(name,options){
  if(options.isMobile && !await page.getByRole('button',{name:'建立旅行',exact:true}).isVisible())await page.getByRole('button',{name:'搜尋與我的旅行',exact:true}).click()
  await page.getByRole('button',{name:'建立旅行',exact:true}).click();assert.equal(await editor.locator('fieldset').count(),1)
  await editor.getByRole('button',{name:'查看旅行預覽',exact:true}).click()
- await view('map');await flatColors({'158':'#22c55e','392':'#22c55e'})
+ await view('map');await flatColors({'158':'#6F9E91','392':'#6F9E91'})
  assert.equal(await page.locator('path[data-country-id="392"]').getAttribute('stroke-dasharray'),null)
- await view('globe');await globeColors({'158':'#22c55e','392':'#22c55e'},1)
+ await view('globe');await globeColors({'158':'#6F9E91','392':'#6F9E91'},1)
  await page.locator('canvas').first().click({position:{x:100,y:100}})
  assert.equal(await page.locator('[data-testid="airport-confirmation"]').count(),0)
  if(options.isMobile){const map=await page.locator('canvas').first().boundingBox(),panel=await page.getByRole('region',{name:'查看旅行預覽',exact:true}).boundingBox();assert.ok(map.y+map.height<=panel.y+1,'Mobile preview panel does not cover the globe')}
@@ -45,7 +45,7 @@ async function run(name,options){
  page.once('dialog',d=>d.accept());await editor.getByRole('button',{name:'清除暫存草稿',exact:true}).click()
  await add('TPE');await add('DXB');await add('ATH');assert.equal(await editor.getByLabel('整趟旅行狀態',{exact:true}).count(),0,'Completed trips need no status selector');await editor.getByLabel('國家停留性質 DXB',{exact:true}).selectOption('transit')
  await editor.getByRole('button',{name:'查看旅行預覽',exact:true}).click()
- const colors={'158':'#22c55e','300':'#22c55e','784':'#3b82f6'}
+ const colors={'158':'#6F9E91','300':'#6F9E91','784':'#8BB6CE'}
  await view('map');await flatColors(colors);await view('globe');await globeColors(colors,2)
  await page.getByRole('button',{name:'返回編輯器',exact:true}).click();assert.equal(await editor.locator('fieldset').count(),2);await unchanged();assert.deepEqual(errors,[])
  console.log(`PASS ${name}: preview toggle, globe/flat actual fills, TPE/KCZ, transit colors, completed default, exit restoration, no accidental stop, unchanged storage`)

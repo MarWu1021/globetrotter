@@ -21,9 +21,14 @@ for(const width of (process.env.TEST_WIDTH?[Number(process.env.TEST_WIDTH)]:[128
   window.oldTripReads=0
   Storage.prototype.getItem=function(k){if(k===key)window.oldTripReads++;return original.call(this,k)}
  })
+ await context.route('**/api/account**',route=>route.fulfill({json:{userId:user?.id??null,result:user?{ok:true,value:[]}:{ok:false,error:'unauthenticated'}},headers:{'Cache-Control':'private, no-store'}}))
  await page.route('**/auth/session',route=>route.fulfill({status:failed?503:200,json:{user},headers:{'Cache-Control':'private, no-store'}}))
  await page.goto(url,{waitUntil:'domcontentloaded'})
- async function menu(){if(width<768 && !await page.getByRole('button',{name:'使用 Google 登入',exact:true}).isVisible() && !await page.getByRole('button',{name:'登出',exact:true}).isVisible())await page.getByRole('button',{name:'搜尋與我的旅行',exact:true}).click()}
+ async function menu(){
+  await page.waitForFunction(()=>document.querySelector('[data-login-page]')||document.querySelector('.map-stage'))
+  if(await page.locator('[data-login-page]').count())return
+  if(width<768&&!await page.getByRole('button',{name:'登出',exact:true}).isVisible())await page.getByRole('button',{name:'搜尋與我的旅行',exact:true}).click()
+ }
  await menu();await page.getByRole('button',{name:'使用 Google 登入',exact:true,includeHidden:true}).waitFor({state:'attached'});await menu();passed++
  assert.equal(await page.evaluate(()=>window.oldTripReads),0);passed++
  user={id:'test-account-a',email:'a@example.invalid'}

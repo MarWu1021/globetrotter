@@ -3,6 +3,7 @@
  * Run with the same optional Playwright environment as the other browser tests. */
 import { createRequire } from 'node:module'
 import assert from 'node:assert/strict'
+import {footprintPixel} from './browser-color-match.mjs'
 const require = createRequire(import.meta.url)
 const { chromium, devices } = require('playwright')
 const sharp = require('sharp')
@@ -13,7 +14,7 @@ const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', hea
 const samples = { TW: [23.7, 121], JP: [36.2, 138.2], AE: [24.2, 54.4], GR: [39, 22] }
 const names = { TW: '台灣', JP: '日本', AE: '阿拉伯聯合大公國', GR: '希臘' }
 const ids = { TW: '158', JP: '392', AE: '784', GR: '300' }
-const matches = (r,g,b,color) => color === 'green' ? g > 100 && g > r * 1.4 && g > b * 1.25 : color === 'red' ? r > 160 && r > g * 1.5 && r > b * 1.5 : color === 'purple' ? b > 140 && r > 100 && g < r * .8 : b > 160 && b - r > 80 && b - g > 60
+const matches = (r,g,b,color) => ['green','blue'].includes(color) ? footprintPixel(r,g,b,color) : color === 'red' ? r > 160 && r > g * 1.5 && r > b * 1.5 : b > 140 && r > 100 && g < r * .8
 async function pixels(buffer, color, point) {
   const { data, info } = await sharp(buffer).removeAlpha().raw().toBuffer({ resolveWithObject: true })
   let count = 0
@@ -23,6 +24,21 @@ async function pixels(buffer, color, point) {
     if (matches(data[i],data[i+1],data[i+2],color)) count++
   }
   return count
+}
+async function visibleCountry(page,id) {
+  // Horizontally wrapped maps can contain an offscreen copy before the visible
+  // copy. Sample the fully visible geometry rather than scrolling that copy.
+  const handle=await page.waitForFunction(id=>{
+    const paths=[...document.querySelectorAll(`path[data-country-id="${id}"]`)]
+    const index=paths.findIndex(p=>{
+      const b=p.getBoundingClientRect(),s=p.closest('svg').getBoundingClientRect()
+      return getComputedStyle(p).visibility==='visible' && b.width>0 && b.height>0 &&
+        b.left>=s.left && b.right<=s.right && b.top>=s.top && b.bottom<=s.bottom
+    })
+    return index>=0?{index}:false
+  },id)
+  const {index}=await handle.jsonValue();await handle.dispose()
+  return page.locator(`path[data-country-id="${id}"]`).nth(index)
 }
 async function attachGlobe(page) {
   await page.waitForFunction(() => {
@@ -65,7 +81,7 @@ async function paintedFrame(page,country,after) {
     if(!last||last.sequence<=after||Math.abs(pov.lat-target[0])>1e-4||Math.abs(pov.lng-target[1])>1e-4)return false
     if(!g.camera().position.toArray().every((v,i)=>Math.abs(v-last.camera[i])<1e-7))return false
     if(last.width!==r.domElement.width||last.height!==r.domElement.height||r.getContext().isContextLost())return false
-    if(!Object.entries(expected).every(([id,color])=>last.colors[id]===color))return false
+    if(!Object.entries(expected).every(([id,color])=>last.colors[id]?.toLowerCase()===color.toLowerCase()))return false
     // Freeze ONLY after the renderer has completed the matching camera/material frame.
     g.pauseAnimation()
     r.getContext().finish()
@@ -103,11 +119,11 @@ async function run(name,options) {
     async function view(mode) { await page.getByRole('button',{name:mode==='map'?'平面地圖':'地球',exact:true}).click() }
     async function unchanged() { assert.equal(await page.evaluate(()=>localStorage.getItem('globetrotter:v1')),baseline) }
     async function flat(country,color) {
-      const path = page.locator(`path[data-country-id="${ids[country]}"]`).first()
-      assert.equal(await path.getAttribute('fill'),color==='green'?'#22c55e':'#3b82f6')
+      const path = await visibleCountry(page,ids[country])
+      assert.equal(await path.getAttribute('fill'),color==='green'?'#6F9E91':'#8BB6CE')
       // SVG has an intentional 150ms CSS fill transition; attribute equality
       // alone precedes the painted/computed color. Wait for its real endpoint.
-      await page.waitForFunction(({id,color})=>getComputedStyle(document.querySelector(`path[data-country-id="${id}"]`)).fill===color,{id:ids[country],color:color==='green'?'rgb(34, 197, 94)':'rgb(59, 130, 246)'})
+      await page.waitForFunction(({id,color})=>getComputedStyle(document.querySelector(`path[data-country-id="${id}"]`)).fill===color,{id:ids[country],color:color==='green'?'rgb(111, 158, 145)':'rgb(139, 182, 206)'})
       const image = await path.screenshot({path:`/tmp/flat-visual-${name}-${country}.png`})
       console.log('FLAT',name,country,await path.boundingBox())
       assert.ok(await pixels(image,color) >= 1, `${name}: ${country} actually visible in flat-map screenshot`)
@@ -203,8 +219,8 @@ async function run(name,options) {
     assert.equal(await page.locator('path[data-country-id="158"]').first().getAttribute('fill'),'#ef4444')
     assert.equal(await page.locator('path[data-country-id="392"]').first().getAttribute('fill'),'#a855f7')
     await page.getByRole('button',{name:'重設視角',exact:true}).click(); await page.waitForTimeout(400)
-    assert.ok(await pixels(await page.locator('path[data-country-id="158"]').first().screenshot(),'red')>=1,'Original Taiwan red is rendered after exit')
-    assert.ok(await pixels(await page.locator('path[data-country-id="392"]').first().screenshot(),'purple')>=1,'Original Japan wishlist purple is rendered after exit')
+    assert.ok(await pixels(await (await visibleCountry(page,'158')).screenshot(),'red')>=1,'Original Taiwan red is rendered after exit')
+    assert.ok(await pixels(await (await visibleCountry(page,'392')).screenshot(),'purple')>=1,'Original Japan wishlist purple is rendered after exit')
     // A separate real mounted globe requests location before preview starts.
     // Deliver that callback late, while the SAME globe is previewing Japan.
     await page.reload()

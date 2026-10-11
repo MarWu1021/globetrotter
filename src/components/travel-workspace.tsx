@@ -1,21 +1,25 @@
 "use client"
 
-import { AuthProvider, useAuth } from "./auth-provider"
+import { useAuth } from "./auth-provider"
+import { AuthGate } from "./auth-gate"
 import { useEffect, useRef } from "react"
+import { AccountProvider } from "./account-provider"
 import { TripDraftProvider, useTripDraft } from "./trip-draft-provider"
 import { TripEditorHost } from "./trip-composer"
 import Sidebar from "@/components/sidebar"
+import MobileNavigation from "./mobile-navigation"
 import MapStage from "@/components/map-stage"
 import { useTravelStore } from "@/lib/store"
 import { useT } from "@/lib/i18n"
 
 export default function TravelWorkspace() {
-  return <AuthProvider><AuthenticatedWorkspace /></AuthProvider>
+  return <AuthGate><AuthenticatedWorkspace /></AuthGate>
 }
 
 function AuthenticatedWorkspace() {
   const {generation}=useAuth()
-  return <TripDraftProvider key={generation}><Workspace /></TripDraftProvider>
+  useEffect(()=>{useTravelStore.getState().select(null)},[generation])
+  return <AccountProvider key={generation}><TripDraftProvider key={generation}><Workspace /></TripDraftProvider></AccountProvider>
 }
 
 function Workspace() {
@@ -72,7 +76,7 @@ function Workspace() {
   }, [open, setOpen])
 
   return (
-    <><TripEditorHost /><div className="grid h-dvh min-w-0 grid-cols-1 grid-rows-1 overflow-hidden md:grid-cols-[340px_1fr]">
+    <><TripEditorHost /><MobileNavigation /><div className="grid h-dvh min-w-0 grid-cols-1 grid-rows-1 overflow-hidden md:grid-cols-[340px_1fr]">
       {open && (
         <div
           className="fixed inset-0 z-40 bg-[var(--scrim)] md:hidden"
@@ -109,9 +113,9 @@ function Workspace() {
         onClick={() => setOpen(true)}
         aria-expanded={open}
         aria-controls="travel-panel"
-        className="fixed inset-x-4 bottom-[calc(12px+env(safe-area-inset-bottom))] z-30 min-h-11 rounded-2xl border border-[var(--border-strong)] bg-[var(--panel)] px-4 py-3 font-semibold text-[var(--ink)] shadow-lg md:hidden"
+        className="fixed left-3 top-[calc(104px+env(safe-area-inset-top))] z-30 min-h-11 min-w-11 rounded-2xl border border-[var(--border-strong)] bg-[var(--panel)] px-4 py-3 font-semibold text-[var(--ink)] shadow-lg md:hidden"
       >
-        {t("mobile.travels")}
+        <span aria-hidden="true">⌕</span><span className="sr-only">{t("mobile.travels")}</span>
       </button>
     </div></>
   )

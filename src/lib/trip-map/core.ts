@@ -1,11 +1,12 @@
+import { FOOTPRINT_COLORS } from '../travel-core/palette'
 import { draftGlobePreview } from '../trip-draft/globe'
 import type { SavedTrip } from '../trip-storage/core'
 import { previewTripDraft } from '../trip-draft/core'
 import { COUNTRY_MAPPINGS } from '../airport-data/countries'
 import type { ArcDescriptor } from '../travel-core/models'
 
-export const VISITED_COLOR = '#22c55e'
-export const TRANSIT_COLOR = '#3b82f6'
+export const VISITED_COLOR = FOOTPRINT_COLORS.visited
+export const TRANSIT_COLOR = FOOTPRINT_COLORS.transit
 export type MapColors = Record<string, string>
 /** Visual composition only. Never changes legacy statuses/preferences or storage. */
 export function mergeMapColors(...layers: readonly MapColors[]): MapColors {

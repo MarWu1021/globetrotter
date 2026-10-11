@@ -1,4 +1,8 @@
 "use client"
+import {countryFade} from "@/lib/presentation/country-fade"
+import { journeyFrame } from "@/lib/presentation/journey"
+import { useMotionPolicy } from "@/lib/presentation/use-motion-policy"
+import { useCountryData } from "./account-provider"
 
 import {
   useCallback,
@@ -24,7 +28,7 @@ import {
 } from "@/lib/geo"
 import { getCountryInfo, getCapitalLatLng } from "@/lib/country-info"
 import { useTravelStore } from "@/lib/store"
-import { MAP_PALETTE, PREVIEW_ROUTE_COLOR, lighten, baseFill } from "@/lib/colors"
+import { MAP_PALETTE, PREVIEW_ROUTE_COLOR, baseFill } from "@/lib/colors"
 import { OCEANS, oceanTip } from "@/lib/oceans"
 import { LAYERS, KIND_ICON, type TransportPoint } from "@/lib/transport"
 import { useAdvisoryStore, combinedLevel } from "@/lib/advisory-store"
@@ -77,8 +81,8 @@ type HtmlItem =
 // ISS poll re-renders this component every few seconds.
 const draftArcAltitude = (d:object) => renderedArcAltitude(d as {distanceKm:number;altitude:number})
 const draftArcColor = () => PREVIEW_ROUTE_COLOR
-const routeDashLength = (d:object) => "count" in d ? 1 : 0.2
-const routeDashGap = (d:object) => "count" in d ? 0 : 0.08
+const routeDashLength = (d:object) => "reveal" in d ? Number(d.reveal) : "count" in d ? 1 : 0.2
+const routeDashGap = (d:object) => "reveal" in d ? 1 : "count" in d ? 0 : 0.08
 // A string is a feature-field accessor, not a literal colour, in three-globe.
 const polygonStrokeColor = () => MAP_PALETTE.dark.polygonStroke
 const labelLat = (d: object) => (d as GlobeLabel).lat
@@ -139,8 +143,11 @@ const MOON_DISC = `<svg width="26" height="26" viewBox="0 0 26 26" style="displa
 const SUN_DISC = `<svg width="30" height="30" viewBox="0 0 30 30" style="display:block"><circle cx="15" cy="15" r="13" fill="#ffd86b" opacity=".2"/><circle cx="15" cy="15" r="8.5" fill="#ffe89a" opacity=".5"/><circle cx="15" cy="15" r="5.5" fill="#fff6da" opacity=".97" stroke="rgba(214,158,46,.7)" stroke-width="1" paint-order="stroke"/></svg>`
 
 const GlobeView = ({ size }: Props) => {
-  const { savedMap, draft, opened, picking, previewActive, mapPreview: preview, searchAirports, setCandidate, focusAirport } = useTripDraft()
+  const policy=useMotionPolicy()
+  const { journey,markJourneyReady,journeyElapsed,skipJourney,savedMap, draft, opened, picking, previewActive, mapPreview: preview, searchAirports, setCandidate, focusAirport } = useTripDraft()
   const t = useT(), locale = useTravelStore(s=>s.locale)
+  const [globeReady,setGlobeReady]=useState(false)
+  useEffect(()=>{if(journey&&globeReady)markJourneyReady()},[journey,globeReady,markJourneyReady])
   const [regional,setRegional] = useState<CatalogAirport[]>([])
   const [spacing,setSpacing] = useState(5)
   const [regionalError,setRegionalError] = useState(false)
@@ -161,9 +168,15 @@ const GlobeView = ({ size }: Props) => {
   useEffect(()=>{hasSavedRoutesRef.current=savedMap.arcs.length>0},[savedMap.arcs.length])
   const previewActiveRef = useRef(previewActive)
   useEffect(() => { previewActiveRef.current = previewActive }, [previewActive])
-  const statuses = useTravelStore((s) => s.statuses)
+  const { statuses } = useCountryData()
   const displayColors=useMemo(()=>mergeMapColors(savedMap.colors,previewActive?preview.colors:{}),[savedMap.colors,previewActive,preview.colors])
-  const displayArcs=useMemo(()=>previewActive?[...savedMap.renderedArcs,...preview.arcs]:savedMap.renderedArcs,[savedMap.renderedArcs,previewActive,preview.arcs])
+  const frame=journey?journeyFrame(journey.arcs,journeyElapsed):null
+  const displayArcs=useMemo(()=>{
+    const frame=journey?journeyFrame(journey.arcs,journeyElapsed):null
+    const existing=journey?savedMap.renderedArcs.filter(a=>a.flightRefs.some(ref=>ref.tripId!==journey.tripId)):savedMap.renderedArcs
+    const animated=journey&&frame?journey.arcs.slice(0,frame.index+1).map((a,i)=>({...a,reveal:i===frame.index?frame.progress:1})):[]
+    return [...existing,...animated,...(previewActive?preview.arcs:[])]
+  },[savedMap.renderedArcs,previewActive,preview.arcs,journey,journeyElapsed])
   const autoSpin = useTravelStore((s) => s.autoSpin)
   const zoomLocked = useTravelStore((s) => s.zoomLocked)
   const focusId = useTravelStore((s) => s.focusId)
@@ -198,10 +211,10 @@ const GlobeView = ({ size }: Props) => {
     (d: object) => {
       const f = d as CountryFeature
       const fill = displayColors[f.id] ?? baseFill(f.id, statuses[f.id], palette)
-      // Selection keeps the status/ice colour but brightened.
-      return !displayColors[f.id] && !previewActive && f.id === selectedId ? lighten(fill, 0.32) : fill
+      // The selected capital marker is separate; keep the functional fill fixed.
+      return fill
     },
-    [statuses, selectedId, palette, previewActive, displayColors],
+    [statuses, palette, displayColors],
   )
 
   // Cursor-following hover, identical to the flat map: track the pointer and,
@@ -474,9 +487,9 @@ const GlobeView = ({ size }: Props) => {
   useEffect(() => {
     const controls = globeRef.current?.controls()
     if (!controls) return
-    controls.autoRotate = autoSpin && !picking
+    controls.autoRotate = autoSpin && !picking && !journey && !selectedId && !policy.reduced
     controls.autoRotateSpeed = 0.6
-  }, [autoSpin, size.width, picking])
+  }, [autoSpin, size.width, picking,journey,selectedId,policy.reduced])
 
   // Hide heavy markers only during explicit gestures. Auto-spin emits change
   // continuously, so a change-event debounce would hide markers forever.
@@ -485,11 +498,12 @@ const GlobeView = ({ size }: Props) => {
     if (!controls) return
     const motion = markerMotionController(setRotating)
     motion.end()
+    const onStart=()=>{motion.start();skipJourney()}
     const onEnd = () => { motion.end(); if(picking) {const pov=globeRef.current?.pointOfView();if(pov)fetchRegional(pov.lat,pov.lng,pov.altitude)} }
-    controls.addEventListener("start", motion.start)
+    controls.addEventListener("start", onStart)
     controls.addEventListener("end", onEnd)
-    return () => {controls.removeEventListener("start",motion.start);controls.removeEventListener("end",onEnd);motion.dispose()}
-  }, [size.width,picking,fetchRegional])
+    return () => {controls.removeEventListener("start",onStart);controls.removeEventListener("end",onEnd);motion.dispose()}
+  }, [size.width,picking,fetchRegional,skipJourney])
 
   useEffect(()=>{
     if(!previewActive) return
@@ -516,9 +530,9 @@ const GlobeView = ({ size }: Props) => {
 
   // No background WebGL work while the full trip editor covers the globe.
   useEffect(()=>{
-    if(opened) globeRef.current?.pauseAnimation()
+    if(opened||policy.hidden) globeRef.current?.pauseAnimation()
     else globeRef.current?.resumeAnimation()
-  },[opened,size.width])
+  },[opened,size.width,policy.hidden])
 
   // Honour the global zoom-lock: disable the globe's zoom control while locked.
   useEffect(() => {
@@ -527,16 +541,16 @@ const GlobeView = ({ size }: Props) => {
   }, [zoomLocked, size.width])
 
   useEffect(() => {
-    if (previewActive || !focusId) return
-    const target = countryById.get(focusId)
+    if (previewActive || !(focusId||selectedId)) return
+    const target = countryById.get((selectedId||focusId)!)
     if (!target) return
     const [lng, lat] = target.centroid
-    globeRef.current?.pointOfView({ lat, lng, altitude: 1.6 }, 900)
-  }, [focusId, previewActive])
+    globeRef.current?.pointOfView({ lat, lng, altitude: 1.6 }, policy.reduced?0:900)
+  }, [focusId,selectedId, previewActive,policy.reduced])
 
   // Frame committed routes once per change, never for unsaved editor changes.
   useEffect(()=>{
-    if(previewActive || opened || !globeRef.current) return
+    if(previewActive || opened || journey || selectedId || !globeRef.current) return
     const key=JSON.stringify([size.width,size.height,savedMap.renderedArcs.map(a=>[a.tripId,a.flightId,a.startLat,a.startLng,a.endLat,a.endLng])])
     if(key===savedCameraKey.current) return
     savedCameraKey.current=key
@@ -544,10 +558,45 @@ const GlobeView = ({ size }: Props) => {
     if(!arc)return
     const altitude=size.width<768?Math.max(1.8,size.height/Math.max(1,size.width)*1.9):1.8
     globeRef.current.pointOfView({lat:arc.startLat,lng:arc.startLng,altitude},0)
-  },[savedMap.renderedArcs,previewActive,opened,size.width,size.height])
+  },[savedMap.renderedArcs,previewActive,opened,journey,selectedId,size.width,size.height])
 
+  // polygonsTransitionDuration changes altitude only; cap colours need their
+  // own bounded material fade. Confirmed model colours remain untouched.
+  useEffect(()=>{
+    if(!journey||!globeReady||policy.reduced||policy.hidden)return
+    const g=globeRef.current;if(!g)return
+    const from=(id:string)=>journey.fromColors[id]??baseFill(id,statuses[id],palette)
+    const targets=Object.fromEntries(Object.entries(displayColors).filter(([id,color])=>globeCountryFeatures.some(f=>f.id===id)&&from(id)!==color))
+    if(!Object.keys(targets).length)return
+    let fade:ReturnType<typeof countryFade>|null=null,raf=0,elapsed=0,previous=0,waiting=0
+    const tick=(now:number)=>{
+      if(!waiting)waiting=now
+      if(!fade){const candidate=countryFade(g.scene(),targets,from)
+        if(candidate.countries!==Object.keys(targets).length){candidate.dispose();if(now-waiting<1200)raf=requestAnimationFrame(tick);return}
+        fade=candidate;previous=now
+      }
+      elapsed+=Math.min(100,now-previous);previous=now
+      const progress=Math.min(1,elapsed/650);fade.apply(progress)
+      if(progress<1)raf=requestAnimationFrame(tick);else {fade.dispose();fade=null}
+    }
+    raf=requestAnimationFrame(tick)
+    return()=>{cancelAnimationFrame(raf);fade?.dispose()}
+  },[journey,globeReady,policy.reduced,policy.hidden,displayColors,statuses,palette])
+  const legIndex=frame?.index??-1
+  useEffect(()=>{
+    if(!journey||legIndex<0)return
+    const arc=journey.arcs[legIndex]
+    savedCameraKey.current=JSON.stringify([size.width,size.height,savedMap.renderedArcs.map(a=>[a.tripId,a.flightId,a.startLat,a.startLng,a.endLat,a.endLng])])
+    const altitude=size.width<768?Math.max(1.8,size.height/Math.max(1,size.width)*1.9):1.8
+    globeRef.current?.pointOfView({lat:arc.endLat,lng:arc.endLng,altitude},policy.reduced?0:1000)
+  },[journey,legIndex,policy.reduced,size.width,size.height,savedMap.renderedArcs])
+  const [expiredHighlight,setExpiredHighlight]=useState<string|null>(null)
+  useEffect(()=>{if(!selectedId)return;const timer=setTimeout(()=>setExpiredHighlight(selectedId),1800);return()=>clearTimeout(timer)},[selectedId])
+  const highlight=selectedId!==expiredHighlight?selectedId:null
+  const selectedStroke=useCallback((d:object)=>(d as CountryFeature).id===highlight?'#486B80':polygonStrokeColor(),[highlight])
+  useEffect(()=>()=>oceanMaterial.dispose(),[oceanMaterial])
   return (
-    <div className="h-full w-full" data-saved-colors={JSON.stringify(savedMap.colors)} data-saved-arcs={savedMap.arcs.length} data-globe-points={points.length} data-preview-arcs={previewActive ? preview.arcs.length : 0} data-preview-colors={previewActive ? JSON.stringify(preview.colors) : "{}"} onMouseMove={onMove}
+    <div className="h-full w-full" data-journey-leg={legIndex} data-journey-progress={frame?.progress??1} data-saved-colors={JSON.stringify(savedMap.colors)} data-saved-arcs={savedMap.arcs.length} data-globe-points={points.length} data-preview-arcs={previewActive ? preview.arcs.length : 0} data-preview-colors={previewActive ? JSON.stringify(preview.colors) : "{}"} onMouseMove={onMove}
       onPointerDownCapture={e=>{if(!tap.current.pointers.size){tap.current.start={x:e.clientX,y:e.clientY};tap.current.multiple=false;tap.current.moved=false}tap.current.pointers.add(e.pointerId);if(tap.current.pointers.size>1)tap.current.multiple=true;tap.current.eligible=false}}
       onPointerMoveCapture={e=>{if(tap.current.pointers.size&&Math.hypot(e.clientX-tap.current.start.x,e.clientY-tap.current.start.y)>8)tap.current.moved=true}}
       onPointerUpCapture={e=>{tap.current.eligible=isAirportTap(tap.current.start,{x:e.clientX,y:e.clientY},tap.current.multiple||tap.current.moved);tap.current.pointers.delete(e.pointerId)}}
@@ -557,6 +606,7 @@ const GlobeView = ({ size }: Props) => {
       {picking && regionalError && <p role="alert" className="absolute left-3 top-3 z-20 max-w-xs bg-[var(--panel)] p-2 text-sm">{t("trip.regionalError")}</p>}
       <Globe
         ref={globeRef}
+        onGlobeReady={()=>setGlobeReady(true)}
         width={size.width}
         height={size.height}
         backgroundColor="rgba(0,0,0,0)"
@@ -568,10 +618,10 @@ const GlobeView = ({ size }: Props) => {
         polygonAltitude={0.01}
         polygonCapColor={capColor}
         polygonSideColor="rgba(0,0,0,0)"
-        polygonStrokeColor={polygonStrokeColor}
+        polygonStrokeColor={selectedStroke}
         onPolygonHover={onPolygonHover}
         onPolygonClick={handleClick}
-        polygonsTransitionDuration={150}
+        polygonsTransitionDuration={policy.reduced?0:650}
         labelsData={labels}
         labelLat={labelLat}
         labelLng={labelLng}

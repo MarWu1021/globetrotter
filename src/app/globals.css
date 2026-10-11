@@ -15,9 +15,9 @@
   }
 
   /* Detail panels are sheets; leave the globe visible above them. */
-  .map-stage > aside {
+  .map-stage [data-country-panel] {
     top: auto;
-    bottom: 0;
+    bottom: calc(76px + env(safe-area-inset-bottom));
     width: 100%;
     height: min(58dvh, 560px);
     border-radius: 24px 24px 0 0;
@@ -27,7 +27,7 @@
     overscroll-behavior: contain;
   }
 
-  .map-stage > aside > header:first-child {
+  .map-stage [data-country-panel] > header:first-child {
     position: sticky;
     top: -20px;
     z-index: 1;
@@ -206,3 +206,18 @@ dialog::backdrop { background: var(--scrim); }
   font: 600 12px var(--font-geist-sans), system-ui, sans-serif;
   cursor: pointer;
 }
+
+/* Restrained glass: solid fallback, a single shallow blur, readable opaque ink. */
+:root { --glass: rgba(244,247,248,.92); --glass-shadow: 0 6px 24px rgba(72,107,128,.10); }
+.glass-card { background:var(--panel); box-shadow:var(--glass-shadow); }
+@supports (backdrop-filter: blur(6px)) {
+  .glass-card { background:var(--glass); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); }
+}
+@media (max-width:767px) {
+  .glass-card { backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .glass-card { backdrop-filter:none; -webkit-backdrop-filter:none; }
+}
+[data-country-selected="true"] { animation: country-outline 1.8s ease-out; }
+@keyframes country-outline { 0%,25% { stroke:var(--sea-blue); stroke-width:2; } 100% { stroke:var(--sea-blue); } }

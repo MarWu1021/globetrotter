@@ -303,4 +303,192 @@ begin
 end $$;
 revoke all on function public.d1_restore_country(text,bigint,uuid) from public, anon;
 grant execute on function public.d1_restore_country(text,bigint,uuid) to authenticated;
+-- Finalize ONLY this migration's objects after all CREATE FUNCTION/DDL events.
+-- Never change global defaults, roles or the existing ensure_rls Event Trigger.
+revoke all on public.trips, public.country_records from public, anon, authenticated;
+grant select,insert,update on public.trips, public.country_records to authenticated;
+-- Table-level REVOKE does not remove independent column ACLs.
+-- Keep the loop record distinct from catalog aliases: c.relname must bind to pg_class.
+do $$ declare column_acl_row record; begin
+  for column_acl_row in select n.nspname,c.relname,a.attname from pg_catalog.pg_attribute a
+    join pg_catalog.pg_class c on c.oid=a.attrelid
+    join pg_catalog.pg_namespace n on n.oid=c.relnamespace
+    where n.nspname='public' and c.relname in ('trips','country_records')
+      and a.attnum>0 and not a.attisdropped loop
+    execute format('revoke all (%I) on table %I.%I from public, anon, authenticated',column_acl_row.attname,column_acl_row.nspname,column_acl_row.relname);
+  end loop;
+end $$;
+revoke all on function public.d1_utf16_length(text) from public, anon;
+grant execute on function public.d1_utf16_length(text) to authenticated;
+revoke all on function public.d1_json_text(jsonb,integer,boolean,boolean) from public, anon;
+grant execute on function public.d1_json_text(jsonb,integer,boolean,boolean) to authenticated;
+revoke all on function public.d1_valid_date(text) from public, anon;
+grant execute on function public.d1_valid_date(text) to authenticated;
+revoke all on function public.d1_valid_timestamp(jsonb) from public, anon;
+grant execute on function public.d1_valid_timestamp(jsonb) to authenticated;
+revoke all on function public.d1_valid_airport_revision(jsonb) from public, anon;
+grant execute on function public.d1_valid_airport_revision(jsonb) to authenticated;
+revoke all on function public.d1_valid_airport(jsonb) from public, anon;
+grant execute on function public.d1_valid_airport(jsonb) to authenticated;
+revoke all on function public.d1_valid_trip(jsonb) from public, anon;
+grant execute on function public.d1_valid_trip(jsonb) to authenticated;
+revoke all on function public.d1_guard_revision() from public, anon, authenticated;
+revoke all on function public.d1_write_trip(text,jsonb,bigint,uuid) from public, anon;
+grant execute on function public.d1_write_trip(text,jsonb,bigint,uuid) to authenticated;
+revoke all on function public.d1_write_country(text,text,text,jsonb,boolean,bigint,uuid) from public, anon;
+grant execute on function public.d1_write_country(text,text,text,jsonb,boolean,bigint,uuid) to authenticated;
+revoke all on function public.d1_restore_country(text,bigint,uuid) from public, anon;
+grant execute on function public.d1_restore_country(text,bigint,uuid) to authenticated;
+-- Fail closed before COMMIT. Catalog/privilege checks do not insert test data.
+-- Any exception aborts the entire initial-schema transaction, including Event Trigger DDL.
+do $$
+declare
+  role_name text; privilege_name text; table_name text; oid_table oid;
+  client_role record; reachable_role record; expected record; policy_row record; function_row record;
+  qual_text text; check_text text;
+  denied text[] := array['DELETE','TRUNCATE','REFERENCES','TRIGGER'];
+begin
+  if current_setting('server_version_num')::integer >= 170000 then denied := array_append(denied,'MAINTAIN'); end if;
+  foreach role_name in array array['anon','authenticated'] loop
+    select * into client_role from pg_catalog.pg_roles where rolname=role_name;
+    if not found or client_role.rolsuper or client_role.rolbypassrls then
+      raise exception 'unsafe or missing client role: %',role_name;
+    end if;
+    -- Check membership too: NOINHERIT membership may still permit SET ROLE.
+    if exists(select 1 from pg_catalog.pg_roles admin_role
+      where (admin_role.rolsuper or admin_role.rolbypassrls or admin_role.rolname in ('postgres','supabase_admin','service_role'))
+        and pg_catalog.pg_has_role(client_role.oid,admin_role.oid,'MEMBER')) then
+      raise exception 'client role belongs to an administrative role: %',role_name;
+    end if;
+    foreach table_name in array array['trips','country_records'] loop
+      select c.oid into oid_table from pg_catalog.pg_class c join pg_catalog.pg_namespace n on n.oid=c.relnamespace
+        where n.nspname='public' and c.relname=table_name and c.relkind='r'
+          and c.relrowsecurity and c.relforcerowsecurity
+          and not pg_catalog.pg_has_role(client_role.oid,c.relowner,'MEMBER');
+      if not found then raise exception 'missing RLS or unsafe owner: %',table_name; end if;
+      foreach privilege_name in array array['SELECT','INSERT','UPDATE'] loop
+        if pg_catalog.has_table_privilege(client_role.oid,oid_table,privilege_name) is distinct from (role_name='authenticated') then
+          raise exception 'unexpected effective table privilege: % % %',role_name,table_name,privilege_name;
+        end if;
+        if pg_catalog.has_table_privilege(client_role.oid,oid_table,privilege_name||' WITH GRANT OPTION')
+          or pg_catalog.has_any_column_privilege(client_role.oid,oid_table,privilege_name||' WITH GRANT OPTION') then
+          raise exception 'client grant option remains: % % %',role_name,table_name,privilege_name;
+        end if;
+      end loop;
+      foreach privilege_name in array denied loop
+        if pg_catalog.has_table_privilege(client_role.oid,oid_table,privilege_name) then
+          raise exception 'dangerous effective privilege: % % %',role_name,table_name,privilege_name;
+        end if;
+      end loop;
+      -- Effective helpers include INHERIT. Also reject dangerous grants reachable
+      -- through NOINHERIT memberships that could be exercised by SET ROLE.
+      for reachable_role in select r.oid,r.rolname from pg_catalog.pg_roles r
+        where r.oid<>client_role.oid and pg_catalog.pg_has_role(client_role.oid,r.oid,'MEMBER') loop
+        foreach privilege_name in array denied loop
+          if pg_catalog.has_table_privilege(reachable_role.oid,oid_table,privilege_name) then
+            raise exception 'dangerous SET ROLE privilege: % via % % %',role_name,reachable_role.rolname,table_name,privilege_name;
+          end if;
+        end loop;
+        foreach privilege_name in array array['SELECT','INSERT','UPDATE'] loop
+          if pg_catalog.has_table_privilege(reachable_role.oid,oid_table,privilege_name||' WITH GRANT OPTION')
+            or pg_catalog.has_any_column_privilege(reachable_role.oid,oid_table,privilege_name||' WITH GRANT OPTION') then
+            raise exception 'SET ROLE grant option: % via % % %',role_name,reachable_role.rolname,table_name,privilege_name;
+          end if;
+        end loop;
+        if pg_catalog.has_any_column_privilege(reachable_role.oid,oid_table,'REFERENCES') then
+          raise exception 'SET ROLE column REFERENCES: % via % %',role_name,reachable_role.rolname,table_name;
+        end if;
+        if role_name='anon' and (pg_catalog.has_any_column_privilege(reachable_role.oid,oid_table,'SELECT')
+          or pg_catalog.has_any_column_privilege(reachable_role.oid,oid_table,'INSERT')
+          or pg_catalog.has_any_column_privilege(reachable_role.oid,oid_table,'UPDATE')) then
+          raise exception 'anonymous SET ROLE data privilege: % %',reachable_role.rolname,table_name;
+        end if;
+      end loop;
+      foreach privilege_name in array array['SELECT','INSERT','UPDATE','REFERENCES'] loop
+        if pg_catalog.has_any_column_privilege(client_role.oid,oid_table,privilege_name)
+          is distinct from (role_name='authenticated' and privilege_name<>'REFERENCES') then
+          raise exception 'unexpected effective column privilege: % % %',role_name,table_name,privilege_name;
+        end if;
+      end loop;
+      if exists(select 1 from pg_catalog.pg_class c cross join lateral pg_catalog.aclexplode(c.relacl) a
+        where c.oid=oid_table and a.grantee=0)
+        or exists(select 1 from pg_catalog.pg_attribute c cross join lateral pg_catalog.aclexplode(c.attacl) a
+          where c.attrelid=oid_table and c.attnum>0 and not c.attisdropped and a.grantee=0) then
+        raise exception 'PUBLIC ACL remains: %',table_name;
+      end if;
+      if (select count(*) from pg_catalog.pg_policy where polrelid=oid_table)<>3 then
+        raise exception 'unexpected policy count: %',table_name;
+      end if;
+      if (select count(*) from pg_catalog.pg_trigger where tgrelid=oid_table and not tgisinternal)<>1 then
+        raise exception 'unexpected application trigger count: %',table_name;
+      end if;
+      if not exists(select 1 from pg_catalog.pg_trigger where tgrelid=oid_table
+        and tgname=case when table_name='trips' then 'trips_revision' else 'country_records_revision' end
+        and tgfoid='public.d1_guard_revision()'::regprocedure and tgtype=23
+        and tgenabled in ('O','A') and not tgisinternal and tgqual is null and tgnargs=0) then
+        raise exception 'missing or unsafe revision trigger: %',table_name;
+      end if;
+    end loop;
+  end loop;
+  for expected in select * from (values
+    ('trips','trips_read','r'),('trips','trips_insert','a'),('trips','trips_update','w'),
+    ('country_records','countries_read','r'),('country_records','countries_insert','a'),('country_records','countries_update','w')
+  ) e(table_name,policy_name,command) loop
+    select p.* into policy_row from pg_catalog.pg_policy p
+      where p.polrelid=format('public.%I',expected.table_name)::regclass and p.polname=expected.policy_name;
+    if not found or policy_row.polcmd::text<>expected.command or not policy_row.polpermissive
+      or policy_row.polroles is distinct from array[(select oid from pg_catalog.pg_roles where rolname='authenticated')]::oid[] then
+      raise exception 'unexpected policy scope: %',expected.policy_name;
+    end if;
+    -- Compare the deparsed expression, not merely policy names/counts.
+    -- Removing parentheses/whitespace leaves the exact scalar auth.uid() owner check.
+    qual_text := regexp_replace(pg_catalog.pg_get_expr(policy_row.polqual,policy_row.polrelid),'[[:space:]()]','','g');
+    check_text := regexp_replace(pg_catalog.pg_get_expr(policy_row.polwithcheck,policy_row.polrelid),'[[:space:]()]','','g');
+    if (expected.command in ('r','w') and qual_text is distinct from 'SELECTauth.uidASuid=user_id')
+      or (expected.command='a' and policy_row.polqual is not null)
+      or (expected.command in ('a','w') and check_text is distinct from 'SELECTauth.uidASuid=user_id')
+      or (expected.command='r' and policy_row.polwithcheck is not null) then
+      raise exception 'unexpected policy predicate: %',expected.policy_name;
+    end if;
+  end loop;
+  for expected in select * from (values
+    ('public.d1_utf16_length(text)',true),('public.d1_json_text(jsonb,integer,boolean,boolean)',true),
+    ('public.d1_valid_date(text)',true),('public.d1_valid_timestamp(jsonb)',true),
+    ('public.d1_valid_airport_revision(jsonb)',true),('public.d1_valid_airport(jsonb)',true),
+    ('public.d1_valid_trip(jsonb)',true),('public.d1_guard_revision()',false),
+    ('public.d1_write_trip(text,jsonb,bigint,uuid)',true),
+    ('public.d1_write_country(text,text,text,jsonb,boolean,bigint,uuid)',true),
+    ('public.d1_restore_country(text,bigint,uuid)',true)
+  ) e(signature,authenticated_execute) loop
+    select * into function_row from pg_catalog.pg_proc where oid=expected.signature::regprocedure;
+    if not found or function_row.prosecdef or function_row.proconfig is distinct from array['search_path=""']::text[] then
+      raise exception 'unsafe function configuration: %',expected.signature;
+    end if;
+    if pg_catalog.has_function_privilege('authenticated',function_row.oid,'EXECUTE WITH GRANT OPTION')
+      or pg_catalog.has_function_privilege('anon',function_row.oid,'EXECUTE')
+      or pg_catalog.has_function_privilege('authenticated',function_row.oid,'EXECUTE') is distinct from expected.authenticated_execute
+      or exists(select 1 from pg_catalog.aclexplode(coalesce(function_row.proacl,pg_catalog.acldefault('f',function_row.proowner))) a where a.grantee=0) then
+      raise exception 'unsafe effective function ACL: %',expected.signature;
+    end if;
+    foreach role_name in array array['anon','authenticated'] loop
+      select * into client_role from pg_catalog.pg_roles where rolname=role_name;
+      if pg_catalog.pg_has_role(client_role.oid,function_row.proowner,'MEMBER') then
+        raise exception 'unsafe client function owner membership: % %',role_name,expected.signature;
+      end if;
+      for reachable_role in select r.oid,r.rolname from pg_catalog.pg_roles r
+        where r.oid<>client_role.oid and pg_catalog.pg_has_role(client_role.oid,r.oid,'MEMBER') loop
+        if pg_catalog.has_function_privilege(reachable_role.oid,function_row.oid,'EXECUTE WITH GRANT OPTION')
+          or ((role_name='anon' or not expected.authenticated_execute)
+            and pg_catalog.has_function_privilege(reachable_role.oid,function_row.oid,'EXECUTE')) then
+          raise exception 'unsafe SET ROLE function privilege: % via % %',role_name,reachable_role.rolname,expected.signature;
+        end if;
+      end loop;
+    end loop;
+  end loop;
+  if not pg_catalog.has_schema_privilege('authenticated','public','USAGE')
+    or not pg_catalog.has_schema_privilege('authenticated','auth','USAGE')
+    or not pg_catalog.has_function_privilege('authenticated','auth.uid()','EXECUTE') then
+    raise exception 'missing authenticated schema/Auth prerequisite';
+  end if;
+end $$;
 commit;

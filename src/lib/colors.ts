@@ -1,3 +1,4 @@
+import { FOOTPRINT_COLORS } from "./travel-core/palette"
 import type { Status, ResolvedTheme } from "@/lib/store"
 
 // Status colours are deliberately separated on BOTH hue and lightness so they
@@ -5,7 +6,7 @@ import type { Status, ResolvedTheme } from "@/lib/store"
 // Status colours are deliberately separated on BOTH hue and lightness so they
 // stay distinguishable under colour-vision deficiencies and in greyscale.
 export const STATUS = {
-  visited: "#22c55e", // green
+  visited: FOOTPRINT_COLORS.visited, // green
   wishlist: "#a855f7", // violet
   blocked: "#ef4444", // red — boycott / avoid
 } as const
@@ -51,27 +52,27 @@ export type MapPalette = {
 export const PREVIEW_ROUTE_COLOR = "#486B80"
 export const MAP_PALETTE: Record<ResolvedTheme, MapPalette> = {
   dark: {
-    land: "#BCC5C9",
+    land: FOOTPRINT_COLORS.unvisited,
     ocean: "#A8C7D1",
     graticule: "rgba(72,107,128,0.12)",
     sphereStroke: "rgba(72,107,128,0.38)",
     polygonStroke: "#486B80",
     atmosphere: "#DCE9ED",
     oceanLabel: "#243E4B",
-    ice: "#E4ECEF",
+    ice: FOOTPRINT_COLORS.unvisited,
     statusVisited: STATUS.visited,
     statusWishlist: STATUS.wishlist,
     statusBlocked: STATUS.blocked,
   },
   light: {
-    land: "#BCC5C9",
+    land: FOOTPRINT_COLORS.unvisited,
     ocean: "#DCE9ED",
     graticule: "rgba(72,107,128,0.12)",
     sphereStroke: "rgba(72,107,128,0.38)",
     polygonStroke: "#486B80",
     atmosphere: "#A8C7D1",
     oceanLabel: "#243E4B",
-    ice: "#F4F7F8",
+    ice: FOOTPRINT_COLORS.unvisited,
     statusVisited: STATUS.visited,
     statusWishlist: STATUS.wishlist,
     statusBlocked: STATUS.blocked,

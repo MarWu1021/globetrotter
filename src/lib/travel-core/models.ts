@@ -83,7 +83,7 @@ export interface FlightDetails {
 export interface CountryFootprint {
   countryCode: string
   presence: Presence
-  color: "#22c55e" | "#3b82f6"
+  color: "#6F9E91" | "#8BB6CE"
   manualRecordIds: string[]
   tripIds: string[]
 }

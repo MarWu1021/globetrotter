@@ -35,12 +35,60 @@ function load(file) {
 const { validSavedDraft } = load('src/lib/trip-storage/core.ts')
 const { previewTripDraft } = load('src/lib/trip-draft/core.ts')
 
+// Scoped lint for unquoted catalog table aliases in these drafts. Grammar parsing
+// alone does not bind PL/pgSQL variables; this is not a PostgreSQL runtime test.
+function catalogAliasCollisions(body, parameters = '') {
+  const code = body.replace(/--[^\n]*|\/\*[\s\S]*?\*\/|'(?:''|[^'])*'/g,
+    token => token.startsWith("'") ? "''" : ' ')
+  const declarations = code.match(/\bdeclare\b([\s\S]*?)\bbegin\b/i)?.[1] ?? ''
+  const names = new Set([...declarations.split(';'), ...parameters.split(',')]
+    .map(part => part.match(/^\s*([a-z_]\w*)\s+/i)?.[1]?.toLowerCase()).filter(Boolean))
+  const aliases = [...code.matchAll(/\b(?:from|join)\s+(?:lateral\s+)?(?:[a-z_]\w*\.)?[a-z_]\w*(?:\s+as)?\s+([a-z_]\w*)\b/gi)]
+    .map(match => match[1].toLowerCase())
+  return [...new Set(aliases.filter(alias => names.has(alias)))]
+}
+function anonymousBlocks(source) {
+  return [...source.matchAll(/\bdo\s+\$\$([\s\S]*?)\$\$\s*;/gi)].map(match => match[1])
+}
+
+test('regression: column ACL loop cannot shadow its catalog table alias with an unassigned record', () => {
+  const body = anonymousBlocks(sql)[0]
+  assert.match(body, /declare column_acl_row record/)
+  assert.match(body, /for column_acl_row in select n\.nspname,c\.relname,a\.attname/)
+  assert.match(body, /column_acl_row\.attname,column_acl_row\.nspname,column_acl_row\.relname/)
+  assert.deepEqual(catalogAliasCollisions(body), [])
+  // Reintroducing the real reported bug MUST fail this check, not merely grammar parsing.
+  assert.deepEqual(catalogAliasCollisions(body.replace(/\bcolumn_acl_row\b/g, 'c')), ['c'])
+  assert.match(body, /revoke all \(%I\) on table %I\.%I from public, anon, authenticated/)
+})
+test('static: all schema and RLS-test DO blocks and function locals avoid catalog alias collisions', () => {
+  for (const [source, count] of [[sql, 2], [checks, 16]]) {
+    const bodies = anonymousBlocks(source)
+    assert.equal(bodies.length, count)
+    for (const body of bodies) assert.deepEqual(catalogAliasCollisions(body), [])
+  }
+  for (const [name, f] of functions) {
+    const parameters = f.declaration.match(/^([\s\S]*?)\)\s*returns\b/i)?.[1] ?? ''
+    assert.deepEqual(catalogAliasCollisions(f.body, parameters), [], name)
+  }
+})
+test('regression: alias checks are scoped and distinguish range aliases from VALUES column labels', () => {
+  assert.deepEqual(catalogAliasCollisions('declare c record; begin select c.oid from pg_catalog.pg_class AS c; end'), ['c'])
+  assert.deepEqual(catalogAliasCollisions('declare item pg_catalog.pg_class; begin select item.oid from pg_catalog.pg_class item; end'), ['item'])
+  assert.deepEqual(catalogAliasCollisions('declare table_name text; expected record; begin for expected in select * from (values (1)) e(table_name) loop end loop; end'), [])
+  assert.deepEqual(catalogAliasCollisions("declare item record; begin -- from pg_class item\n raise notice 'from pg_class item'; select x.oid from pg_class x; end"), [])
+  // Alias c in one block is safe even when another block has a local c.
+  for (const body of anonymousBlocks('do $$ begin select c.oid from pg_class c; end $$; do $$ declare c record; begin select x.oid from pg_class x; end $$;'))
+    assert.deepEqual(catalogAliasCollisions(body), [])
+  assert.deepEqual(catalogAliasCollisions('begin select param.oid from pg_class param; end', 'param text'), ['param'])
+})
+
 test('static: schema is transactional initial creation; test script only rolls back', () => {
   assert.match(sql, /\nbegin;/); assert.match(sql, /commit;\s*$/)
   assert.match(checks, /\nbegin;/); assert.match(checks, /rollback;\s*$/)
   const withoutComments = checks.replace(/--[^\n]*/g, '')
   assert.doesNotMatch(withoutComments, /\b(commit|truncate|drop)\b/i)
-  assert.doesNotMatch(sql, /\b(drop|truncate|security definer)\b/i)
+  assert.doesNotMatch(sql, /(?:^|\n|;)\s*(drop|truncate)\b|security\s+definer/i)
 })
 test('static: owner-only SELECT INSERT UPDATE; no client hard DELETE', () => {
   for (const name of ['trips', 'country_records']) {
@@ -163,8 +211,8 @@ test('TypeScript: unchanged SQL fixture yields TW/GR green, AE blue and two flig
   const p = previewTripDraft(fixture)
   assert.equal(p.kind, 'ready'); assert.equal(p.trip.flights.length, 2); assert.equal(p.trip.stops.length, 3)
   assert.deepEqual(p.footprint.countryTotals, { total: 3, visited: 2, transit: 1 })
-  assert.equal(p.footprint.countries.find(c => c.countryCode === 'TW').color, '#22c55e')
-  assert.equal(p.footprint.countries.find(c => c.countryCode === 'AE').color, '#3b82f6')
+  assert.equal(p.footprint.countries.find(c => c.countryCode === 'TW').color, '#6F9E91')
+  assert.equal(p.footprint.countries.find(c => c.countryCode === 'AE').color, '#8BB6CE')
 })
 test('TypeScript: optional blank/leap dates and nullable airport fields preserve existing format', () => {
   for (const date of [undefined, '', '2024-02-29', '2000-02-29', '0000-02-29']) {
@@ -205,4 +253,40 @@ test('static: rejected test UPDATE/DELETE statements also target only namespaced
   assert.match(checks, /has_table_privilege\(current_user,tbl,privilege_name\)/)
   assert.match(checks, /anon must have no table CRUD grants/)
   assert.match(checks, /anon RPC grant leaked/)
+})
+
+
+test('static: final scoped ACL cleanup and fail-closed checks follow all DDL and precede COMMIT',()=>{
+ const guard=sql.slice(sql.indexOf('-- Finalize ONLY'))
+ assert.ok(sql.indexOf('-- Finalize ONLY')>sql.lastIndexOf('create function'))
+ assert.match(guard,/revoke all on public.trips, public.country_records from public, anon, authenticated/)
+ assert.match(guard,/revoke all \(%I\) on table %I.%I from public, anon, authenticated/)
+ assert.match(guard,/raise exception/);assert.match(guard,/end \$\$;\s*commit;\s*$/)
+ assert.doesNotMatch(guard,/alter default privileges|disable.*trigger|alter role|all tables in schema/i)
+})
+test('static: final audit checks effective inherited and column permissions, including MAINTAIN and grant options',()=>{
+ const guard=sql.slice(sql.indexOf('-- Fail closed'))
+ for(const token of ['has_table_privilege','has_any_column_privilege','pg_has_role','MEMBER','rolsuper','rolbypassrls','TRUNCATE','REFERENCES','TRIGGER','MAINTAIN','WITH GRANT OPTION','attacl','grantee=0'])assert.ok(guard.includes(token),token)
+ assert.match(guard,/server_version_num/)
+})
+test('static: final policy, RPC and revision-trigger checks verify semantics and configuration',()=>{
+ const guard=sql.slice(sql.indexOf('-- Fail closed'))
+ for(const token of ['relrowsecurity','relforcerowsecurity','polroles','polcmd','polpermissive','pg_get_expr','polwithcheck','SELECTauth.uidASuid=user_id','prosecdef','proconfig','has_function_privilege','tgfoid','tgtype=23','tgenabled','tgqual','tgnargs'])assert.ok(guard.includes(token),token)
+ for(const name of ['trips_read','trips_insert','trips_update','countries_read','countries_insert','countries_update','d1_write_trip','d1_write_country','d1_restore_country'])assert.ok(guard.includes(name),name)
+ assert.match(guard,/count\(\*\).*pg_catalog.pg_policy/)
+})
+
+test('final gate checks dangerous privileges reachable by NOINHERIT SET ROLE membership',()=>{
+ assert.match(sql,/pg_has_role\(client_role\.oid,r\.oid,'MEMBER'\)/)
+ assert.match(sql,/has_table_privilege\(reachable_role\.oid,oid_table,privilege_name\)/)
+ assert.match(sql,/anonymous SET ROLE data privilege/)
+})
+
+test('static: NOINHERIT memberships cannot regrant table/column/RPC privileges or replace owned functions',()=>{
+ const gate=sql.slice(sql.indexOf('-- Fail closed before COMMIT'))
+ assert.match(gate,/has_table_privilege\(reachable_role.oid,oid_table,privilege_name\|\|' WITH GRANT OPTION'\)/)
+ assert.match(gate,/has_any_column_privilege\(reachable_role.oid,oid_table,privilege_name\|\|' WITH GRANT OPTION'\)/)
+ assert.match(gate,/has_function_privilege\(reachable_role.oid,function_row.oid,'EXECUTE WITH GRANT OPTION'\)/)
+ assert.match(gate,/pg_has_role\(client_role.oid,function_row.proowner,'MEMBER'\)/)
+ assert.match(gate,/role_name='anon' or not expected.authenticated_execute/)
 })

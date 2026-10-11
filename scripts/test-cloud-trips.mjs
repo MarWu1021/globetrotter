@@ -73,8 +73,8 @@ test('network failure keeps committed data and unsaved inputs unchanged',async()
 })
 test('cloud snapshots feed existing colors routes and manual union without new calculation rules',async()=>{
  const r=db().forVerifiedTestUser('A');await r.save(command());const p=savedTripMap((await r.list()).value,{'250':'visited','784':'wishlist'})
- assert.equal(p.colors['158'],'#22c55e');assert.equal(p.colors['784'],'#3b82f6');assert.equal(p.colors['300'],'#22c55e');assert.equal(p.countryCount,4);assert.equal(p.flightCount,2);assert.equal(p.arcs.length,2)
- const upgraded=savedTripMap((await r.list()).value,{'784':'visited'});assert.equal(upgraded.colors['784'],'#22c55e');assert.equal(upgraded.countryCount,3)
+ assert.equal(p.colors['158'],'#6F9E91');assert.equal(p.colors['784'],'#8BB6CE');assert.equal(p.colors['300'],'#6F9E91');assert.equal(p.countryCount,4);assert.equal(p.flightCount,2);assert.equal(p.arcs.length,2)
+ const upgraded=savedTripMap((await r.list()).value,{'784':'visited'});assert.equal(upgraded.colors['784'],'#6F9E91');assert.equal(upgraded.countryCount,3)
 })
 test('repository reads and writes clone input/output; no shared mutable state',async()=>{
  const r=db().forVerifiedTestUser('A'),d=draft();await r.save(command(d));d.title='mutated';const list=(await r.list()).value;list[0].draft.title='mutated';assert.equal((await r.list()).value[0].draft.title,'')

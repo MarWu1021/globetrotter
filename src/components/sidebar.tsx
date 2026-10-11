@@ -1,4 +1,5 @@
 "use client"
+import { useCountryData, useAccount } from "./account-provider"
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
@@ -69,7 +70,7 @@ const CountUp = ({
 }
 
 const Stat = ({ value, label }: { value: React.ReactNode; label: string }) => (
-  <div className="rounded-xl bg-[var(--panel-2)] px-2 py-3 text-center">
+  <div className="glass-card rounded-xl bg-[var(--panel-2)] px-2 py-3 text-center">
     <span className="block text-2xl font-bold leading-none">{value}</span>
     <span className="mt-1 block text-[0.7rem] uppercase tracking-wide text-[var(--ink-dim)]">
       {label}
@@ -191,13 +192,13 @@ const Sidebar = () => {
   const t = useT()
   const locale = useTravelStore((s) => s.locale)
   const hydrated = useHasHydrated()
-  const statuses = useTravelStore((s) => s.statuses)
-  const notes = useTravelStore((s) => s.notes)
-  const reviews = useTravelStore((s) => s.reviews)
-  const cycle = useTravelStore((s) => s.cycle)
+  const { statuses, notes, reviews, cycle } = useCountryData()
+  const account=useAccount()
   const flyTo = useTravelStore((s) => s.flyTo)
-  const reset = useTravelStore((s) => s.reset)
-  const replaceData = useTravelStore((s) => s.replaceData)
+  const legacyReset = useTravelStore((s) => s.reset)
+  const reset = () => { if(!account.enabled)legacyReset() }
+  const legacyReplaceData = useTravelStore((s) => s.replaceData)
+  const replaceData:typeof legacyReplaceData = data => { if(!account.enabled)legacyReplaceData(data) }
   const fileRef = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState("")
   const [searchFocus, setSearchFocus] = useState(false)
@@ -314,6 +315,7 @@ const Sidebar = () => {
   }
 
   const applyParsed = (next: ReturnType<typeof parseSaveFile>) => {
+    if(account.enabled)return
     const count = Object.keys(next.statuses).length
     if (
       (Object.keys(statuses).length > 0 || Object.keys(notes).length > 0) &&
@@ -452,6 +454,7 @@ const Sidebar = () => {
           />
           <input
             type="text"
+            aria-label={t("search.label")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => {
@@ -597,7 +600,7 @@ const Sidebar = () => {
         </div>
       </section>
 
-      <section>
+      {!account.enabled && (<section>
         <h2 className="mb-2 text-xs uppercase tracking-wide text-[var(--ink-dim)]">
           {t("save.title")}
         </h2>
@@ -681,10 +684,10 @@ const Sidebar = () => {
         >
           <TrashIcon width={16} height={16} /> {t("reset")}
         </button>
-      </section>
+      </section>)}
 
       <footer className="text-[0.7rem] leading-relaxed text-[var(--ink-faint)]">
-        {t("footer")}
+        {t(account.enabled?"cloud.footer":"footer")}
       </footer>
     </aside>
   )

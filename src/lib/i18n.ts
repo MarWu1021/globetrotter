@@ -1116,3 +1116,105 @@ Object.assign(es, {"auth.login": "Iniciar sesión con Google", "auth.logout": "C
 Object.assign(de, {"auth.login": "Mit Google anmelden", "auth.logout": "Abmelden", "auth.guest": "Gast", "auth.loading": "Anmeldung wird geprüft…", "auth.error": "Anmeldung fehlgeschlagen oder abgebrochen. Bitte erneut versuchen.", "auth.unconfigured": "Google-Anmeldung ist hier nicht eingerichtet.", "auth.storagePending": "Cloud-Speicherung folgt im nächsten Schritt. Alte Testreisen werden weder geladen noch hochgeladen."})
 
 Object.assign(zhTW, {"auth.login": "使用 Google 登入", "auth.logout": "登出", "auth.guest": "訪客模式", "auth.loading": "正在確認登入狀態…", "auth.error": "登入失敗或已取消，請重試。", "auth.unconfigured": "此環境尚未設定 Google 登入。", "auth.storagePending": "雲端旅行儲存將於下一階段開放；不會讀取或上傳舊的瀏覽器測試旅行。"})
+
+Object.assign(en, {
+  'cloud.saved':'Saved to your account', 'cloud.accountOnly':'Account data syncs across devices. Old browser test records are kept separate.',
+  'cloud.loginRequired':'Sign in with Google to save to your account.', 'cloud.syncing':'Syncing…', 'cloud.refresh':'Refresh cloud records',
+  'cloud.countryHint':'Changes to this country stay unsaved until you save below.', 'cloud.saveCountry':'Save country record',
+  'cloud.reloadCountry':'Discard edits and load the latest country record', 'cloud.discardConfirm':'Discard these unsaved country changes?',
+  'cloud.error.setup':'Cloud storage is waiting for the reviewed SQL to be enabled. Nothing was saved. Your edits remain here.',
+  'cloud.error.unauthenticated':'Your session is unavailable. Sign in again; nothing was saved.',
+  'cloud.error.account-changed':'The account changed. Rechecking your session; nothing was saved.',
+  'cloud.error.invalid':'The record has an invalid or unsupported format. Nothing was overwritten.',
+  'cloud.error.conflict':'This record changed on another device. Refresh records, then reopen the latest version before editing. Your edits are kept.',
+  'cloud.error.network':'Cloud records could not be loaded. Check the connection and retry. This is not an empty account.',
+  'cloud.error.uncertain':'Save confirmation was lost. Keep the same edits and retry to check the original request. Do not create a second trip.',
+  'cloud.error.busy':'Another sync is in progress. Wait before trying again.',
+  'airline.hint':'Airline name or IATA code', 'airline.results':'Matching airlines', 'airline.optional':'Optional. Select a match or keep a historical airline name.'
+})
+Object.assign(fr, {
+  'cloud.saved':'Enregistré dans votre compte', 'cloud.accountOnly':'Vos données sont synchronisées entre appareils. Les anciens tests du navigateur restent séparés.',
+  'cloud.loginRequired':'Connectez-vous avec Google pour enregistrer dans votre compte.', 'cloud.syncing':'Synchronisation…', 'cloud.refresh':'Actualiser les données cloud',
+  'cloud.countryHint':'Les modifications de ce pays restent non enregistrées jusqu’à leur sauvegarde.', 'cloud.saveCountry':'Enregistrer le pays',
+  'cloud.reloadCountry':'Abandonner les modifications et charger la version récente', 'cloud.discardConfirm':'Abandonner ces modifications du pays ?',
+  'cloud.error.setup':'Le stockage cloud attend l’activation du SQL vérifié. Rien n’a été enregistré. Vos modifications sont conservées.',
+  'cloud.error.unauthenticated':'Session indisponible. Reconnectez-vous ; rien n’a été enregistré.',
+  'cloud.error.account-changed':'Le compte a changé. Vérification de la session ; rien n’a été enregistré.',
+  'cloud.error.invalid':'Format invalide ou non pris en charge. Rien n’a été écrasé.',
+  'cloud.error.conflict':'Ce document a changé sur un autre appareil. Actualisez puis ouvrez la dernière version. Vos modifications sont conservées.',
+  'cloud.error.network':'Impossible de charger le cloud. Vérifiez la connexion. Cela ne signifie pas que le compte est vide.',
+  'cloud.error.uncertain':'Confirmation perdue. Gardez les mêmes modifications et réessayez la demande initiale. Ne créez pas un second voyage.',
+  'cloud.error.busy':'Synchronisation en cours. Veuillez patienter.',
+  'airline.hint':'Nom de compagnie ou code IATA', 'airline.results':'Compagnies correspondantes', 'airline.optional':'Facultatif. Sélectionnez une compagnie ou gardez un nom historique.'
+})
+Object.assign(es, {
+  'cloud.saved':'Guardado en tu cuenta', 'cloud.accountOnly':'Los datos se sincronizan entre dispositivos. Las pruebas antiguas del navegador permanecen separadas.',
+  'cloud.loginRequired':'Inicia sesión con Google para guardar en tu cuenta.', 'cloud.syncing':'Sincronizando…', 'cloud.refresh':'Actualizar registros de la nube',
+  'cloud.countryHint':'Los cambios de este país no se guardan hasta que pulses guardar.', 'cloud.saveCountry':'Guardar registro del país',
+  'cloud.reloadCountry':'Descartar cambios y cargar la última versión', 'cloud.discardConfirm':'¿Descartar los cambios de este país?',
+  'cloud.error.setup':'La nube espera la activación del SQL revisado. No se ha guardado nada. Tus cambios siguen aquí.',
+  'cloud.error.unauthenticated':'Sesión no disponible. Vuelve a iniciar sesión; no se guardó nada.',
+  'cloud.error.account-changed':'La cuenta cambió. Se está verificando la sesión; no se guardó nada.',
+  'cloud.error.invalid':'Formato inválido o no compatible. No se sobrescribió nada.',
+  'cloud.error.conflict':'Este registro cambió en otro dispositivo. Actualiza y abre la última versión antes de editar. Tus cambios se conservan.',
+  'cloud.error.network':'No se pudieron cargar los datos. Comprueba la conexión. Esto no significa que la cuenta esté vacía.',
+  'cloud.error.uncertain':'Se perdió la confirmación. Mantén los mismos cambios y reintenta la solicitud original. No crees otro viaje.',
+  'cloud.error.busy':'Hay otra sincronización en curso. Espera.',
+  'airline.hint':'Nombre de aerolínea o código IATA', 'airline.results':'Aerolíneas coincidentes', 'airline.optional':'Opcional. Selecciona una aerolínea o conserva un nombre histórico.'
+})
+Object.assign(de, {
+  'cloud.saved':'In deinem Konto gespeichert', 'cloud.accountOnly':'Kontodaten werden zwischen Geräten synchronisiert. Alte Browser-Testdaten bleiben getrennt.',
+  'cloud.loginRequired':'Melde dich mit Google an, um im Konto zu speichern.', 'cloud.syncing':'Synchronisierung…', 'cloud.refresh':'Cloud-Daten aktualisieren',
+  'cloud.countryHint':'Länderänderungen bleiben bis zum Speichern ungespeichert.', 'cloud.saveCountry':'Ländereintrag speichern',
+  'cloud.reloadCountry':'Änderungen verwerfen und aktuellen Eintrag laden', 'cloud.discardConfirm':'Diese Länderänderungen verwerfen?',
+  'cloud.error.setup':'Cloud-Speicher wartet auf die Freigabe des geprüften SQL. Nichts wurde gespeichert. Deine Änderungen bleiben erhalten.',
+  'cloud.error.unauthenticated':'Sitzung nicht verfügbar. Melde dich erneut an; nichts wurde gespeichert.',
+  'cloud.error.account-changed':'Das Konto wurde gewechselt. Sitzung wird geprüft; nichts wurde gespeichert.',
+  'cloud.error.invalid':'Ungültiges oder nicht unterstütztes Format. Nichts wurde überschrieben.',
+  'cloud.error.conflict':'Ein anderes Gerät hat diesen Eintrag geändert. Aktualisiere und öffne die neueste Version. Deine Änderungen bleiben erhalten.',
+  'cloud.error.network':'Cloud-Daten konnten nicht geladen werden. Verbindung prüfen. Das bedeutet kein leeres Konto.',
+  'cloud.error.uncertain':'Bestätigung verloren. Dieselben Änderungen beibehalten und dieselbe Anfrage wiederholen. Keine zweite Reise erstellen.',
+  'cloud.error.busy':'Eine Synchronisierung läuft. Bitte warten.',
+  'airline.hint':'Fluggesellschaft oder IATA-Code', 'airline.results':'Passende Fluggesellschaften', 'airline.optional':'Optional. Vorschlag wählen oder historischen Namen beibehalten.'
+})
+Object.assign(zhTW, {
+  'cloud.saved':'已儲存至帳號', 'cloud.accountOnly':'帳號資料會跨裝置同步，與舊的瀏覽器測試紀錄分開。',
+  'cloud.loginRequired':'請先使用 Google 登入，再儲存至帳號。', 'cloud.syncing':'正在同步…', 'cloud.refresh':'重新載入雲端紀錄',
+  'cloud.countryHint':'此國家的修改尚未儲存，請按下方按鈕儲存至帳號。', 'cloud.saveCountry':'儲存國家紀錄',
+  'cloud.reloadCountry':'捨棄修改並載入最新國家紀錄', 'cloud.discardConfirm':'確定捨棄此國家尚未儲存的修改嗎？',
+  'cloud.error.setup':'雲端儲存尚待啟用已審查的 SQL。目前未儲存，編輯內容已保留。',
+  'cloud.error.unauthenticated':'登入狀態無法驗證，請重新登入；目前未儲存。',
+  'cloud.error.account-changed':'帳號已切換，正在重新驗證登入；目前未儲存。',
+  'cloud.error.invalid':'紀錄格式不正確或不支援，未覆寫任何資料。',
+  'cloud.error.conflict':'其他裝置已修改這筆紀錄。請重新載入紀錄，再開啟最新版本編輯；目前修改已保留。',
+  'cloud.error.network':'無法取得雲端紀錄，請確認網路後重試；這不代表帳號沒有資料。',
+  'cloud.error.uncertain':'未收到儲存確認。請保留相同修改並重試原請求，不要另建一趟旅行。',
+  'cloud.error.busy':'另一筆資料正在同步，請稍後再試。',
+  'airline.hint':'航空公司名稱或 IATA 代碼', 'airline.results':'符合的航空公司', 'airline.optional':'選填；可選取候選公司，或保留歷史航空公司名稱。'
+})
+
+Object.assign(en, {"cloud.footer": "Made with Next.js, Three.js and D3. Signed-in records are stored privately in your account."})
+
+Object.assign(fr, {"cloud.footer": "Créé avec Next.js, Three.js et D3. Les données privées sont enregistrées dans votre compte."})
+
+Object.assign(es, {"cloud.footer": "Creado con Next.js, Three.js y D3. Tus registros privados se guardan en tu cuenta."})
+
+Object.assign(de, {"cloud.footer": "Erstellt mit Next.js, Three.js und D3. Private Einträge werden in deinem Konto gespeichert."})
+
+Object.assign(zhTW, {"cloud.footer": "使用 Next.js、Three.js 與 D3 製作；登入後的私人紀錄儲存在你的帳號。"})
+
+Object.assign(en, {'login.eyebrow':'Your personal travel atlas', 'login.title':'Keep your journeys together.', 'login.description':'Record your flights and explore the countries you have visited on your own travel globe.', 'login.privacy':'Sign in to privately save your trips and see the same map across devices.', 'login.footer':'Every journey leaves a footprint.'})
+Object.assign(fr, {'login.eyebrow':'Votre atlas de voyages personnel', 'login.title':'Retrouvez tous vos voyages.', 'login.description':'Notez vos vols et explorez les pays visités sur votre globe personnel.', 'login.privacy':'Connectez-vous pour enregistrer vos voyages privés et retrouver la même carte sur tous vos appareils.', 'login.footer':'Chaque voyage laisse une empreinte.'})
+Object.assign(es, {'login.eyebrow':'Tu atlas personal de viajes', 'login.title':'Todos tus viajes en un lugar.', 'login.description':'Registra tus vuelos y explora los países que has visitado en tu propio globo.', 'login.privacy':'Inicia sesión para guardar tus viajes de forma privada y ver el mismo mapa en todos tus dispositivos.', 'login.footer':'Cada viaje deja una huella.'})
+Object.assign(de, {'login.eyebrow':'Dein persönlicher Reiseatlas', 'login.title':'Alle deine Reisen an einem Ort.', 'login.description':'Halte deine Flüge fest und entdecke besuchte Länder auf deinem eigenen Globus.', 'login.privacy':'Melde dich an, um Reisen privat zu speichern und auf allen Geräten dieselbe Karte zu sehen.', 'login.footer':'Jede Reise hinterlässt Spuren.'})
+Object.assign(zhTW, {'login.eyebrow':'你的專屬旅行地圖', 'login.title':'把走過的世界，留在一起。', 'login.description':'記錄每段飛行，在專屬地球上回顧去過的國家與旅行足跡。', 'login.privacy':'登入後，旅行紀錄會私密儲存至帳號，手機與電腦都能看到同一張地圖。', 'login.footer':'每趟旅行，都值得留下足跡。'})
+
+Object.assign(en, {"nav.label": "Main navigation", "journey.saved": "Trip saved", "journey.skip": "Skip animation", "nav.globe": "Globe", "nav.go.globe": "Open globe", "nav.records": "Trips", "nav.go.records": "Open trip records", "nav.add": "Add trip", "nav.go.add": "Add a trip", "nav.stats": "Statistics", "nav.go.stats": "Open statistics", "nav.settings": "Settings", "nav.go.settings": "Open settings"})
+
+Object.assign(fr, {"nav.label": "Navigation principale", "journey.saved": "Voyage enregistré", "journey.skip": "Passer l’animation", "nav.globe": "Globe", "nav.go.globe": "Ouvrir le globe", "nav.records": "Voyages", "nav.go.records": "Ouvrir les voyages", "nav.add": "Ajouter", "nav.go.add": "Ajouter un voyage", "nav.stats": "Statistiques", "nav.go.stats": "Ouvrir les statistiques", "nav.settings": "Réglages", "nav.go.settings": "Ouvrir les réglages"})
+
+Object.assign(es, {"nav.label": "Navegación principal", "journey.saved": "Viaje guardado", "journey.skip": "Omitir animación", "nav.globe": "Globo", "nav.go.globe": "Abrir el globo", "nav.records": "Viajes", "nav.go.records": "Abrir los viajes", "nav.add": "Añadir", "nav.go.add": "Añadir un viaje", "nav.stats": "Estadísticas", "nav.go.stats": "Abrir estadísticas", "nav.settings": "Ajustes", "nav.go.settings": "Abrir ajustes"})
+
+Object.assign(de, {"nav.label": "Hauptnavigation", "journey.saved": "Reise gespeichert", "journey.skip": "Animation überspringen", "nav.globe": "Globus", "nav.go.globe": "Globus öffnen", "nav.records": "Reisen", "nav.go.records": "Reisen öffnen", "nav.add": "Hinzufügen", "nav.go.add": "Reise hinzufügen", "nav.stats": "Statistik", "nav.go.stats": "Statistik öffnen", "nav.settings": "Einstellungen", "nav.go.settings": "Einstellungen öffnen"})
+
+Object.assign(zhTW, {"nav.label": "主要導覽", "journey.saved": "旅行已儲存", "journey.skip": "略過動畫", "nav.globe": "地球", "nav.go.globe": "前往地球", "nav.records": "旅行紀錄", "nav.go.records": "查看旅行紀錄", "nav.add": "新增旅行", "nav.go.add": "新增一趟旅行", "nav.stats": "統計", "nav.go.stats": "查看旅行統計", "nav.settings": "設定", "nav.go.settings": "開啟設定"})

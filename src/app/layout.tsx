@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next"
 import "./globals.css"
 import ThemeApplier from "@/components/theme-applier"
 import PwaRegister from "@/components/pwa-register"
+import { AuthProvider } from "@/components/auth-provider"
 
 export const metadata: Metadata = {
   title: "Globetrotter — map where you've been",
@@ -42,7 +43,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: NO_FLASH }} />
         <ThemeApplier />
         <PwaRegister />
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   )

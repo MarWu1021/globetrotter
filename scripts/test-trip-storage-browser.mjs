@@ -48,7 +48,7 @@ async function run(name,options){
  await page.screenshot({path:`/tmp/globetrotter-storage-${name}.png`})
  let file=await page.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);assert.equal(file.trips.length,1);assert.equal(file.trips[0].draft.status,'completed');assert.equal(file.trips[0].draft.legs[0].flightNumber,'EK367');assert.equal(file.trips[0].draft.legs[1].notes,'第二段獨立備註')
  await editor.getByRole('button',{name:'關閉編輯器',exact:true}).click()
- for(const id of ['158','784','300'])assert.equal(await page.locator(`path[data-country-id="${id}"]`).getAttribute('fill'),'#22c55e','Committed footprint merges with manual visited')
+ for(const id of ['158','784','300'])assert.equal(await page.locator(`path[data-country-id="${id}"]`).getAttribute('fill'),'#6F9E91','Committed footprint merges with manual visited')
  assert.equal(await page.locator('path[data-country-id="392"]').getAttribute('fill'),originals['392'],'Unrelated wishlist remains visible')
  await unchanged();await page.reload({waitUntil:'domcontentloaded'});await menu('我的旅行紀錄')
  const item=()=>records.locator('li').filter({has:page.getByRole('heading',{name:'台灣杜拜希臘',exact:true})})

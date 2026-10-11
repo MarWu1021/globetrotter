@@ -1,3 +1,4 @@
+import { FOOTPRINT_COLORS } from './palette'
 import type {
   Airport, ArcDescriptor, CountryFootprint, CountryRecord,
   DerivedFootprint, FlightDetails, LegacyTravelData, Presence, RouteEntry,
@@ -108,9 +109,9 @@ export function deriveCountryFootprint(
   const countries = new Map<string, CountryFootprint>()
   const add = (code: string, presence: Presence, kind: "manualRecordIds" | "tripIds", id: string) => {
     requireValid(/^[A-Z]{2}$/.test(code), "Unresolved/invalid country mapping")
-    const c = countries.get(code) ?? { countryCode: code, presence, color: "#3b82f6", manualRecordIds: [], tripIds: [] }
+    const c = countries.get(code) ?? { countryCode: code, presence, color: FOOTPRINT_COLORS.transit, manualRecordIds: [], tripIds: [] }
     if (presence === "visited") c.presence = "visited"
-    c.color = c.presence === "visited" ? "#22c55e" : "#3b82f6"
+    c.color = c.presence === "visited" ? FOOTPRINT_COLORS.visited : FOOTPRINT_COLORS.transit
     if (!c[kind].includes(id)) c[kind].push(id)
     countries.set(code, c)
   }

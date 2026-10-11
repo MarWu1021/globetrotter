@@ -1,4 +1,5 @@
 "use client"
+import { useAccount } from "./account-provider"
 import { useAuth } from "./auth-provider"
 import { useEffect, useRef, useState } from "react"
 import { useTripDraft } from "./trip-draft-provider"
@@ -11,11 +12,12 @@ import { savedTripToken, type StorageError } from "@/lib/trip-storage/core"
 
 const button="min-h-11 rounded-lg border border-[var(--border)] px-3 py-2"
 export default function TripRecords({onClose}:{onClose:()=>void}) {
-  const {savedTrips,repository,loadSaved,draft,savedDraftJSON,setRecordToken,setSavedDraftJSON,setMode}=useTripDraft()
+  const {savedTrips,repository,loadSaved,draft,setDraft,savedDraftJSON,setRecordToken,setSavedDraftJSON,setMode}=useTripDraft()
   const {enabled:authEnabled}=useAuth()
+  const account=useAccount()
   const t=useT(),locale=useTravelStore(s=>s.locale)
   const dialog=useRef<HTMLDialogElement>(null)
-  const [selected,setSelected]=useState<string|null>(null),[error,setError]=useState<StorageError|null>(null)
+  const [selected,setSelected]=useState<string|null>(null),[error,setError]=useState<StorageError|import('@/lib/cloud-trips/contracts').CloudError|null>(null)
   useEffect(()=>{dialog.current?.showModal()},[])
   const records=[...savedTrips.trips].sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt))
   const record=records.find(r=>r.draft.id===selected)
@@ -37,8 +39,8 @@ export default function TripRecords({onClose}:{onClose:()=>void}) {
         <button className={button} aria-label={t("trip.closeRecords")} onClick={onClose}>✕</button>
       </header>
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-4 pb-[calc(16px+env(safe-area-inset-bottom))]">
-        <p>{t(authEnabled?"auth.storagePending":"trip.localOnly")}</p><p className="text-sm">{t("trip.mapsLater")}</p>
-        {(error||savedTrips.error) && <div role="alert"><p>{t(`trip.storage.${error??savedTrips.error}`)}</p><button className={button} onClick={()=>{repository.reload();setError(null)}}>{t("trip.retry")}</button></div>}
+        <p>{t(authEnabled?"cloud.accountOnly":"trip.localOnly")}</p><p className="text-sm">{t("trip.mapsLater")}</p>
+        {(error||savedTrips.error) && <div role="alert"><p>{t(`${authEnabled?"cloud.error":"trip.storage"}.${error??savedTrips.error}`)}</p><button className={button} onClick={()=>{if(authEnabled)void account.reload();else repository.reload();setError(null)}}>{t("trip.retry")}</button></div>}
         {savedTrips.ready && !records.length && !savedTrips.error && <p>{t("trip.noTrips")}</p>}
         <ul className="space-y-3">{records.map(r=><li key={r.draft.id} className="space-y-2 rounded-xl border border-[var(--border)] p-3">
           <h3 className="break-words font-semibold">{r.draft.title||t("trip.untitled")}</h3>
@@ -46,17 +48,17 @@ export default function TripRecords({onClose}:{onClose:()=>void}) {
           <p className="text-sm">{t("trip.counts",{flights:r.draft.legs.length,stops:r.draft.stops.length})}</p>
           <div className="flex flex-wrap gap-2">
             <button className={button} onClick={()=>setSelected(r.draft.id)}>{t("trip.view")}</button>
-            <button className={button} disabled={!!savedTrips.error} onClick={()=>{
+            <button className={button} disabled={savedTrips.busy || (!!savedTrips.error && !authEnabled)} onClick={()=>{
               if(draft.stops.length && savedDraftJSON!==JSON.stringify(draft) && !window.confirm(t("trip.replaceConfirm")))return
               loadSaved(r)
             }}>{t("trip.edit")}</button>
-            <button className={button} disabled={!!savedTrips.error} onClick={()=>{
+            <button className={button} disabled={savedTrips.busy || (!!savedTrips.error && !authEnabled)} onClick={async()=>{
               if(!window.confirm(t("trip.deleteConfirm")))return
-              const result=repository.remove(r.draft.id,savedTripToken(r)!)
+              const result=authEnabled?await account.session.removeTrip(r.draft.id,(r as import("@/lib/cloud-trips/contracts").CloudTrip).revision):repository.remove(r.draft.id,savedTripToken(r)!)
               if(!result.ok){setError(result.error);return}
               setError(null);if(selected===r.draft.id)setSelected(null)
               // Keep any open editing copy, but detach it from the deleted stored record.
-              if(draft.id===r.draft.id){setRecordToken(null);setSavedDraftJSON(null);setMode('idle')}
+              if(draft.id===r.draft.id){if(authEnabled)setDraft(d=>({...d,id:crypto.randomUUID()}));setRecordToken(null);setSavedDraftJSON(null);setMode('idle')}
             }}>{t("trip.delete")}</button>
           </div>
         </li>)}</ul>
