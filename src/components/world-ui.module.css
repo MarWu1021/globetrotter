@@ -43,6 +43,8 @@
   .navigation { backdrop-filter: none; }
   .viewToggle > button { min-height: 44px; }
   .toolbar { z-index: 20; }
+  /* A wrapped language menu must sit above the floating search launcher. */
+  .toolbar:has([data-language-menu]) { z-index: 35; }
   /* Keep the entire zoom stack clear even when translated layer labels wrap. */
   .stage :global([data-layer-control]) { right: 76px; }
 }

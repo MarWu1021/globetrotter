@@ -1224,3 +1224,69 @@ Object.assign(es, {"nav.label": "Navegación principal", "journey.saved": "Viaje
 Object.assign(de, {"nav.label": "Hauptnavigation", "journey.saved": "Reise gespeichert", "journey.skip": "Animation überspringen", "nav.globe": "Globus", "nav.go.globe": "Globus öffnen", "nav.records": "Reisen", "nav.go.records": "Reisen öffnen", "nav.add": "Hinzufügen", "nav.go.add": "Reise hinzufügen", "nav.stats": "Statistik", "nav.go.stats": "Statistik öffnen", "nav.settings": "Einstellungen", "nav.go.settings": "Einstellungen öffnen"})
 
 Object.assign(zhTW, {"nav.label": "主要導覽", "journey.saved": "旅行已儲存", "journey.skip": "略過動畫", "nav.globe": "地球", "nav.go.globe": "前往地球", "nav.records": "旅行紀錄", "nav.go.records": "查看旅行紀錄", "nav.add": "新增旅行", "nav.go.add": "新增一趟旅行", "nav.stats": "統計", "nav.go.stats": "查看旅行統計", "nav.settings": "設定", "nav.go.settings": "開啟設定"})
+
+Object.assign(en, {
+  'mileage.title':'Total flight distance', 'mileage.legs':'Valid flight legs', 'mileage.laps':'Around the Earth',
+  'mileage.estimate':'Great-circle estimate · 40,075 km per lap.', 'mileage.loading':'Loading saved trips…',
+  'mileage.unavailable':'Saved trips are unavailable; distance cannot be calculated.',
+  'mileage.lastConfirmed':'Showing the last confirmed records; the update did not succeed.',
+  'mileage.excludedLegs':'{n} unverifiable flight legs excluded. Only valid legs are included.',
+  'mileage.excludedTrips':'{n} incomplete trips excluded.', 'mileage.details':'View excluded records',
+  'mileage.untitled':'Untitled trip', 'mileage.unknownAirport':'Unknown airport',
+  'mileage.reason.incomplete':'Incomplete or inconsistent flight references.',
+  'mileage.reason.airport':'Missing reliable airport identity; no code-based guessing.',
+  'mileage.reason.coordinates':'Airport coordinates are missing or invalid.',
+  'mileage.reason.duplicate':'Conflicting copies of the same flight; excluded until resolved.'
+})
+Object.assign(fr, {
+  'mileage.title':'Distance totale parcourue', 'mileage.legs':'Vols valides', 'mileage.laps':'Tours de la Terre',
+  'mileage.estimate':'Estimation orthodromique · 40 075 km par tour.', 'mileage.loading':'Chargement des voyages…',
+  'mileage.unavailable':'Voyages indisponibles ; impossible de calculer la distance.',
+  'mileage.lastConfirmed':'Dernières données confirmées affichées ; la mise à jour a échoué.',
+  'mileage.excludedLegs':'{n} vols invérifiables exclus. Seuls les vols valides sont comptés.',
+  'mileage.excludedTrips':'{n} voyages incomplets exclus.', 'mileage.details':'Voir les données exclues',
+  'mileage.untitled':'Voyage sans titre', 'mileage.unknownAirport':'Aéroport inconnu',
+  'mileage.reason.incomplete':'Références de vol incomplètes ou incohérentes.',
+  'mileage.reason.airport':'Identité fiable de l’aéroport manquante ; aucune supposition par code.',
+  'mileage.reason.coordinates':'Coordonnées de l’aéroport absentes ou invalides.',
+  'mileage.reason.duplicate':'Copies contradictoires du même vol ; exclues jusqu’à résolution.'
+})
+Object.assign(es, {
+  'mileage.title':'Distancia total de vuelo', 'mileage.legs':'Tramos válidos', 'mileage.laps':'Vueltas a la Tierra',
+  'mileage.estimate':'Estimación de círculo máximo · 40.075 km por vuelta.', 'mileage.loading':'Cargando viajes…',
+  'mileage.unavailable':'Los viajes no están disponibles; no se puede calcular la distancia.',
+  'mileage.lastConfirmed':'Se muestran los últimos datos confirmados; la actualización falló.',
+  'mileage.excludedLegs':'{n} tramos no verificables excluidos. Solo se cuentan los válidos.',
+  'mileage.excludedTrips':'{n} viajes incompletos excluidos.', 'mileage.details':'Ver registros excluidos',
+  'mileage.untitled':'Viaje sin título', 'mileage.unknownAirport':'Aeropuerto desconocido',
+  'mileage.reason.incomplete':'Referencias de vuelo incompletas o incoherentes.',
+  'mileage.reason.airport':'Falta una identidad fiable del aeropuerto; no se adivina por código.',
+  'mileage.reason.coordinates':'Coordenadas del aeropuerto ausentes o inválidas.',
+  'mileage.reason.duplicate':'Copias contradictorias del mismo vuelo; excluidas hasta resolverlas.'
+})
+Object.assign(de, {
+  'mileage.title':'Gesamte Flugdistanz', 'mileage.legs':'Gültige Flugstrecken', 'mileage.laps':'Erdumrundungen',
+  'mileage.estimate':'Großkreis-Schätzung · 40.075 km pro Umrundung.', 'mileage.loading':'Reisen werden geladen…',
+  'mileage.unavailable':'Reisen nicht verfügbar; die Distanz kann nicht berechnet werden.',
+  'mileage.lastConfirmed':'Letzte bestätigte Daten; die Aktualisierung ist fehlgeschlagen.',
+  'mileage.excludedLegs':'{n} nicht überprüfbare Flugstrecken ausgeschlossen. Nur gültige zählen.',
+  'mileage.excludedTrips':'{n} unvollständige Reisen ausgeschlossen.', 'mileage.details':'Ausgeschlossene Daten ansehen',
+  'mileage.untitled':'Unbenannte Reise', 'mileage.unknownAirport':'Unbekannter Flughafen',
+  'mileage.reason.incomplete':'Unvollständige oder widersprüchliche Flugverweise.',
+  'mileage.reason.airport':'Verlässliche Flughafenkennung fehlt; keine Vermutung anhand des Codes.',
+  'mileage.reason.coordinates':'Flughafenkoordinaten fehlen oder sind ungültig.',
+  'mileage.reason.duplicate':'Widersprüchliche Kopien desselben Flugs; bis zur Klärung ausgeschlossen.'
+})
+Object.assign(zhTW, {
+  'mileage.title':'累積飛行距離', 'mileage.legs':'有效飛行航段', 'mileage.laps':'相當於繞地球圈數',
+  'mileage.estimate':'大圓距離估算 · 每圈約 40,075 km。', 'mileage.loading':'正在讀取已儲存旅行…',
+  'mileage.unavailable':'尚未取得完整旅行紀錄，暫時無法計算里程。',
+  'mileage.lastConfirmed':'顯示最近已確認的紀錄；本次更新未成功。',
+  'mileage.excludedLegs':'已排除 {n} 段無法驗證的航段，里程僅包含有效航段。',
+  'mileage.excludedTrips':'另有 {n} 筆不完整旅行尚未計入。', 'mileage.details':'查看排除原因',
+  'mileage.untitled':'未命名旅行', 'mileage.unknownAirport':'未知機場',
+  'mileage.reason.incomplete':'航段參照不完整或停留順序不一致。',
+  'mileage.reason.airport':'缺少可靠的機場識別資料，不依機場代碼猜測。',
+  'mileage.reason.coordinates':'機場座標缺失或超出有效範圍。',
+  'mileage.reason.duplicate':'同一航段出現衝突資料，釐清前不計入。'
+})

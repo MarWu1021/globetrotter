@@ -6,6 +6,7 @@ import {LOCALES,useT} from '@/lib/i18n'
 import {AuthControls} from './auth-provider'
 import {TravelTile} from './travel-illustration'
 import ui from './world-ui.module.css'
+import FlightMileageCard from './flight-mileage-card'
 export default function MobileNavigation(){
  const t=useT(),session=useTripDraft(),locale=useTravelStore(s=>s.locale),setLocale=useTravelStore(s=>s.setLocale),cycleTheme=useTravelStore(s=>s.cycleTheme)
  const [panel,setPanel]=useState<'stats'|'settings'|null>(null)
@@ -23,9 +24,9 @@ export default function MobileNavigation(){
  if(session.opened||session.recordsOpen||session.previewActive||session.drawerOpen)return null
  return <>
   {panel&&<div className="fixed inset-0 z-40 flex items-end bg-[var(--scrim)] md:hidden" onClick={close}>
-   <section role="dialog" aria-modal="true" aria-label={t(`nav.${panel}`)} className="glass-card w-full max-h-[70dvh] overflow-y-auto rounded-t-3xl p-5 pb-[calc(24px+env(safe-area-inset-bottom))]" onClick={e=>e.stopPropagation()} onKeyDown={e=>{if(e.key==='Escape')close();if(e.key==='Tab'){const controls=[...e.currentTarget.querySelectorAll<HTMLElement>('button,select,input,a[href]')].filter(n=>!n.matches(':disabled'));const first=controls[0],last=controls.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}}}>
+   <section role="dialog" aria-modal="true" aria-label={t(`nav.${panel}`)} className="glass-card w-full max-h-[70dvh] overflow-y-auto rounded-t-3xl p-5 pb-[calc(24px+env(safe-area-inset-bottom))]" onClick={e=>e.stopPropagation()} onKeyDown={e=>{if(e.key==='Escape')close();if(e.key==='Tab'){const controls=[...e.currentTarget.querySelectorAll<HTMLElement>('button,select,input,a[href],summary')].filter(n=>!n.matches(':disabled'));const first=controls[0],last=controls.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}}}>
     <header className="flex items-center justify-between"><h2 className="font-semibold">{t(`nav.${panel}`)}</h2><button autoFocus onClick={close} className="min-h-11 min-w-11" aria-label={t('close')}>✕</button></header>
-    {panel==='stats'?<dl data-mobile-statistics className="grid grid-cols-2 gap-3 py-4">{[['stat.visited',session.savedMap.countryCount],['stat.trips',session.savedMap.tripCount],['stat.flights',session.savedMap.flightCount],['stat.world',Math.min(100,Math.round(session.savedMap.countryCount/195*100))+'%']].map(([label,value])=><div key={label} className="rounded-xl bg-[var(--panel-2)] p-3"><dt className="text-sm text-[var(--ink-dim)]">{t(String(label))}</dt><dd className="text-2xl font-semibold">{value}</dd></div>)}</dl>:<div className="space-y-4 py-4">
+    {panel==='stats'?<div className="space-y-4 py-4"><FlightMileageCard /><dl data-mobile-statistics className="grid grid-cols-2 gap-3">{[['stat.visited',session.savedMap.countryCount],['stat.trips',session.savedMap.tripCount],['stat.flights',session.savedMap.flightCount],['stat.world',Math.min(100,Math.round(session.savedMap.countryCount/195*100))+'%']].map(([label,value])=><div key={label} className="rounded-xl bg-[var(--panel-2)] p-3"><dt className="text-sm text-[var(--ink-dim)]">{t(String(label))}</dt><dd className="text-2xl font-semibold">{value}</dd></div>)}</dl></div>:<div className="space-y-4 py-4">
      <label className="block">{t('language')}<select aria-label={t('language')} value={locale} onChange={e=>setLocale(e.target.value as Locale)} className="mt-2 min-h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--panel)] px-3">{LOCALES.map(l=><option key={l.id} value={l.id}>{l.flag} {l.label}</option>)}</select></label>
      <button className="min-h-11 w-full rounded-xl border border-[var(--border)]" onClick={cycleTheme}>{t('theme.toggle')}</button><AuthControls/>
     </div>}

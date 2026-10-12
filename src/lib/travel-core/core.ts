@@ -170,19 +170,29 @@ export function deriveRouteGroups(trips: readonly Trip[], airports: readonly Air
     .localeCompare(JSON.stringify([b.departureAirportId, b.arrivalAirportId])))
 }
 
+/** Spherical great-circle estimate. Invalid coordinates are unavailable, never zero. */
+export function greatCircleDistanceKm(
+  a: Pick<Airport, "latitude" | "longitude">,
+  b: Pick<Airport, "latitude" | "longitude">,
+): number | null {
+  if (![a, b].every(p => p && Number.isFinite(p.latitude) && Math.abs(p.latitude) <= 90 &&
+    Number.isFinite(p.longitude) && Math.abs(p.longitude) <= 180)) return null
+  const radians = (n: number) => n * Math.PI / 180
+  const hav = Math.sin(radians(b.latitude - a.latitude) / 2) ** 2 +
+    Math.cos(radians(a.latitude)) * Math.cos(radians(b.latitude)) *
+    Math.sin(radians(b.longitude - a.longitude) / 2) ** 2
+  return 6371 * 2 * Math.asin(Math.sqrt(Math.max(0, Math.min(1, hav))))
+}
+
 export function buildArcDescriptors(trips: readonly Trip[], airports: readonly Airport[], includePreview = false): ArcDescriptor[] {
   validateTrips(trips, airports)
   const master = airportMap(airports)
-  const radians = (n: number) => n * Math.PI / 180
   return trips.filter((t) => includePreview || t.status === "completed").flatMap((t) => {
     const stops = stopMap(t)
     return t.flights.map((f) => {
       const a = master.get(stops.get(f.departureStopId)!.airportId)!
       const b = master.get(stops.get(f.arrivalStopId)!.airportId)!
-      const hav = Math.sin(radians(b.latitude - a.latitude) / 2) ** 2 +
-        Math.cos(radians(a.latitude)) * Math.cos(radians(b.latitude)) *
-        Math.sin(radians(b.longitude - a.longitude) / 2) ** 2
-      const distanceKm = 6371 * 2 * Math.asin(Math.sqrt(Math.max(0, Math.min(1, hav))))
+      const distanceKm = greatCircleDistanceKm(a, b)! // validateTrips already checked both airports.
       return { tripId: t.id, flightId: f.id, status: t.status,
         departureAirportId: a.id, arrivalAirportId: b.id,
         startLat: a.latitude, startLng: a.longitude, endLat: b.latitude, endLng: b.longitude,

@@ -85,6 +85,7 @@ const LanguageSelect = () => {
   const locale = useTravelStore((s) => s.locale)
   const setLocale = useTravelStore((s) => s.setLocale)
   const [open, setOpen] = useState(false)
+  const [menuPosition, setMenuPosition] = useState<{ left: number; maxWidth: number }>()
   const current = LOCALES.find((l) => l.id === locale) ?? LOCALES[0]
 
   useEffect(() => {
@@ -92,14 +93,31 @@ const LanguageSelect = () => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false)
     }
+    const onResize = () => setOpen(false)
     window.addEventListener("keydown", onKey)
-    return () => window.removeEventListener("keydown", onKey)
+    window.addEventListener("resize", onResize)
+    return () => {
+      window.removeEventListener("keydown", onKey)
+      window.removeEventListener("resize", onResize)
+    }
   }, [open])
 
   return (
     <div className="relative">
       <button
-        onClick={() => setOpen((o) => !o)}
+        onClick={(event) => {
+          if (!open) {
+            const button = event.currentTarget
+            const bounds = button.closest(".map-stage")?.getBoundingClientRect()
+            const anchor = button.parentElement?.getBoundingClientRect()
+            if (bounds && anchor) {
+              const width = Math.min(11 * (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16), bounds.width - 24)
+              const left = Math.max(bounds.left + 12, Math.min(button.getBoundingClientRect().right - width, bounds.right - 12 - width))
+              setMenuPosition({ left: left - anchor.left, maxWidth: width })
+            }
+          }
+          setOpen((o) => !o)
+        }}
         aria-label={t("language")}
         className="flex h-11 items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--panel)] pl-2.5 pr-2.5 text-sm font-medium text-[var(--ink-dim)] hover:text-[var(--ink)] md:h-9"
       >
@@ -115,11 +133,13 @@ const LanguageSelect = () => {
               onClick={() => setOpen(false)}
             />
             <motion.div
+              data-language-menu
               initial={{ opacity: 0, y: -6, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -6, scale: 0.97 }}
               transition={{ duration: 0.16, ease: "easeOut" }}
-              style={{ transformOrigin: "top right" }}
+              style={{ transformOrigin: "top right", left: menuPosition?.left,
+                right: menuPosition ? "auto" : undefined, maxWidth: menuPosition?.maxWidth }}
               className="absolute right-0 z-40 mt-1.5 w-44 overflow-hidden rounded-xl border border-[var(--border-strong)] bg-[var(--panel)] py-1 shadow-2xl"
             >
               {LOCALES.map((l) => (

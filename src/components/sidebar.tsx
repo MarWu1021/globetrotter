@@ -21,6 +21,7 @@ import { useTripDraft } from "./trip-draft-provider"
 import TripComposer from "@/components/trip-composer"
 import { TravelVillage, TravelTile } from './travel-illustration'
 import ui from './world-ui.module.css'
+import FlightMileageCard from './flight-mileage-card'
 import {
   DownloadIcon,
   UploadIcon,
@@ -401,6 +402,8 @@ const Sidebar = () => {
         <Stat value={savedTrips.ready ? <CountUp value={savedMap.tripCount} /> : "—"} label={t("stat.trips")} />
         <Stat value={savedTrips.ready ? <CountUp value={savedMap.flightCount} /> : "—"} label={t("stat.flights")} />
       </div>
+
+      <FlightMileageCard />
 
       <div className={`${ui.progress} flex flex-col gap-1.5`}>
         <div className="flex items-baseline justify-between text-[0.7rem]">
