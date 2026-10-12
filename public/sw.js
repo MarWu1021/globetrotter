@@ -1,63 +1,36 @@
-const CACHE = "globetrotter-v4"
-const SHELL = [ "/manifest.webmanifest", "/icons/icon-192.png"]
-
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches
-      .open(CACHE)
-      .then((cache) => cache.addAll(SHELL))
-      .then(() => self.skipWaiting()),
-  )
-})
-
+// Public build assets only. Auth, HTML, API and account data stay network-only.
+const CACHE = "globetrotter-v5"
+const ICONS = new Set(["/icons/icon-192.png", "/icons/icon-512.png", "/icons/maskable-512.png", "/icons/apple-touch-icon.png", "/icon.svg"])
+self.addEventListener("install", (event) => event.waitUntil(self.skipWaiting()))
 self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches
-      .keys()
-      .then((keys) =>
-        Promise.all(
-          keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)),
-        ),
-      )
-      .then(() => self.clients.claim()),
-  )
+  event.waitUntil(caches.keys().then(keys => Promise.all(
+    keys.filter(key => /^globetrotter-v\d+$/.test(key) && key !== CACHE).map(key => caches.delete(key)),
+  )).then(() => self.clients.claim()))
 })
-
 self.addEventListener("fetch", (event) => {
   const { request } = event
-  if (request.method !== "GET") return
+  if (request.method !== "GET" || request.mode === "navigate") return
   const url = new URL(request.url)
-  if (url.origin !== self.location.origin) return
-
-  // D1 preparation: Auth callbacks, private endpoints and RSC payloads are never
-  // app-cached. Future authenticated HTML must also send private/no-store.
-  if (url.pathname === "/" || url.pathname === "/login" || url.pathname === "/auth" || url.pathname.startsWith("/auth/") ||
-      url.searchParams.has("_rsc") || request.headers.get("RSC") === "1") return
-
-  // API routes (live advisories): always network, never cache. Let the request
-  // fall through to the browser so fresh data lands when online.
-  if (url.pathname.startsWith("/api/")) return
-
-  // Authenticated app and login navigations are network-only. Never fall back
-  // to an old anonymous shell when verification or logout is offline.
-  if (request.mode === "navigate") return
-
-  // Everything else is network-only unless it is an approved public asset.
-  if (!url.pathname.startsWith("/_next/static/") && !url.pathname.startsWith("/icons/") &&
-      !["/manifest.webmanifest", "/icon.svg", "/favicon.ico"].includes(url.pathname)) return
-
-  // Static assets: cache-first, populate on miss (stale-while-revalidate-ish).
-  event.respondWith(
-    caches.match(request).then(
-      (cached) =>
-        cached ||
-        fetch(request).then((response) => {
-          if (response.ok && !/private|no-store|no-cache/i.test(response.headers.get("Cache-Control") || "")) {
-            const copy = response.clone()
-            event.waitUntil(caches.open(CACHE).then((cache) => cache.put(request, copy)))
-          }
-          return response
-        }),
-    ),
-  )
+  // Queries may contain callback codes or RSC data. Never save them as cache keys.
+  if (url.origin !== self.location.origin || url.search || request.headers.has("Authorization") ||
+      request.headers.get("RSC") === "1") return
+  if (!url.pathname.startsWith("/_next/static/") && !ICONS.has(url.pathname)) return
+  event.respondWith((async () => {
+    let cache
+    try {
+      cache = await caches.open(CACHE)
+      const cached = await cache.match(request)
+      if (cached) return cached
+    } catch { /* Cache restrictions must not break online loading. */ }
+    const response = await fetch(request)
+    const mime = response.headers.get("Content-Type") || ""
+    // Never cache redirects, HTML, JSON, private responses or cross-origin content.
+    const publicType = /^(?:image\/|font\/|text\/css\b|(?:text|application)\/javascript\b|application\/font-)/i.test(mime)
+    if (response.ok && !response.redirected && publicType &&
+        (!response.url || new URL(response.url).origin === self.location.origin) &&
+        !/private|no-store|no-cache/i.test(response.headers.get("Cache-Control") || "")) {
+      try { await cache?.put(request, response.clone()) } catch { /* Full cache: use the network response. */ }
+    }
+    return response
+  })())
 })

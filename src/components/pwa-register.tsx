@@ -7,8 +7,9 @@ const PwaRegister = () => {
     if (process.env.NODE_ENV !== "production") return
     if (!("serviceWorker" in navigator)) return
     const register = () =>
-      navigator.serviceWorker.register("/sw.js").catch(() => {})
-    window.addEventListener("load", register)
+      navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" }).catch(() => {})
+    if (document.readyState === "complete") void register()
+    else window.addEventListener("load", register, { once: true })
     return () => window.removeEventListener("load", register)
   }, [])
   return null

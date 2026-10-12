@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import LoginIsland from './login-island'
+import PwaInstall from './pwa-install'
 import { useRouter } from 'next/navigation'
 import { useAuth } from './auth-provider'
 import { AuthLoading } from './auth-gate'
@@ -71,6 +72,7 @@ export default function LoginScreen() {
           </button>
           <p className={styles.privacy}>{t('login.privacy')}</p>
         </div>
+        <div className={styles.install}><PwaInstall /></div>
       </section>
     </div>
     <footer className={styles.footer}><span aria-hidden="true" />{t('login.footer')}<span aria-hidden="true" /></footer>

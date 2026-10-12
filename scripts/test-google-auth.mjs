@@ -63,7 +63,7 @@ test('Google flow uses same origin callback, clears editor on logout and has sta
  assert.match(fs.readFileSync('src/components/travel-workspace.tsx','utf8'),/TripDraftProvider key={generation}/)
 })
 test('Service Worker upgrade does not precache private root HTML',()=>{
- const code=fs.readFileSync('public/sw.js','utf8');assert.match(code,/globetrotter-v4/);assert.doesNotMatch(code,/const SHELL = \["\/"/)
+ const code=fs.readFileSync('public/sw.js','utf8');assert.match(code,/globetrotter-v5/);assert.doesNotMatch(code,/const SHELL = \["\/"/)
 })
 
 test('callback retains actual website host when Next normalizes an internal URL',()=>{

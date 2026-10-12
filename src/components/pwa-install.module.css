@@ -1,0 +1,14 @@
+.help { min-width: 0; border: 1px solid var(--border); border-radius: 14px; color: var(--ink); background: #f8fbf4d9; font-size: 12px; line-height: 1.65; text-align: left; overflow-wrap: anywhere; }
+.help summary { display: flex; align-items: center; gap: 9px; min-height: 44px; padding: 10px 13px; cursor: pointer; list-style: none; font-weight: 600; }
+.help summary::-webkit-details-marker { display: none; }
+.help summary::after { content: '+'; margin-left: auto; font-size: 18px; font-weight: 400; }
+.help[open] summary::after { content: '−'; }
+.help summary svg { width: 21px; height: 21px; flex-shrink: 0; stroke: var(--sea-blue); stroke-width: 1.5; }
+.content { padding: 0 14px 14px; }
+.content ol { list-style: decimal; padding-left: 20px; margin: 10px 0; }
+.content li { margin-bottom: 6px; }
+.content button { min-height: 44px; width: 100%; border-radius: 10px; background: var(--sea-blue); color: var(--cream); padding: 8px 12px; margin: 4px 0 8px; cursor: pointer; }
+.content button:disabled { opacity: .6; cursor: wait; }
+.help summary:focus-visible, .content button:focus-visible { outline: 3px solid var(--sea-blue); outline-offset: 3px; }
+.note { margin-top: 8px; color: var(--ink-dim); font-size: 11px; }
+.installed { color: var(--ink-dim); font-size: 11px; line-height: 1.6; text-align: center; }

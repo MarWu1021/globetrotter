@@ -1,15 +1,17 @@
 import type { MetadataRoute } from "next"
 
 const manifest = (): MetadataRoute.Manifest => ({
-  name: "Globetrotter — map where you've been",
+  id: "/",
+  name: "Globetrotter",
   short_name: "Globetrotter",
   description:
-    "Track the countries you've visited and want to go, with facts and official safety advice. Works offline.",
+    "Your personal travel map, flight routes and memories. An internet connection is required.",
   start_url: "/",
+  scope: "/",
   display: "standalone",
   orientation: "any",
-  background_color: "#0b1020",
-  theme_color: "#0b1020",
+  background_color: "#F7F8F3",
+  theme_color: "#DCE9ED",
   categories: ["travel", "lifestyle", "navigation"],
   icons: [
     {

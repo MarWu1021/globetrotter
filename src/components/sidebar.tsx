@@ -22,6 +22,7 @@ import TripComposer from "@/components/trip-composer"
 import { TravelVillage, TravelTile } from './travel-illustration'
 import ui from './world-ui.module.css'
 import FlightMileageCard from './flight-mileage-card'
+import PwaInstall from './pwa-install'
 import {
   DownloadIcon,
   UploadIcon,
@@ -382,6 +383,7 @@ const Sidebar = () => {
       </header>
 
       <TripComposer />
+      <div className="hidden md:block"><PwaInstall /></div>
 
       <div className="grid grid-cols-3 gap-2.5">
         <Stat

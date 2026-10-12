@@ -21,10 +21,11 @@
     "test:sql-review": "node --test scripts/test-sql-review.mjs",
     "test:cloud-data": "node --test scripts/test-cloud-data.mjs",
     "test:airlines": "node --test scripts/test-airlines.mjs",
-    "test": "node --test scripts/test-travel-core.mjs scripts/test-airport-data.mjs scripts/test-trip-draft.mjs scripts/test-trip-globe.mjs scripts/test-trip-storage.mjs scripts/test-trip-map.mjs scripts/test-cloud-trips.mjs scripts/test-auth-cache.mjs scripts/test-google-auth.mjs scripts/test-sql-review.mjs scripts/test-cloud-data.mjs scripts/test-airlines.mjs scripts/test-login-map.mjs scripts/test-presentation.mjs scripts/test-trip-mileage.mjs",
+    "test": "node --test scripts/test-travel-core.mjs scripts/test-airport-data.mjs scripts/test-trip-draft.mjs scripts/test-trip-globe.mjs scripts/test-trip-storage.mjs scripts/test-trip-map.mjs scripts/test-cloud-trips.mjs scripts/test-auth-cache.mjs scripts/test-google-auth.mjs scripts/test-sql-review.mjs scripts/test-cloud-data.mjs scripts/test-airlines.mjs scripts/test-login-map.mjs scripts/test-presentation.mjs scripts/test-trip-mileage.mjs scripts/test-pwa.mjs",
     "test:trip-mileage": "node --test scripts/test-trip-mileage.mjs",
     "test:login-map": "node --test scripts/test-login-map.mjs",
-    "test:presentation": "node --test scripts/test-presentation.mjs"
+    "test:presentation": "node --test scripts/test-presentation.mjs",
+    "test:pwa": "node --test --test-isolation=none scripts/test-pwa.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

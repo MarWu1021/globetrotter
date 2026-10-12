@@ -4,8 +4,8 @@ import fs from 'node:fs'
 import vm from 'node:vm'
 function worker() {
  const handlers={},writes=[],waits=[];let reply=null,requests=0
- const response={ok:true,headers:new Headers({'Content-Type':'text/html'}),clone(){return this}}
- const caches={open:async()=>({put:async(key)=>writes.push(key),addAll:async()=>{}}),match:async()=>null}
+ const response={ok:true,headers:new Headers({'Content-Type':'application/javascript'}),clone(){return this}}
+ const caches={open:async()=>({match:async()=>null,put:async(key)=>writes.push(key),addAll:async()=>{}}),match:async()=>null}
  const context={URL,console,caches,self:{location:{origin:'https://preview.example'},addEventListener:(n,f)=>handlers[n]=f},fetch:async()=>{requests++;return response}}
  vm.runInNewContext(fs.readFileSync('public/sw.js','utf8'),context)
  return {writes,response,get requests(){return requests},async dispatch(path,mode='navigate',headers={},method='GET'){

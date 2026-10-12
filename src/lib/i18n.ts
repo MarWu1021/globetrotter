@@ -1290,3 +1290,108 @@ Object.assign(zhTW, {
   'mileage.reason.coordinates':'機場座標缺失或超出有效範圍。',
   'mileage.reason.duplicate':'同一航段出現衝突資料，釐清前不計入。'
 })
+
+Object.assign(en, {
+  "pwa.title": "Add to Home Screen",
+  "pwa.intro": "Keep your travel world one tap away.",
+  "pwa.ios.1": "Open this website in Safari.",
+  "pwa.ios.2": "Tap Share, then Add to Home Screen.",
+  "pwa.ios.3": "Keep Open as Web App enabled if shown, then tap Add.",
+  "pwa.android.1": "Open this website in Chrome.",
+  "pwa.android.2": "Open the ⋮ menu and choose Install app or Add to Home screen.",
+  "pwa.android.3": "Confirm installation, then open Globetrotter from your home screen.",
+  "pwa.desktop.1": "Open this website in Chrome or Edge.",
+  "pwa.desktop.2": "Use the install icon in the address bar or the browser’s app menu.",
+  "pwa.desktop.3": "If installation is unavailable, bookmark this page instead.",
+  "pwa.install": "Install Globetrotter",
+  "pwa.installing": "Waiting for your choice…",
+  "pwa.failed": "Installation did not finish. Use the browser instructions above or try again.",
+  "pwa.installed": "Globetrotter is on your home screen",
+  "pwa.online": "Internet is required for login and travel records; offline sync is not available.",
+  "pwa.origin": "Install from the URL you plan to keep using. Each Preview address is a separate app.",
+  "pwa.ios.session": "Sign in from the home-screen app. Safari and the installed app may have separate login sessions."
+})
+
+Object.assign(fr, {
+  "pwa.title": "Ajouter à l’écran d’accueil",
+  "pwa.intro": "Votre univers de voyage à portée de main.",
+  "pwa.ios.1": "Ouvrez ce site dans Safari.",
+  "pwa.ios.2": "Touchez Partager, puis Sur l’écran d’accueil.",
+  "pwa.ios.3": "Activez Ouvrir comme app web si proposé, puis touchez Ajouter.",
+  "pwa.android.1": "Ouvrez ce site dans Chrome.",
+  "pwa.android.2": "Dans le menu ⋮, choisissez Installer l’application ou Ajouter à l’écran d’accueil.",
+  "pwa.android.3": "Confirmez, puis ouvrez Globetrotter depuis l’écran d’accueil.",
+  "pwa.desktop.1": "Ouvrez ce site dans Chrome ou Edge.",
+  "pwa.desktop.2": "Utilisez l’icône d’installation de la barre d’adresse ou le menu des applications.",
+  "pwa.desktop.3": "Si l’installation est indisponible, ajoutez cette page aux favoris.",
+  "pwa.install": "Installer Globetrotter",
+  "pwa.installing": "En attente de votre choix…",
+  "pwa.failed": "L’installation n’a pas abouti. Suivez les étapes ci-dessus ou réessayez.",
+  "pwa.installed": "Globetrotter est sur votre écran d’accueil",
+  "pwa.online": "Une connexion est requise pour se connecter et consulter les voyages ; pas de synchronisation hors ligne.",
+  "pwa.origin": "Installez depuis l’adresse que vous souhaitez conserver. Chaque adresse Preview est une application distincte.",
+  "pwa.ios.session": "Connectez-vous depuis l’app de l’écran d’accueil. Safari et l’app peuvent avoir des sessions différentes."
+})
+
+Object.assign(es, {
+  "pwa.title": "Añadir a la pantalla de inicio",
+  "pwa.intro": "Tu mundo de viajes, a un toque.",
+  "pwa.ios.1": "Abre este sitio en Safari.",
+  "pwa.ios.2": "Toca Compartir y Añadir a pantalla de inicio.",
+  "pwa.ios.3": "Activa Abrir como app web si aparece y toca Añadir.",
+  "pwa.android.1": "Abre este sitio en Chrome.",
+  "pwa.android.2": "En el menú ⋮, elige Instalar aplicación o Añadir a pantalla de inicio.",
+  "pwa.android.3": "Confirma y abre Globetrotter desde la pantalla de inicio.",
+  "pwa.desktop.1": "Abre este sitio en Chrome o Edge.",
+  "pwa.desktop.2": "Usa el icono de instalación de la barra de direcciones o el menú de aplicaciones.",
+  "pwa.desktop.3": "Si no puedes instalarlo, guarda esta página en favoritos.",
+  "pwa.install": "Instalar Globetrotter",
+  "pwa.installing": "Esperando tu elección…",
+  "pwa.failed": "La instalación no terminó. Sigue las instrucciones anteriores o inténtalo de nuevo.",
+  "pwa.installed": "Globetrotter está en tu pantalla de inicio",
+  "pwa.online": "Se necesita internet para iniciar sesión y consultar viajes; no hay sincronización sin conexión.",
+  "pwa.origin": "Instala desde la dirección que quieras conservar. Cada dirección Preview es una app distinta.",
+  "pwa.ios.session": "Inicia sesión desde la app instalada. Safari y la app pueden tener sesiones independientes."
+})
+
+Object.assign(de, {
+  "pwa.title": "Zum Home-Bildschirm hinzufügen",
+  "pwa.intro": "Deine Reisewelt mit einem Fingertipp öffnen.",
+  "pwa.ios.1": "Öffne diese Website in Safari.",
+  "pwa.ios.2": "Tippe auf Teilen und Zum Home-Bildschirm.",
+  "pwa.ios.3": "Lass Als Web-App öffnen aktiviert, falls angezeigt, und tippe auf Hinzufügen.",
+  "pwa.android.1": "Öffne diese Website in Chrome.",
+  "pwa.android.2": "Wähle im Menü ⋮ App installieren oder Zum Startbildschirm hinzufügen.",
+  "pwa.android.3": "Bestätige und öffne Globetrotter vom Startbildschirm.",
+  "pwa.desktop.1": "Öffne diese Website in Chrome oder Edge.",
+  "pwa.desktop.2": "Nutze das Installationssymbol in der Adressleiste oder das App-Menü des Browsers.",
+  "pwa.desktop.3": "Falls die Installation nicht verfügbar ist, speichere ein Lesezeichen.",
+  "pwa.install": "Globetrotter installieren",
+  "pwa.installing": "Warte auf deine Auswahl…",
+  "pwa.failed": "Die Installation wurde nicht abgeschlossen. Folge der Anleitung oder versuche es erneut.",
+  "pwa.installed": "Globetrotter ist auf deinem Home-Bildschirm",
+  "pwa.online": "Für Anmeldung und Reisen ist Internet nötig; keine Offline-Synchronisierung.",
+  "pwa.origin": "Installiere von der Adresse, die du weiter nutzen möchtest. Jede Preview-Adresse ist eine eigene App.",
+  "pwa.ios.session": "Melde dich in der installierten App an. Safari und die App können getrennte Sitzungen verwenden."
+})
+
+Object.assign(zhTW, {
+  "pwa.title": "加入主畫面",
+  "pwa.intro": "讓你的旅行世界，一點就開啟。",
+  "pwa.ios.1": "使用 Safari 開啟這個網站。",
+  "pwa.ios.2": "點選「分享」，再選「加入主畫面」。",
+  "pwa.ios.3": "若出現「以網頁 App 開啟」，請保持開啟，再點「加入」。",
+  "pwa.android.1": "使用 Chrome 開啟這個網站。",
+  "pwa.android.2": "點選右上角 ⋮，選擇「安裝應用程式」或「加入主畫面」。",
+  "pwa.android.3": "確認安裝後，即可從主畫面開啟 Globetrotter。",
+  "pwa.desktop.1": "使用 Chrome 或 Edge 開啟這個網站。",
+  "pwa.desktop.2": "點選網址列的安裝圖示，或從瀏覽器的應用程式選單安裝。",
+  "pwa.desktop.3": "若瀏覽器沒有安裝選項，也可以先將此頁加入書籤。",
+  "pwa.install": "安裝 Globetrotter",
+  "pwa.installing": "等待你確認安裝…",
+  "pwa.failed": "安裝尚未完成，請依上方步驟操作或稍後再試。",
+  "pwa.installed": "Globetrotter 已加入主畫面",
+  "pwa.online": "登入與旅行紀錄需要網路連線，目前不支援離線同步。",
+  "pwa.origin": "請固定使用同一個網址安裝與開啟；更換網址會視為不同 App。",
+  "pwa.ios.session": "請從主畫面 App 內登入。Safari 與已安裝 App 的登入狀態可能各自獨立。"
+})
