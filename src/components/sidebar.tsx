@@ -22,6 +22,7 @@ import TripComposer from "@/components/trip-composer"
 import { TravelVillage, TravelTile } from './travel-illustration'
 import ui from './world-ui.module.css'
 import FlightMileageCard from './flight-mileage-card'
+import TravelRankings from './travel-rankings'
 import PwaInstall from './pwa-install'
 import {
   DownloadIcon,
@@ -406,6 +407,7 @@ const Sidebar = () => {
       </div>
 
       <FlightMileageCard />
+      <TravelRankings />
 
       <div className={`${ui.progress} flex flex-col gap-1.5`}>
         <div className="flex items-baseline justify-between text-[0.7rem]">

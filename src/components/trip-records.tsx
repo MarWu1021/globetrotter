@@ -1,7 +1,7 @@
 "use client"
 import { useAccount } from "./account-provider"
 import { useAuth } from "./auth-provider"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useTripDraft } from "./trip-draft-provider"
 import { useT } from "@/lib/i18n"
 import { useTravelStore } from "@/lib/store"
@@ -9,6 +9,7 @@ import { countryDisplayName } from "@/lib/airport-data/countries"
 import { airportChinese } from "@/lib/airport-data/localization"
 import { previewTripDraft } from "@/lib/trip-draft/core"
 import { savedTripToken, type StorageError } from "@/lib/trip-storage/core"
+import { selectTripRecords, tripDepartureDate, type TripRecordOrder } from "@/lib/trip-records-order"
 
 const button="min-h-11 rounded-lg border border-[var(--border)] px-3 py-2"
 export default function TripRecords({onClose}:{onClose:()=>void}) {
@@ -19,7 +20,9 @@ export default function TripRecords({onClose}:{onClose:()=>void}) {
   const dialog=useRef<HTMLDialogElement>(null)
   const [selected,setSelected]=useState<string|null>(null),[error,setError]=useState<StorageError|import('@/lib/cloud-trips/contracts').CloudError|null>(null)
   useEffect(()=>{dialog.current?.showModal()},[])
-  const records=[...savedTrips.trips].sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt))
+  const [order,setOrder]=useState<TripRecordOrder>('date-desc'),[query,setQuery]=useState('')
+  const records=useMemo(()=>selectTripRecords(savedTrips.trips,order,query),[savedTrips.trips,order,query])
+  const dateFormat=new Intl.DateTimeFormat(locale,{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'})
   const record=records.find(r=>r.draft.id===selected)
   const details=record && previewTripDraft(record.draft)
   return <dialog ref={dialog} aria-labelledby="trip-records-title" onCancel={onClose}
@@ -40,10 +43,18 @@ export default function TripRecords({onClose}:{onClose:()=>void}) {
       </header>
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-4 pb-[calc(16px+env(safe-area-inset-bottom))]">
         {(error||savedTrips.error) && <div role="alert"><p>{t(`${authEnabled?"cloud.error":"trip.storage"}.${error??savedTrips.error}`)}</p><button className={button} onClick={()=>{if(authEnabled)void account.reload();else repository.reload();setError(null)}}>{t("trip.retry")}</button></div>}
-        {savedTrips.ready && !records.length && !savedTrips.error && <p>{t("trip.noTrips")}</p>}
-        <ul className="space-y-3">{records.map(r=><li key={r.draft.id} className="space-y-2 rounded-xl border border-[var(--border)] p-3">
+        <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+          <label className="min-w-0 space-y-1 text-sm">{t('tripOrder.search')}<input type="search" aria-label={t('tripOrder.search')} value={query} onChange={e=>setQuery(e.target.value)} className="block min-h-11 w-full min-w-0 rounded-lg text-base border border-[var(--border)] bg-[var(--panel)] px-3" /></label>
+          <label className="min-w-0 space-y-1 text-sm">{t('tripOrder.label')}<select aria-label={t('tripOrder.label')} value={order} onChange={e=>setOrder(e.target.value as TripRecordOrder)} className="block min-h-11 w-full min-w-0 rounded-lg text-base border border-[var(--border)] bg-[var(--panel)] px-3">
+            {(['date-desc','date-asc','updated-desc'] as const).map(o=><option key={o} value={o}>{t(`tripOrder.${o}`)}</option>)}
+          </select></label>
+        </div>
+        <p className="text-xs text-[var(--ink-dim)]">{t('tripOrder.hint')}</p>
+        {savedTrips.ready && !records.length && !savedTrips.error && <p>{t(query?'tripOrder.noMatches':'trip.noTrips')}</p>}
+        <ul data-trip-records-list className="space-y-3">{records.map(r=><li key={r.draft.id} data-trip-record-id={r.draft.id} className="space-y-2 rounded-xl border border-[var(--border)] p-3">
           <h3 className="break-words font-semibold">{r.draft.title||t("trip.untitled")}</h3>
           <p className="break-words">{r.draft.stops.map(s=>s.airport.iata??s.airport.icao??s.airport.ident).join(' → ')}</p>
+          <p className="text-sm text-[var(--ink-dim)]">{t('tripOrder.departure')}: {tripDepartureDate(r)?dateFormat.format(new Date(tripDepartureDate(r)!)):t('tripOrder.undated')}</p>
           <p className="text-sm">{t("trip.counts",{flights:r.draft.legs.length,stops:r.draft.stops.length})}</p>
           <div className="flex flex-wrap gap-2">
             <button className={button} onClick={()=>setSelected(r.draft.id)}>{t("trip.view")}</button>
