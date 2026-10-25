@@ -152,7 +152,7 @@ try {for(const width of (process.env.TEST_WIDTH?[Number(process.env.TEST_WIDTH)]
  }
  // End LOCALES is zh-TW, so reuse the localized CRUD flow.
  assert.equal(current,'zh-TW');await menu('建立旅行');await editor.getByLabel('旅行名稱（選填）',{exact:true}).fill('CRUD 排行測試')
- async function add(code){await editor.getByRole('searchbox').fill(code);await editor.locator('li').filter({has:page.getByRole('button',{name:'加入路線',exact:true})}).filter({hasText:code}).first().getByRole('button',{name:'加入路線',exact:true}).click()}
+ async function add(code){if(!await editor.getByRole('searchbox').isVisible())await editor.locator('summary#trip-search-title').click();await editor.getByRole('searchbox').fill(code);await editor.locator('li').filter({has:page.getByRole('button',{name:'加入路線',exact:true})}).filter({hasText:code}).first().getByRole('button',{name:'加入路線',exact:true}).click()}
  await add('TPE');await add('KCZ');await editor.getByRole('combobox',{name:'航空公司',exact:true}).fill('CI');await editor.getByRole('option').filter({hasText:'China Airlines'}).click()
  const before=expected();fail=true;await editor.getByRole('button',{name:'儲存旅行',exact:true}).click();await editor.getByRole('alert').filter({hasText:translate(current)('cloud.error.network')}).waitFor();assert.deepEqual(expected(),before)
  await editor.getByRole('button',{name:'儲存旅行',exact:true}).click();await editor.waitFor({state:'hidden'});await closeDrawer()

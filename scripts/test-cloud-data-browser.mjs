@@ -52,7 +52,7 @@ try {for(const width of process.env.TEST_WIDTH?[Number(process.env.TEST_WIDTH)]:
  const editor=page.getByRole('dialog',{name:'旅行編輯',exact:true}),recordDialog=page.getByRole('dialog',{name:'我的旅行紀錄',exact:true})
  async function menu(label){if(width<768&&!await page.getByRole('button',{name:label,exact:true}).isVisible())await page.getByRole('button',{name:'搜尋與我的旅行',exact:true}).click();await page.getByRole('button',{name:label,exact:true}).click()}
  async function closeDrawer(){const drawer=page.getByRole('dialog',{name:'搜尋與我的旅行',exact:true});if(width<768&&await drawer.isVisible())await drawer.getByRole('button',{name:'關閉',exact:true}).click()}
- async function add(code){await editor.getByRole('searchbox').fill(code);await editor.locator('li').filter({has:page.getByRole('button',{name:'加入路線',exact:true})}).filter({hasText:code}).first().getByRole('button',{name:'加入路線',exact:true}).click()}
+ async function add(code){if(!await editor.getByRole('searchbox').isVisible())await editor.locator('summary#trip-search-title').click();await editor.getByRole('searchbox').fill(code);await editor.locator('li').filter({has:page.getByRole('button',{name:'加入路線',exact:true})}).filter({hasText:code}).first().getByRole('button',{name:'加入路線',exact:true}).click()}
  const colorData=()=>page.evaluate(()=>JSON.parse(document.querySelector('[data-flat-preview-colors]')?.dataset.savedColors||'{}'))
  async function colors(expected){await page.waitForFunction(expected=>{const colors=JSON.parse(document.querySelector('[data-flat-preview-colors]')?.dataset.savedColors||'{}');return Object.entries(expected).every(([id,c])=>colors[id]===c)},expected)}
  async function globePixels(sample,color){
@@ -121,6 +121,7 @@ try {for(const width of process.env.TEST_WIDTH?[Number(process.env.TEST_WIDTH)]:
   const airline=editor.getByRole('combobox',{name:'航空公司',exact:true})
   await airline.fill('中華');await editor.getByRole('option').filter({hasText:'CI · 中華航空'}).getByRole('button').click()
   assert.equal(await airline.inputValue(),'CI · China Airlines')
+  if(!await editor.getByLabel('航班編號',{exact:true}).isVisible())await editor.locator('[data-flight-more] > summary').click()
   await editor.getByLabel('航班編號',{exact:true}).fill('CI100')
   fail='uncertain';await editor.getByRole('button',{name:'儲存旅行',exact:true}).click();await editor.getByRole('alert').filter({hasText:'未收到儲存確認'}).waitFor()
   assert.equal((await colorData())['392'],undefined);assert.equal(rows.A.size,0)

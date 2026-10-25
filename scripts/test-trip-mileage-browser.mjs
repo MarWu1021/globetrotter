@@ -74,7 +74,7 @@ try {for(const width of (process.env.TEST_WIDTH?[Number(process.env.TEST_WIDTH)]
  async function menu(label){if(width<768&&!await page.getByRole('button',{name:label,exact:true}).isVisible())await page.getByRole('button',{name:'搜尋與我的旅行',exact:true}).click();await page.getByRole('button',{name:label,exact:true}).click()}
  async function closeDrawer(){const d=page.getByRole('dialog',{name:'搜尋與我的旅行',exact:true});if(width<768&&await d.isVisible())await d.getByRole('button',{name:'關閉',exact:true}).click()}
  const editor=page.getByRole('dialog',{name:'旅行編輯',exact:true}),records=page.getByRole('dialog',{name:'我的旅行紀錄',exact:true})
- async function add(code){await editor.getByRole('searchbox').fill(code);await editor.locator('li').filter({has:page.getByRole('button',{name:'加入路線',exact:true})}).filter({hasText:code}).first().getByRole('button',{name:'加入路線',exact:true}).click()}
+ async function add(code){if(!await editor.getByRole('searchbox').isVisible())await editor.locator('summary#trip-search-title').click();await editor.getByRole('searchbox').fill(code);await editor.locator('li').filter({has:page.getByRole('button',{name:'加入路線',exact:true})}).filter({hasText:code}).first().getByRole('button',{name:'加入路線',exact:true}).click()}
  await page.goto(origin,{waitUntil:'domcontentloaded'});await totals(sum(['TPE','DXB','ATH']),2);await flat();groups++
  await menu('建立旅行');await editor.getByLabel('旅行名稱（選填）',{exact:true}).fill('瀏覽器測試 · 日本直飛')
  await add('TPE');await add('NRT')
@@ -116,7 +116,7 @@ try {for(const width of (process.env.TEST_WIDTH?[Number(process.env.TEST_WIDTH)]
  await menu('我的旅行紀錄')
  const japan=records.locator('li').filter({has:page.getByRole('heading',{name:'瀏覽器測試 · 日本直飛',exact:true})})
  await japan.getByRole('button',{name:'編輯',exact:true}).click()
- await editor.getByRole('button',{name:translate('zh-TW')('trip.remove')+' NRT',exact:true}).click();await add('KCZ');await totals(all,3)
+ await editor.locator('[data-flight-card]').first().locator('[data-airport-endpoint="to"]').click();await add('KCZ');await totals(all,3)
  await editor.getByRole('button',{name:'儲存旅行',exact:true}).click();await editor.getByText('已儲存至帳號',{exact:true}).first().waitFor()
  const edited=sum(['TPE','DXB','ATH'])+sum(['TPE','KCZ']);await totals(edited,3)
  await editor.getByRole('button',{name:'關閉編輯器',exact:true}).click();await closeDrawer();await flat();groups++

@@ -77,7 +77,7 @@ async function run(name,options){
   console.log(`PASS ${name} ${locale.id}: editor/save button and navigation fit`)
  }
  const t=translate('zh-TW');await menu(t,t('trip.create'));const editor=page.getByRole('dialog',{name:t('trip.editor'),exact:true})
- for(const code of ['TPE','DXB','ATH']){await editor.getByRole('searchbox').fill(code);await editor.locator('li').filter({has:page.getByRole('button',{name:t('trip.add'),exact:true})}).first().getByRole('button',{name:t('trip.add'),exact:true}).click()}
+ for(const code of ['TPE','DXB','ATH']){if(!await editor.getByRole('searchbox').isVisible())await editor.locator('summary#trip-search-title').click();await editor.getByRole('searchbox').fill(code);await editor.locator('li').filter({has:page.getByRole('button',{name:t('trip.add'),exact:true})}).first().getByRole('button',{name:t('trip.add'),exact:true}).click()}
  await editor.getByLabel(`${t('trip.presence')} DXB`,{exact:true}).selectOption('transit')
  await editor.getByLabel(t('trip.title'),{exact:true}).fill('台灣 → 杜拜 → 希臘')
  const save=editor.getByRole('button',{name:t('trip.save'),exact:true});assert.equal(await save.isEnabled(),true)

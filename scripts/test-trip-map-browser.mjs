@@ -29,7 +29,7 @@ async function run(name,options){
  const editor=page.getByRole('dialog',{name:'旅行編輯',exact:true}),records=page.getByRole('dialog',{name:'我的旅行紀錄',exact:true})
  async function menu(label){if(options.isMobile&&!await page.getByRole('button',{name:label,exact:true}).isVisible())await page.getByRole('button',{name:'搜尋與我的旅行',exact:true}).click();await page.getByRole('button',{name:label,exact:true}).click()}
  async function closeDrawer(){if(options.isMobile&&await page.getByRole('dialog',{name:'搜尋與我的旅行',exact:true}).isVisible())await page.getByRole('dialog',{name:'搜尋與我的旅行',exact:true}).getByRole('button',{name:'關閉',exact:true}).click()}
- async function add(code){await editor.getByRole('searchbox').fill(code);await editor.locator('li').first().getByRole('button',{name:'加入路線',exact:true}).click()}
+ async function add(code){if(!await editor.getByRole('searchbox').isVisible())await editor.locator('summary#trip-search-title').click();await editor.getByRole('searchbox').fill(code);await editor.locator('li').filter({has:page.getByRole('button',{name:'加入路線',exact:true})}).first().getByRole('button',{name:'加入路線',exact:true}).click()}
  async function view(label){await closeDrawer();await page.getByRole('button',{name:label,exact:true}).click()}
  async function snapshotColors(){return JSON.parse(await page.locator('[data-flat-preview-colors]').getAttribute('data-saved-colors'))}
  async function check(country,color){assert.equal((await snapshotColors())[ids[country]],color==='green'?'#6F9E91':'#8BB6CE')}

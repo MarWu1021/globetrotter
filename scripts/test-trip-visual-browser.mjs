@@ -91,7 +91,7 @@ async function paintedFrame(page,country,after) {
 async function run(name,options) {
   const context = await browser.newContext({ ...options, locale: 'zh-TW' })
   const page = await context.newPage(), errors = []
-  page.on('pageerror',e=>errors.push(e.message))
+  page.on('dialog',d=>d.accept());page.on('pageerror',e=>errors.push(e.message))
   // Fresh, isolated browser fixture; never touches an existing user's browser.
   await page.addInitScript(() => {
     localStorage.setItem('globetrotter:v1',JSON.stringify({ version:4, state:{
@@ -113,8 +113,8 @@ async function run(name,options) {
     baseline = await page.evaluate(()=>localStorage.getItem('globetrotter:v1'))
     const editor = page.getByRole('dialog',{name:'旅行編輯',exact:true})
     async function add(code) {
-      await editor.getByRole('searchbox').fill(code)
-      await editor.locator('li').first().getByRole('button',{name:'加入路線',exact:true}).click()
+      if(!await editor.getByRole('searchbox').isVisible())await editor.locator('summary#trip-search-title').click();await editor.getByRole('searchbox').fill(code)
+      await editor.locator('li').filter({has:page.getByRole('button',{name:'加入路線',exact:true})}).first().getByRole('button',{name:'加入路線',exact:true}).click()
     }
     async function view(mode) { await page.getByRole('button',{name:mode==='map'?'平面地圖':'地球',exact:true}).click() }
     async function unchanged() { assert.equal(await page.evaluate(()=>localStorage.getItem('globetrotter:v1')),baseline) }
@@ -191,7 +191,11 @@ async function run(name,options) {
     await page.getByRole('button',{name:'返回編輯器',exact:true}).click()
     await add('DXB'); await add('ATH')
     // TPE -> DXB -> ATH, keep the same stop identities when changing the route.
-    await editor.getByRole('button',{name:'移除停留 KCZ',exact:true}).click()
+    await editor.getByRole('button',{name:'刪除此航段 2',exact:true}).click()
+    await editor.locator('[data-flight-card]').first().locator('[data-airport-endpoint="to"]').click()
+    if(!await editor.getByRole('searchbox').isVisible())await editor.locator('summary#trip-search-title').click()
+    await editor.getByRole('searchbox').fill('DXB')
+    await editor.locator('li').filter({hasText:'DXB'}).filter({has:page.getByRole('button',{name:'加入路線',exact:true})}).first().getByRole('button',{name:'加入路線',exact:true}).click()
     await editor.getByLabel('國家停留性質 DXB',{exact:true}).selectOption('transit')
     await editor.getByRole('button',{name:'查看旅行預覽',exact:true}).click()
     await view('map'); await flat('TW','green'); await flat('GR','green'); await flat('AE','blue')

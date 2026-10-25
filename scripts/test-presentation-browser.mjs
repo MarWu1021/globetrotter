@@ -43,7 +43,7 @@ try{for(const width of [1280,390,320]){
  await page.evaluate(()=>{const r=window.checkedGlobe.renderer(),render=r.render.bind(r);window.fadeHistory=[];r.render=(scene,camera)=>{render(scene,camera);const c=r.checkedLast?.colors?.['158'];if(c&&window.fadeHistory.at(-1)!==c)window.fadeHistory.push(c)}})
  const editor=page.getByRole('dialog',{name:'旅行編輯',exact:true})
  async function newTrip(){if(width<768)await page.getByRole('button',{name:'新增一趟旅行',exact:true}).click();else await page.getByRole('button',{name:'建立旅行',exact:true}).click();await editor.waitFor()}
- async function add(code){await editor.getByRole('searchbox').fill(code);await editor.locator('li').filter({has:page.getByRole('button',{name:'加入路線',exact:true})}).filter({hasText:code}).first().getByRole('button',{name:'加入路線',exact:true}).click()}
+ async function add(code){if(!await editor.getByRole('searchbox').isVisible())await editor.locator('summary#trip-search-title').click();await editor.getByRole('searchbox').fill(code);await editor.locator('li').filter({has:page.getByRole('button',{name:'加入路線',exact:true})}).filter({hasText:code}).first().getByRole('button',{name:'加入路線',exact:true}).click()}
  await newTrip();await add('TPE');await add('DXB');await add('ATH');await editor.getByLabel('旅行名稱（選填）',{exact:true}).fill('旅行動畫');await editor.getByLabel('國家停留性質 DXB',{exact:true}).selectOption('transit')
  assert.equal(await page.locator('[data-mobile-navigation]').count(),0)
  const save=editor.getByRole('button',{name:'儲存旅行',exact:true}),saveBox=await save.boundingBox();assert.ok(saveBox.y+saveBox.height<=850)

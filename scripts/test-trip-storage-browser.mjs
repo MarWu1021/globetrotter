@@ -22,7 +22,7 @@ async function setup(options,corrupt=false){
  const legacy=await page.evaluate(()=>({old:localStorage.getItem('globetrotter:v1'),older:localStorage.getItem('globetrotter')}))
  async function menu(name){if(options.isMobile&&!await page.getByRole('button',{name,exact:true}).isVisible())await page.getByRole('button',{name:'搜尋與我的旅行',exact:true}).click();await page.getByRole('button',{name,exact:true}).click()}
  const editor=page.getByRole('dialog',{name:'旅行編輯',exact:true}),records=page.getByRole('dialog',{name:'我的旅行紀錄',exact:true})
- async function add(c){await editor.getByRole('searchbox',{name:'搜尋機場',exact:true}).fill(c);await editor.locator('li').filter({has:page.getByRole('button',{name:'加入路線',exact:true})}).first().getByRole('button',{name:'加入路線',exact:true}).click()}
+ async function add(c){if(!await editor.getByRole('searchbox').isVisible())await editor.locator('summary#trip-search-title').click();await editor.getByRole('searchbox',{name:'搜尋機場',exact:true}).fill(c);await editor.locator('li').filter({has:page.getByRole('button',{name:'加入路線',exact:true})}).first().getByRole('button',{name:'加入路線',exact:true}).click()}
  async function unchanged(){assert.deepEqual(await page.evaluate(()=>({old:localStorage.getItem('globetrotter:v1'),older:localStorage.getItem('globetrotter')})),legacy)}
  return {context,page,errors,editor,records,menu,add,unchanged}
 }
@@ -33,7 +33,9 @@ async function run(name,options){
  await menu('建立旅行');assert.equal(await editor.getByLabel('整趟旅行狀態',{exact:true}).count(),0)
  await add('TPE');await add('DXB');await add('ATH');await editor.getByLabel('國家停留性質 DXB',{exact:true}).selectOption('transit')
  await editor.getByLabel('旅行名稱（選填）',{exact:true}).fill('台灣杜拜希臘')
+ if(!await editor.locator('fieldset').nth(0).getByLabel('航班編號',{exact:true}).isVisible())await editor.locator('fieldset').nth(0).locator('[data-flight-more] > summary').click()
  await editor.locator('fieldset').nth(0).getByLabel('航班編號',{exact:true}).fill('EK367')
+ if(!await editor.locator('fieldset').nth(1).getByLabel('備註',{exact:true}).isVisible())await editor.locator('fieldset').nth(1).locator('[data-flight-more] > summary').click()
  await editor.locator('fieldset').nth(1).getByLabel('備註',{exact:true}).fill('第二段獨立備註')
  assert.equal(await page.evaluate(k=>localStorage.getItem(k),key),null,'Unsaved route never writes storage')
  await page.evaluate(()=>window.failTripWrites=true)

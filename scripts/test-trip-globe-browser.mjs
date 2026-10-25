@@ -18,7 +18,7 @@ async function run(browser,name,options){
   await page.getByRole('button',{name:'建立旅行',exact:true}).click()
   const editor=page.getByRole('dialog',{name:'旅行編輯',exact:true})
   await editor.waitFor()
-  async function search(q){await editor.getByRole('searchbox',{name:'搜尋機場',exact:true}).fill(q);return editor.locator('li').filter({has:page.getByRole('button',{name:'加入路線',exact:true})}).first()}
+  async function search(q){if(!await editor.getByRole('searchbox').isVisible())await editor.locator('summary#trip-search-title').click();await editor.getByRole('searchbox',{name:'搜尋機場',exact:true}).fill(q);return editor.locator('li').filter({has:page.getByRole('button',{name:'加入路線',exact:true})}).first()}
   await (await search('TPE')).getByRole('button',{name:'加入路線',exact:true}).click()
   await (await search('DXB')).getByRole('button',{name:'在地球上查看',exact:true}).click()
   await page.locator('[data-airport-code="DXB"]').waitFor({state:'visible'})

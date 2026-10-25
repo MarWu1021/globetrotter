@@ -13,7 +13,7 @@ import { selectTripRecords, tripDepartureDate, type TripRecordOrder } from "@/li
 
 const button="min-h-11 rounded-lg border border-[var(--border)] px-3 py-2"
 export default function TripRecords({onClose}:{onClose:()=>void}) {
-  const {savedTrips,repository,loadSaved,draft,setDraft,savedDraftJSON,setRecordToken,setSavedDraftJSON,setMode}=useTripDraft()
+  const {savedTrips,repository,loadSaved,draft,setDraft,savedDraftJSON,setRecordToken,setSavedDraftJSON,setMode,newTrip}=useTripDraft()
   const {enabled:authEnabled}=useAuth()
   const account=useAccount()
   const t=useT(),locale=useTravelStore(s=>s.locale)
@@ -43,6 +43,7 @@ export default function TripRecords({onClose}:{onClose:()=>void}) {
       </header>
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-4 pb-[calc(16px+env(safe-area-inset-bottom))]">
         {(error||savedTrips.error) && <div role="alert"><p>{t(`${authEnabled?"cloud.error":"trip.storage"}.${error??savedTrips.error}`)}</p><button className={button} onClick={()=>{if(authEnabled)void account.reload();else repository.reload();setError(null)}}>{t("trip.retry")}</button></div>}
+        <button className={`${button} w-full bg-[var(--accent)] text-[var(--accent-ink)]`} onClick={()=>{if(draft.stops.length && savedDraftJSON!==JSON.stringify(draft) && !window.confirm(t("trip.replaceConfirm")))return;onClose();newTrip()}}>＋ {t("ticket.newRecord")}</button>
         <div className="grid min-w-0 gap-3 sm:grid-cols-2">
           <label className="min-w-0 space-y-1 text-sm">{t('tripOrder.search')}<input type="search" aria-label={t('tripOrder.search')} value={query} onChange={e=>setQuery(e.target.value)} className="block min-h-11 w-full min-w-0 rounded-lg text-base border border-[var(--border)] bg-[var(--panel)] px-3" /></label>
           <label className="min-w-0 space-y-1 text-sm">{t('tripOrder.label')}<select aria-label={t('tripOrder.label')} value={order} onChange={e=>setOrder(e.target.value as TripRecordOrder)} className="block min-h-11 w-full min-w-0 rounded-lg text-base border border-[var(--border)] bg-[var(--panel)] px-3">

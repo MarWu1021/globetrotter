@@ -32,7 +32,7 @@ try{for(const [width,height] of [[1440,900],[390,844],[320,740]]){
  const editor=page.getByRole('dialog',{name:'旅行編輯',exact:true});await editor.waitFor()
  await editor.getByLabel('旅行名稱（選填）',{exact:true}).fill('隔離瀏覽器測試旅行')
  for(const code of ['TPE','DXB','ATH']){
-  await editor.getByRole('searchbox').fill(code)
+  if(!await editor.getByRole('searchbox').isVisible())await editor.locator('summary#trip-search-title').click();await editor.getByRole('searchbox').fill(code)
   await editor.locator('li').filter({has:page.getByRole('button',{name:'加入路線',exact:true})}).filter({hasText:code}).first().getByRole('button',{name:'加入路線',exact:true}).click()
  }
  await editor.getByLabel('國家停留性質 DXB',{exact:true}).selectOption('transit')
